@@ -3,7 +3,7 @@ package wowchat.game
 import wowchat.common.{WowChatConfig, WowExpansion}
 import io.netty.util.AttributeKey
 
-object GamePackets {
+trait GamePackets {
 
   val CRYPT: AttributeKey[GameHeaderCrypt] = AttributeKey.valueOf("CRYPT")
 
@@ -36,6 +36,9 @@ object GamePackets {
   // tbc/wotlk only
   val SMSG_TIME_SYNC_REQ = 0x0390
   val CMSG_TIME_SYNC_RESP = 0x0391
+
+  // cataclysm
+  val WOW_CONNECTION = 0x4F57 // same hack as in mangos :D
 
   object ChatEvents {
     // err...

@@ -37,7 +37,7 @@ class GamePacketHandlerTBC(realmId: Int, sessionKey: Array[Byte], gameEventCallb
 
     msg.byteBuf.skipBytes(4)
 
-    val channelName = if (tp == GamePackets.ChatEvents.CHAT_MSG_CHANNEL) {
+    val channelName = if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
       Some(msg.readString)
     } else {
       None

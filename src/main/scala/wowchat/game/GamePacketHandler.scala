@@ -8,7 +8,6 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.{Executors, TimeUnit}
 
 import wowchat.common._
-import wowchat.game.GamePackets._
 import wowchat.game.warden.WardenHandler
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
@@ -26,7 +25,7 @@ case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
 
 class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends ChannelInboundHandlerAdapter with GameCommandHandler with StrictLogging {
+  extends ChannelInboundHandlerAdapter with GameCommandHandler with GamePackets with StrictLogging {
 
   protected val addonInfo: Array[Byte] = Array(
     0x56, 0x01, 0x00, 0x00, 0x78, 0x9C, 0x75, 0xCC, 0xBD, 0x0E, 0xC2, 0x30, 0x0C, 0x04, 0xE0, 0xF2,
@@ -73,7 +72,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
         byteBuf.writeIntLE(pingId)
         byteBuf.writeIntLE(latency)
 
-        ctx.get.writeAndFlush(Packet(GamePackets.CMSG_PING, byteBuf))
+        ctx.get.writeAndFlush(Packet(CMSG_PING, byteBuf))
         pingId += 1
       }
     }, 30, 30, TimeUnit.SECONDS)
@@ -99,13 +98,13 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   }
 
   def updateGuildRoster: Unit = {
-    ctx.get.writeAndFlush(Packet(GamePackets.CMSG_GUILD_ROSTER))
+    ctx.get.writeAndFlush(Packet(CMSG_GUILD_ROSTER))
   }
 
   def sendLogout: Option[ChannelFuture] = {
     ctx.flatMap(ctx => {
       if (ctx.channel.isActive) {
-        Some(ctx.writeAndFlush(Packet(GamePackets.CMSG_LOGOUT_REQUEST)))
+        Some(ctx.writeAndFlush(Packet(CMSG_LOGOUT_REQUEST)))
       } else {
         None
       }
@@ -124,7 +123,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       })
       out.writeCharSequence(message, Charset.forName("UTF-8"))
       out.writeByte(0)
-      ctx.writeAndFlush(Packet(GamePackets.CMSG_CHATMESSAGE, out))
+      ctx.writeAndFlush(Packet(CMSG_CHATMESSAGE, out))
     })
   }
 
@@ -136,7 +135,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     ctx.foreach(ctx => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
       out.writeLongLE(guid)
-      ctx.writeAndFlush(Packet(GamePackets.CMSG_NAME_QUERY, out))
+      ctx.writeAndFlush(Packet(CMSG_NAME_QUERY, out))
     })
   }
 
@@ -155,7 +154,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       byteBuf.writeIntLE(1) // strings count
       byteBuf.writeBytes(arguments.get.getBytes)
       byteBuf.writeByte(0)
-      ctx.get.writeAndFlush(Packet(GamePackets.CMSG_WHO, byteBuf))
+      ctx.get.writeAndFlush(Packet(CMSG_WHO, byteBuf))
       None
     } else {
       Some(playerRoster
@@ -164,7 +163,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
         .toSeq
         .sortBy(_.name)
         .map(m => {
-          s"${m.name} (${GamePackets.Classes.valueOf(m.charClass)})"
+          s"${m.name} (${Classes.valueOf(m.charClass)})"
         })
         .mkString(getGuildiesOnlineMessage(false), ", ", ""))
     }
@@ -200,22 +199,26 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     msg match {
       case msg: Packet =>
         msg.id match {
-          case GamePackets.SMSG_AUTH_CHALLENGE => handle_SMSG_AUTH_CHALLENGE(msg)
-          case GamePackets.SMSG_AUTH_RESPONSE => handle_SMSG_AUTH_RESPONSE(msg)
-          case GamePackets.SMSG_NAME_QUERY => handle_SMSG_NAME_QUERY(msg)
-          case GamePackets.SMSG_CHAR_ENUM => handle_SMSG_CHAR_ENUM(msg)
-          case GamePackets.SMSG_LOGIN_VERIFY_WORLD => handle_SMSG_LOGIN_VERIFY_WORLD(msg)
-          case GamePackets.SMSG_GUILD_EVENT => handle_SMSG_GUILD_EVENT(msg)
-          case GamePackets.SMSG_GUILD_ROSTER => handle_SMSG_GUILD_ROSTER(msg)
-          case GamePackets.SMSG_CHATMESSAGE => handle_SMSG_CHATMESSAGE(msg)
-          case GamePackets.SMSG_CHANNEL_NOTIFY => handle_SMSG_CHANNEL_NOTIFY(msg)
-          case GamePackets.SMSG_NOTIFICATION => handle_SMSG_NOTIFICATION(msg)
-          case GamePackets.SMSG_WHO => handle_SMSG_WHO(msg)
+          case SMSG_AUTH_CHALLENGE => handle_SMSG_AUTH_CHALLENGE(msg)
+          case SMSG_AUTH_RESPONSE => handle_SMSG_AUTH_RESPONSE(msg)
+          case SMSG_NAME_QUERY => handle_SMSG_NAME_QUERY(msg)
+          case SMSG_CHAR_ENUM => handle_SMSG_CHAR_ENUM(msg)
+          case SMSG_LOGIN_VERIFY_WORLD => handle_SMSG_LOGIN_VERIFY_WORLD(msg)
+          case SMSG_GUILD_EVENT => handle_SMSG_GUILD_EVENT(msg)
+          case SMSG_GUILD_ROSTER => handle_SMSG_GUILD_ROSTER(msg)
+          case SMSG_CHATMESSAGE => handle_SMSG_CHATMESSAGE(msg)
+          case SMSG_CHANNEL_NOTIFY => handle_SMSG_CHANNEL_NOTIFY(msg)
+          case SMSG_NOTIFICATION => handle_SMSG_NOTIFICATION(msg)
+          case SMSG_WHO => handle_SMSG_WHO(msg)
 
-          case GamePackets.SMSG_WARDEN_DATA => handle_SMSG_WARDEN_DATA(msg)
+          case SMSG_WARDEN_DATA => handle_SMSG_WARDEN_DATA(msg)
 
           // tbc/wotlk only
-          case GamePackets.SMSG_TIME_SYNC_REQ => handle_SMSG_TIME_SYNC_REQ(msg)
+          case SMSG_TIME_SYNC_REQ => handle_SMSG_TIME_SYNC_REQ(msg)
+
+          // cata only
+          case WOW_CONNECTION => handle_WOW_CONNECTION(msg)
+
           case x =>
         }
         msg.byteBuf.release
@@ -227,13 +230,13 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   private def handle_SMSG_AUTH_CHALLENGE(msg: Packet): Unit = {
     val authChallengeMessage = parseAuthChallenge(msg)
 
-    ctx.get.channel.attr(GamePackets.CRYPT).get.init(authChallengeMessage.sessionKey)
+    ctx.get.channel.attr(CRYPT).get.init(authChallengeMessage.sessionKey)
 
-    ctx.get.writeAndFlush(Packet(GamePackets.CMSG_AUTH_CHALLENGE, authChallengeMessage.byteBuf))
+    ctx.get.writeAndFlush(Packet(CMSG_AUTH_CHALLENGE, authChallengeMessage.byteBuf))
   }
 
   protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
-    val accountConfig = Global.config.wow.account.toUpperCase
+    val account = Global.config.wow.account.toUpperCase
 
     val serverSeed = msg.byteBuf.readInt
     val clientSeed = Random.nextInt
@@ -241,12 +244,12 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     out.writeShortLE(0)
     out.writeIntLE(WowChatConfig.getBuild)
     out.writeIntLE(0)
-    out.writeBytes(accountConfig.getBytes)
+    out.writeBytes(account.getBytes)
     out.writeByte(0)
     out.writeInt(clientSeed)
 
     val md = MessageDigest.getInstance("SHA1")
-    md.update(accountConfig.getBytes)
+    md.update(account.getBytes)
     md.update(Array[Byte](0, 0, 0, 0))
     md.update(ByteUtils.intToBytes(clientSeed))
     md.update(ByteUtils.intToBytes(serverSeed))
@@ -259,15 +262,20 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   }
 
   private def handle_SMSG_AUTH_RESPONSE(msg: Packet): Unit = {
-    val code = msg.byteBuf.readByte
+    val code = parseAuthResponse(msg)
     if (code == AuthResponseCodes.AUTH_OK) {
-      ctx.get.writeAndFlush(Packet(GamePackets.CMSG_CHAR_ENUM))
+      logger.info("Successfully logged in!")
+      ctx.get.writeAndFlush(Packet(CMSG_CHAR_ENUM))
     } else {
       logger.error(AuthResponseCodes.getMessage(code))
       isShutdown = true
       pingExecutor.shutdown()
       ctx.foreach(_.close)
     }
+  }
+
+  protected def parseAuthResponse(msg: Packet): Byte = {
+    msg.byteBuf.readByte
   }
 
   private def handle_SMSG_NAME_QUERY(msg: Packet): Unit = {
@@ -333,7 +341,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     })(guid => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
       out.writeLongLE(selfCharacterId.get)
-      ctx.get.writeAndFlush(Packet(GamePackets.CMSG_PLAYER_LOGIN, out))
+      ctx.get.writeAndFlush(Packet(CMSG_PLAYER_LOGIN, out))
     })
   }
 
@@ -356,7 +364,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
         byteBuf.writeBytes(channel.getBytes)
         byteBuf.writeByte(0)
         byteBuf.writeByte(0)
-        ctx.get.writeAndFlush(Packet(GamePackets.CMSG_JOIN_CHANNEL, byteBuf))
+        ctx.get.writeAndFlush(Packet(CMSG_JOIN_CHANNEL, byteBuf))
       })
   }
 
@@ -368,10 +376,10 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
     val guildNotificationConfig = Global.config.guildConfig.notificationConfigs(
       event match {
-        case GamePackets.GuildEvents.GE_JOINED => "joined"
-        case GamePackets.GuildEvents.GE_LEFT | GamePackets.GuildEvents.GE_REMOVED => "left"
-        case GamePackets.GuildEvents.GE_SIGNED_ON => "online"
-        case GamePackets.GuildEvents.GE_SIGNED_OFF => "offline"
+        case GuildEvents.GE_JOINED => "joined"
+        case GuildEvents.GE_LEFT | GuildEvents.GE_REMOVED => "left"
+        case GuildEvents.GE_SIGNED_ON => "online"
+        case GuildEvents.GE_SIGNED_OFF => "offline"
         case _ => return
       }
     )
@@ -449,7 +457,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       return None
     }
 
-    val channelName = if (tp == GamePackets.ChatEvents.CHAT_MSG_CHANNEL) {
+    val channelName = if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
       val ret = Some(msg.readString)
       msg.byteBuf.skipBytes(4)
       ret
@@ -470,8 +478,8 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
     // these events have a "target" guid we need to skip
     tp match {
-      case GamePackets.ChatEvents.CHAT_MSG_SAY |
-           GamePackets.ChatEvents.CHAT_MSG_YELL =>
+      case ChatEvents.CHAT_MSG_SAY |
+           ChatEvents.CHAT_MSG_YELL =>
         msg.byteBuf.skipBytes(8)
       case _ =>
     }
@@ -535,7 +543,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
     val out = wardenHandler.get.handle(msg)
     if (out.isDefined) {
-      ctx.get.writeAndFlush(Packet(GamePackets.CMSG_WARDEN_DATA, out.get))
+      ctx.get.writeAndFlush(Packet(CMSG_WARDEN_DATA, out.get))
     }
   }
 
@@ -550,6 +558,16 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     byteBuf.writeIntLE(counter)
     byteBuf.writeIntLE(jvmUptime.toInt)
 
-    ctx.get.writeAndFlush(Packet(GamePackets.CMSG_TIME_SYNC_RESP, byteBuf))
+    ctx.get.writeAndFlush(Packet(CMSG_TIME_SYNC_RESP, byteBuf))
+  }
+
+  // cata only
+  private def handle_WOW_CONNECTION(msg: Packet): Unit = {
+    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(48, 48)
+
+    val connectionString = "RLD OF WARCRAFT CONNECTION - CLIENT TO SERVER"
+    byteBuf.writeBytes(connectionString.getBytes)
+    byteBuf.writeByte(0)
+    ctx.get.writeAndFlush(Packet(WOW_CONNECTION, byteBuf))
   }
 }

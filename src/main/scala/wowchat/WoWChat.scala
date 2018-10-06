@@ -21,7 +21,7 @@ object WoWChat extends StrictLogging {
     }
     Global.config = WowChatConfig(confFile)
 
-    checkForNewVersion
+    //checkForNewVersion
 
     val gameEventCallback = new CommonConnectionCallback {
 

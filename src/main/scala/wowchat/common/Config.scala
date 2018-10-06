@@ -4,8 +4,8 @@ import java.io.File
 
 import wowchat.common.ChatDirection.ChatDirection
 import wowchat.common.WowExpansion.WowExpansion
-import wowchat.game.GamePackets
 import com.typesafe.config.{Config, ConfigFactory}
+import wowchat.game.GamePackets
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.{typeOf, TypeTag}
@@ -20,7 +20,7 @@ case class ChannelConfig(chatDirection: ChatDirection, wow: WowChannelConfig, di
 case class WowChannelConfig(tp: Byte, channel: Option[String] = None, format: String)
 case class DiscordChannelConfig(channel: String, format: String)
 
-object WowChatConfig {
+object WowChatConfig extends GamePackets {
 
   private var version: String = _
   private var expansion: WowExpansion = _
@@ -76,6 +76,7 @@ object WowChatConfig {
       case "3.3.2" => 11403
       case "3.3.3" => 11723
       case "3.3.5" => 12340
+      case "4.3.4" => 15595
     }
   }
 
@@ -130,7 +131,7 @@ object WowChatConfig {
 
         ChannelConfig(
           ChatDirection.withName(channel.getString("direction")),
-          WowChannelConfig(GamePackets.ChatEvents.parse(channel.getString("wow.type")), wowChannel, channel.getString("wow.format")),
+          WowChannelConfig(ChatEvents.parse(channel.getString("wow.type")), wowChannel, channel.getString("wow.format")),
           DiscordChannelConfig(channel.getString("discord.channel"), channel.getString("discord.format"))
         )
     })
@@ -164,7 +165,7 @@ object WowChatConfig {
 
 object WowExpansion extends Enumeration {
   type WowExpansion = Value
-  val Vanilla, TBC, WotLK = Value
+  val Vanilla, TBC, WotLK, Cataclysm = Value
 
   def valueOf(version: String): WowExpansion = {
     if (version.startsWith("1.")) {
@@ -173,6 +174,8 @@ object WowExpansion extends Enumeration {
       WowExpansion.TBC
     } else if (version.startsWith("3.")) {
       WowExpansion.WotLK
+    } else if (version.startsWith("4.")) {
+      WowExpansion.Cataclysm
     } else {
       throw new IllegalArgumentException(s"Version $version not supported!")
     }

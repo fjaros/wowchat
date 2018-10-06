@@ -19,7 +19,7 @@ class GameConnector(host: String,
                     realmId: Int,
                     sessionKey: Array[Byte],
                     gameEventCallback: CommonConnectionCallback)
-  extends Connector with StrictLogging {
+  extends Connector with GamePackets with StrictLogging {
 
   sys.addShutdownHook({
     disconnect
@@ -80,14 +80,17 @@ class GameConnector(host: String,
           handler = Some(
             WowChatConfig.getExpansion match {
               case WowExpansion.Vanilla =>
-                socketChannel.attr(GamePackets.CRYPT).set(new GameHeaderCrypt)
+                socketChannel.attr(CRYPT).set(new GameHeaderCrypt)
                 new GamePacketHandler(realmId, sessionKey, gameEventCallback)
               case WowExpansion.TBC =>
-                socketChannel.attr(GamePackets.CRYPT).set(new GameHeaderCryptTBC)
+                socketChannel.attr(CRYPT).set(new GameHeaderCryptTBC)
                 new GamePacketHandlerTBC(realmId, sessionKey, gameEventCallback)
               case WowExpansion.WotLK =>
-                socketChannel.attr(GamePackets.CRYPT).set(new GameHeaderCryptWotLK)
+                socketChannel.attr(CRYPT).set(new GameHeaderCryptWotLK)
                 new GamePacketHandlerWotLK(realmId, sessionKey, gameEventCallback)
+              case WowExpansion.Cataclysm =>
+                socketChannel.attr(CRYPT).set(new GameHeaderCryptWotLK)
+                new GamePacketHandlerCataclysm(realmId, sessionKey, gameEventCallback)
             }
           )
 

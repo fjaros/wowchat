@@ -2,7 +2,6 @@ package wowchat.discord
 
 import wowchat.commands.CommandHandler
 import wowchat.common._
-import wowchat.game.GamePackets
 import com.typesafe.scalalogging.StrictLogging
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.core.JDA.Status
@@ -11,11 +10,12 @@ import net.dv8tion.jda.core.events.StatusChangeEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 import net.dv8tion.jda.core.{AccountType, JDABuilder}
-import wowchat.game.GamePackets.ChatEvents
+import wowchat.game.GamePackets
 
 import scala.collection.JavaConverters._
 
-class Discord(discordConnectionCallback: CommonConnectionCallback) extends ListenerAdapter with StrictLogging {
+class Discord(discordConnectionCallback: CommonConnectionCallback) extends ListenerAdapter
+  with GamePackets with StrictLogging {
 
   private val jda = new JDABuilder(AccountType.BOT)
     .setToken(Global.config.discord.token)
@@ -54,7 +54,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   }
 
   def sendGuildNotification(message: String): Unit = {
-    Global.wowToDiscord.get((GamePackets.ChatEvents.CHAT_MSG_GUILD, None))
+    Global.wowToDiscord.get((ChatEvents.CHAT_MSG_GUILD, None))
       .foreach(_.foreach {
         case (discordChannel, _) => discordChannel.sendMessage(message).queue()
       })

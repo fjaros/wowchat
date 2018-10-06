@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 
-class GamePacketDecoder extends ByteToMessageDecoder with StrictLogging {
+class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with StrictLogging {
 
   private val HEADER_LENGTH = 4
 
@@ -20,7 +20,7 @@ class GamePacketDecoder extends ByteToMessageDecoder with StrictLogging {
       return
     }
 
-    val crypt = ctx.channel.attr(GamePackets.CRYPT).get
+    val crypt = ctx.channel.attr(CRYPT).get
 
     if (size == 0 && id == 0) {
       if (crypt.isInit) {
@@ -50,7 +50,7 @@ class GamePacketDecoder extends ByteToMessageDecoder with StrictLogging {
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-    println("EXCEPTION CAUGHT: " + cause.getMessage)
+    logger.error("EXCEPTION CAUGHT: " + cause.getMessage)
 
     super.exceptionCaught(ctx, cause)
   }
