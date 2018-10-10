@@ -31,4 +31,21 @@ case class Packet(
     while (byteBuf.readableBytes > 0 && byteBuf.readByte != 0) {}
     this
   }
+
+  var bitPosition = 0
+  var byte: Byte = 0
+
+  def readBits(length: Int): Int = {
+    (0 until length).foldLeft(0) {
+      case (result, i) =>
+        if (bitPosition == 0) {
+          byte = byteBuf.readByte
+        }
+        bitPosition = (bitPosition + 1) % 8
+
+        val ret = result | ((byte >> (8 - bitPosition)) & 1)
+        byte = (byte >> 1).toByte
+        ret
+    }
+  }
 }

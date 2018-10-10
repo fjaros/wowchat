@@ -23,6 +23,7 @@ case class Player(name: String, charClass: Byte)
 case class ChatMessage(guid: Long, tp: Byte, message: String, channel: Option[String] = None)
 case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
+case class CharEnumMessage(guid: Long, race: Byte)
 
 class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends ChannelInboundHandlerAdapter with GameCommandHandler with GamePackets with StrictLogging {
@@ -46,7 +47,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   var motd: String = ""
   var ginfo: String = ""
 
-  private var ctx: Option[ChannelHandlerContext] = None
+  protected var ctx: Option[ChannelHandlerContext] = None
   private val playerRoster = mutable.Map.empty[Long, Player]
   private var languageId: Byte = _
 
@@ -197,34 +198,33 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
     msg match {
-      case msg: Packet =>
-        msg.id match {
-          case SMSG_AUTH_CHALLENGE => handle_SMSG_AUTH_CHALLENGE(msg)
-          case SMSG_AUTH_RESPONSE => handle_SMSG_AUTH_RESPONSE(msg)
-          case SMSG_NAME_QUERY => handle_SMSG_NAME_QUERY(msg)
-          case SMSG_CHAR_ENUM => handle_SMSG_CHAR_ENUM(msg)
-          case SMSG_LOGIN_VERIFY_WORLD => handle_SMSG_LOGIN_VERIFY_WORLD(msg)
-          case SMSG_GUILD_EVENT => handle_SMSG_GUILD_EVENT(msg)
-          case SMSG_GUILD_ROSTER => handle_SMSG_GUILD_ROSTER(msg)
-          case SMSG_CHATMESSAGE => handle_SMSG_CHATMESSAGE(msg)
-          case SMSG_CHANNEL_NOTIFY => handle_SMSG_CHANNEL_NOTIFY(msg)
-          case SMSG_NOTIFICATION => handle_SMSG_NOTIFICATION(msg)
-          case SMSG_WHO => handle_SMSG_WHO(msg)
-
-          case SMSG_WARDEN_DATA => handle_SMSG_WARDEN_DATA(msg)
-
-          // tbc/wotlk only
-          case SMSG_TIME_SYNC_REQ => handle_SMSG_TIME_SYNC_REQ(msg)
-
-          // cata only
-          case WOW_CONNECTION => handle_WOW_CONNECTION(msg)
-
-          case x =>
-        }
-        msg.byteBuf.release
-      case msg =>
-        logger.error(s"Packet is instance of ${msg.getClass}")
+      case msg: Packet => channelParse(msg)
+      case msg => logger.error(s"Packet is instance of ${msg.getClass}")
     }
+  }
+
+  protected def channelParse(msg: Packet): Unit = {
+    msg.id match {
+      case SMSG_AUTH_CHALLENGE => handle_SMSG_AUTH_CHALLENGE(msg)
+      case SMSG_AUTH_RESPONSE => handle_SMSG_AUTH_RESPONSE(msg)
+      case SMSG_NAME_QUERY => handle_SMSG_NAME_QUERY(msg)
+      case SMSG_CHAR_ENUM => handle_SMSG_CHAR_ENUM(msg)
+      case SMSG_LOGIN_VERIFY_WORLD => handle_SMSG_LOGIN_VERIFY_WORLD(msg)
+      case SMSG_GUILD_EVENT => handle_SMSG_GUILD_EVENT(msg)
+      case SMSG_GUILD_ROSTER => handle_SMSG_GUILD_ROSTER(msg)
+      case SMSG_CHATMESSAGE => handle_SMSG_CHATMESSAGE(msg)
+      case SMSG_CHANNEL_NOTIFY => handle_SMSG_CHANNEL_NOTIFY(msg)
+      case SMSG_NOTIFICATION => handle_SMSG_NOTIFICATION(msg)
+      case SMSG_WHO => handle_SMSG_WHO(msg)
+
+      case SMSG_WARDEN_DATA => handle_SMSG_WARDEN_DATA(msg)
+
+      // tbc/wotlk only
+      case SMSG_TIME_SYNC_REQ => handle_SMSG_TIME_SYNC_REQ(msg)
+
+      case unhandled =>
+    }
+    msg.byteBuf.release
   }
 
   private def handle_SMSG_AUTH_CHALLENGE(msg: Packet): Unit = {
@@ -303,46 +303,45 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   }
 
   private def handle_SMSG_CHAR_ENUM(msg: Packet): Unit = {
-    val characterConfig = Global.config.wow.character
+    parseCharEnum(msg).fold({
+      logger.error(s"Character ${Global.config.wow.character} not found!")
+    })(character => {
+      selfCharacterId = Some(character.guid)
+      languageId = Races.getLanguage(character.race)
 
-    val charactersNum = msg.byteBuf.readByte
-
-    // only care about guid and name here
-    breakable {
-      (0 until charactersNum)
-        .foreach(i => {
-          val guid = msg.byteBuf.readLongLE
-          val name = msg.readString
-          val race = msg.byteBuf.readByte // will determine what language to use in chat
-
-          msg.byteBuf.skipBytes(1) // class
-          msg.byteBuf.skipBytes(1) // gender
-          msg.byteBuf.skipBytes(1) // skin
-          msg.byteBuf.skipBytes(1) // face
-          msg.byteBuf.skipBytes(1) // hair style
-          msg.byteBuf.skipBytes(1) // hair color
-          msg.byteBuf.skipBytes(1) // facial hair
-          msg.byteBuf.skipBytes(1) // level
-          msg.byteBuf.skipBytes(4) // zone
-          msg.byteBuf.skipBytes(4) // map - could be useful in the future to determine what city specific channels to join
-
-          msg.byteBuf.skipBytes(24) // other char info
-          msg.byteBuf.skipBytes(109) // equipment info
-          if (name.equalsIgnoreCase(characterConfig)) {
-            selfCharacterId = Some(guid)
-            languageId = Races.getLanguage(race)
-            break
-          }
-        })
-    }
-
-    selfCharacterId.fold({
-      logger.error(s"Character $characterConfig not found!")
-    })(guid => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
       out.writeLongLE(selfCharacterId.get)
       ctx.get.writeAndFlush(Packet(CMSG_PLAYER_LOGIN, out))
     })
+  }
+
+  protected def parseCharEnum(msg: Packet): Option[CharEnumMessage] = {
+    val charactersNum = msg.byteBuf.readByte
+
+    // only care about guid and name here
+    (0 until charactersNum).foreach(i => {
+      val guid = msg.byteBuf.readLongLE
+      val name = msg.readString
+      val race = msg.byteBuf.readByte // will determine what language to use in chat
+      if (name.equalsIgnoreCase(Global.config.wow.character)) {
+        return Some(CharEnumMessage(guid, race))
+      }
+
+      msg.byteBuf.skipBytes(1) // class
+      msg.byteBuf.skipBytes(1) // gender
+      msg.byteBuf.skipBytes(1) // skin
+      msg.byteBuf.skipBytes(1) // face
+      msg.byteBuf.skipBytes(1) // hair style
+      msg.byteBuf.skipBytes(1) // hair color
+      msg.byteBuf.skipBytes(1) // facial hair
+      msg.byteBuf.skipBytes(1) // level
+      msg.byteBuf.skipBytes(4) // zone
+      msg.byteBuf.skipBytes(4) // map - could be useful in the future to determine what city specific channels to join
+
+      msg.byteBuf.skipBytes(24) // other char info
+      msg.byteBuf.skipBytes(109) // equipment info
+    })
+    None
   }
 
   private def handle_SMSG_LOGIN_VERIFY_WORLD(msg: Packet): Unit = {
@@ -559,15 +558,5 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     byteBuf.writeIntLE(jvmUptime.toInt)
 
     ctx.get.writeAndFlush(Packet(CMSG_TIME_SYNC_RESP, byteBuf))
-  }
-
-  // cata only
-  private def handle_WOW_CONNECTION(msg: Packet): Unit = {
-    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(48, 48)
-
-    val connectionString = "RLD OF WARCRAFT CONNECTION - CLIENT TO SERVER"
-    byteBuf.writeBytes(connectionString.getBytes)
-    byteBuf.writeByte(0)
-    ctx.get.writeAndFlush(Packet(WOW_CONNECTION, byteBuf))
   }
 }

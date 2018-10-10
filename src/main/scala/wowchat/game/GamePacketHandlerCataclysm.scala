@@ -10,6 +10,14 @@ import scala.util.Random
 class GamePacketHandlerCataclysm(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends GamePacketHandlerTBC(realmId, sessionKey, gameEventCallback) with GamePacketsCataclysm {
 
+
+  override protected def channelParse(msg: Packet): Unit = {
+    msg.id match {
+      case WOW_CONNECTION => handle_WOW_CONNECTION(msg)
+      case _ => super.channelParse(msg)
+    }
+  }
+
   override protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
     val account = Global.config.wow.account.toUpperCase
 
@@ -67,5 +75,29 @@ class GamePacketHandlerCataclysm(realmId: Int, sessionKey: Array[Byte], gameEven
   override protected def parseAuthResponse(msg: Packet): Byte = {
     msg.byteBuf.skipBytes(16)
     super.parseAuthResponse(msg)
+  }
+
+  override protected def parseCharEnum(msg: Packet): Option[CharEnumMessage] = {
+    val unpack = new BitUnpack(msg.byteBuf)
+    var guidBytes = new Array[Byte](8)
+
+    msg.readBits(24) // unkn
+    println(ByteUtils.toHexString(msg.byteBuf, true, false))
+    val charactersNum = msg.readBits(17)
+
+//    guidBytes(3) |= unpack.get
+
+
+
+    None
+  }
+
+  private def handle_WOW_CONNECTION(msg: Packet): Unit = {
+    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(48, 48)
+
+    val connectionString = "RLD OF WARCRAFT CONNECTION - CLIENT TO SERVER"
+    byteBuf.writeBytes(connectionString.getBytes)
+    byteBuf.writeByte(0)
+    ctx.get.writeAndFlush(Packet(WOW_CONNECTION, byteBuf))
   }
 }

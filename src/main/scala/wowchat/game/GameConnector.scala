@@ -77,6 +77,11 @@ class GameConnector(host: String,
 
         @throws[Exception]
         override protected def initChannel(socketChannel: SocketChannel): Unit = {
+          val encoder = WowChatConfig.getExpansion match {
+            case WowExpansion.Cataclysm => new GamePacketEncoderCataclysm
+            case _ => new GamePacketEncoder
+          }
+
           handler = Some(
             WowChatConfig.getExpansion match {
               case WowExpansion.Vanilla =>
@@ -98,7 +103,7 @@ class GameConnector(host: String,
             new IdleStateHandler(60, 120, 0),
             disconnectListener.reconnectDelay,
             new GamePacketDecoder,
-            new GamePacketEncoder,
+            encoder,
             handler.get)
         }
       })

@@ -1,11 +1,10 @@
 package wowchat.game
 
-import wowchat.common.{WowChatConfig, WowExpansion}
-
 trait GamePacketsCataclysm extends GamePackets {
 
-  // i am actually pretty sure this just uses same bit obfuscating as some of the other variables like player guid
+  // this might just use the same bit obfuscating as some of the other variables like player guid
   // but mangos hardcodes the values.
+  val WOW_CONNECTION = 0x4F57 // same hack as in mangos :D
 
   override val CMSG_CHAR_ENUM = 0x0502
   override val SMSG_CHAR_ENUM = 0x10B0

@@ -37,9 +37,6 @@ trait GamePackets {
   val SMSG_TIME_SYNC_REQ = 0x0390
   val CMSG_TIME_SYNC_RESP = 0x0391
 
-  // cataclysm
-  val WOW_CONNECTION = 0x4F57 // same hack as in mangos :D
-
   object ChatEvents {
     // err...
     lazy val CHAT_MSG_SAY = if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 0x00.toByte else 0x01.toByte

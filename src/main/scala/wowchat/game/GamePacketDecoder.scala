@@ -31,7 +31,7 @@ class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with Stric
         id = decrypted(3) << 8 | decrypted(2) & 0xFF
       } else {
         size = in.readShort() - 2
-        id = in.readShortLE()
+        id = in.readShortLE
       }
     }
 
