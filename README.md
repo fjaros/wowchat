@@ -53,6 +53,11 @@ Even though this bot does not do anything malicious, some servers may not like a
      * **account**: The bot's WoW game account.
      * **password**: The bot's WoW game account password.
      * **character**: Your character's name as would be shown in the character list.
+   * In section **guild**:
+     * This section sets up guild notifications on Discord.
+     * For each notification, **online**, **offline**, **joined**, **left**, specify:
+       * **enabled**: **0** to not display in Discord, **1** to display in Discord
+       * **format**: How to display the message.
    * In section **chat**:
      * This section sets up the channel relays between Discord and WoW. You can have an unlimited number of channel relays.
      * **direction**: How do you want to relay each channel, put either
@@ -60,19 +65,25 @@ Even though this bot does not do anything malicious, some servers may not like a
      * **wow** section:
        * In type put one of, **Say**, **Guild**, **Officer**, **Emote**, **Yell**, **System**, **Channel**. This is the type of chat the Bot will read for this section.
          * If you put **type=Channel**, you also must provide a **channel=name of channel** value.
-       * In format put how you want to display the message, supported replacable values are **%speaker**, **%message**, and **%channel** if above type is **Channel**.
+       * In format put how you want to display the message, supported replacable values are **%user**, **%message**, and **%channel** if above type is **Channel**.
      * **discord** section:
        * **channel**: The discord channel where to display the message.
        * **format**: Same options as in **wow** section above.
-3. If you do not wish to compile the bot yourself, a ready-made zip of the current release is also provided.
+3. Invite your bot to Discord
+   * Go back to https://discordapp.com/developers/applications/ and click your new Bot application.
+   * In browser enter: https://discordapp.com/oauth2/authorize?client_id=**CLIENT_ID**&scope=bot
+     * Replace **CLIENT_ID** with the value from Discord applications page.
+   * Setup the bot with the correct Discord roles/permissions to enter your desired channels.
+
+## Run
+1. Download the latest ready-made binary from github releases: https://github.com/fjaros/wowchat/releases
    * **Make sure you have a Java Runtime Environment (JRE) 1.8 or higher installed on your system!**
    * **On Windows**: Edit wowchat.conf as above and run `run.bat`
    * **On Mac/Linux**: Edit wowchat.conf as above and run `run.sh`
 
-## Compilation
-
+OR to compile yourself:
 1. WoW Chat is written in Scala and compiles to a Java executable using [maven](https://maven.apache.org).
 2. It uses Java JDK 1.8 and Scala 2.12.6.
 3. Run `mvn clean package` which will produce a file in the target folder called `wowchat.zip`
-4. unzip `wowchat.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
+4. unzip `wowchat-1.1.0.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
    * If no config file is supplied, the bot will try to use `wowchat.conf`

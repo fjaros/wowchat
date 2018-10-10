@@ -366,25 +366,24 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     msg.byteBuf.skipBytes(1)
     val name = msg.readString
 
-    val message = event match {
-      case GamePackets.GuildEvents.GE_JOINED =>
-        // in case new member is added
-        s"`[$name] has joined the guild.`"
-      case GamePackets.GuildEvents.GE_LEFT | GamePackets.GuildEvents.GE_REMOVED =>
-        s"`[$name] has left the guild.`"
-      case GamePackets.GuildEvents.GE_SIGNED_ON =>
-        //s"`[$name] has come online.`"
-        ""
-      case GamePackets.GuildEvents.GE_SIGNED_OFF =>
-        //s"`[$name] has gone offline.`"
-        ""
-      case _ =>
-        return
-    }
+    val guildNotificationConfig = Global.config.guildConfig.notificationConfigs(
+      event match {
+        case GamePackets.GuildEvents.GE_JOINED => "joined"
+        case GamePackets.GuildEvents.GE_LEFT | GamePackets.GuildEvents.GE_REMOVED => "left"
+        case GamePackets.GuildEvents.GE_SIGNED_ON => "online"
+        case GamePackets.GuildEvents.GE_SIGNED_OFF => "offline"
+        case _ => return
+      }
+    )
 
-    if (message.nonEmpty) {
+    if (guildNotificationConfig.enabled) {
+      val message = guildNotificationConfig
+        .format
+        .replace("%user", name)
+
       Global.discord.sendGuildNotification(message)
     }
+
     updateGuildRoster
   }
 

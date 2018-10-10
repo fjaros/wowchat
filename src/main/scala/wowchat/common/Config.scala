@@ -8,11 +8,14 @@ import wowchat.game.GamePackets
 import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.collection.JavaConverters._
+import scala.reflect.runtime.universe.{typeOf, TypeTag}
 
-case class WowChatConfig(discord: DiscordConfig, wow: Wow, channels: Seq[ChannelConfig])
+case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig])
 case class DiscordConfig(token: String)
 case class Wow(realmlist: RealmListConfig, account: String, password: String, character: String)
 case class RealmListConfig(name: String, host: String, port: Int)
+case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
+case class GuildNotificationConfig(enabled: Boolean, format: String)
 case class ChannelConfig(chatDirection: ChatDirection, wow: WowChannelConfig, discord: DiscordChannelConfig)
 case class WowChannelConfig(tp: Byte, channel: Option[String] = None, format: String)
 case class DiscordChannelConfig(channel: String, format: String)
@@ -32,10 +35,15 @@ object WowChatConfig {
 
     val discordConf = config.getConfig("discord")
     val wowConf = config.getConfig("wow")
+    val guildConf = if (config.hasPath("guild")) {
+      Some(config.getConfig("guild"))
+    } else {
+      None
+    }
     val channelsConf = config.getConfig("chat")
 
     // we gotta load this first to initialize constants that change between versions :OMEGALUL:
-    version = getOptString(wowConf, "version").getOrElse("1.12.1")
+    version = getOpt(wowConf, "version").getOrElse("1.12.1")
     expansion = WowExpansion.valueOf(version)
 
     WowChatConfig(
@@ -48,6 +56,7 @@ object WowChatConfig {
         wowConf.getString("password"),
         wowConf.getString("character")
       ),
+      parseGuildConfig(guildConf),
       parseChannels(channelsConf)
     )
   }
@@ -83,11 +92,41 @@ object WowChatConfig {
     RealmListConfig(wowConf.getString("realm"), host, port)
   }
 
+  private def parseGuildConfig(guildConf: Option[Config]): GuildConfig = {
+    // make reasonable defaults for old config
+    val defaults = Map(
+      "online" -> (false, "`[%user] has come online.`"),
+      "offline" -> (false, "`[%user] has gone offline.`"),
+      "joined" -> (true, "`[%user] has joined the guild.`"),
+      "left" -> (true, "`[%user] has left the guild.`")
+    )
+
+    guildConf.fold({
+      GuildConfig(defaults.mapValues {
+        case (enabled, format) => GuildNotificationConfig(enabled, format)
+      })
+    })(guildConf => {
+      GuildConfig(
+        Seq("online", "offline", "joined", "left").map(key => {
+          val conf = getConfigOpt(guildConf, key)
+          val default = defaults(key)
+          key -> conf.fold(GuildNotificationConfig(default._1, default._2))(conf => {
+            GuildNotificationConfig(
+              getOpt[Boolean](conf, "enabled").getOrElse(default._1),
+              getOpt[String](conf, "format").getOrElse(default._2)
+            )
+          })
+        })
+          .toMap
+      )
+    })
+  }
+
   private def parseChannels(channelsConf: Config): Seq[ChannelConfig] = {
     channelsConf.getObjectList("channels").asScala
       .map(_.toConfig)
       .map(channel => {
-        val wowChannel = getOptString(channel, "wow.channel")
+        val wowChannel = getOpt[String](channel, "wow.channel")
 
         ChannelConfig(
           ChatDirection.withName(channel.getString("direction")),
@@ -97,9 +136,26 @@ object WowChatConfig {
     })
   }
 
-  private def getOptString(cfg: Config, path: String): Option[String] = {
+  private def getConfigOpt(cfg: Config, path: String): Option[Config] = {
     if (cfg.hasPath(path)) {
-      Some(cfg.getString(path))
+      Some(cfg.getConfig(path))
+    } else {
+      None
+    }
+  }
+
+  private def getOpt[T : TypeTag](cfg: Config, path: String): Option[T] = {
+    if (cfg.hasPath(path)) {
+      // evil smiley face :)
+      if (typeOf[T] =:= typeOf[Boolean]) {
+        val str = cfg.getString(path).toLowerCase
+        Some((str match {
+          case "true" | "1" | "y" | "yes" => true
+          case _ => false
+        }).asInstanceOf[T])
+      } else {
+        Some(cfg.getAnyRef(path).asInstanceOf[T])
+      }
     } else {
       None
     }

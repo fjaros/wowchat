@@ -34,9 +34,9 @@ object CommandHandler {
 
       Try {
         possibleCommand match {
-          case "reset" | "resets" =>
+//          case "reset" | "resets" =>
             // the construct only
-            game.handleResets
+//            game.handleResets
           case "who" | "online" =>
             val whoSucceeded = game.handleWho(arguments)
             if (arguments.isDefined) {
