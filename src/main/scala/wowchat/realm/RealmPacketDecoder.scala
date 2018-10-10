@@ -10,60 +10,69 @@ import io.netty.handler.codec.ByteToMessageDecoder
 
 class RealmPacketDecoder extends ByteToMessageDecoder with StrictLogging {
 
+  private var size = 0
+  private var id = 0
+
   override def decode(ctx: ChannelHandlerContext, in: ByteBuf, out: util.List[AnyRef]): Unit = {
     if (in.readableBytes == 0) {
       return
     }
 
-    val id = in.readByte
-    var size = 0
-    id match {
-      case RealmPackets.CMD_AUTH_LOGON_CHALLENGE =>
-        if (in.readableBytes < 2) {
-          return
-        }
+    if (size == 0 && id == 0) {
+      in.markReaderIndex
+      id = in.readByte
+      id match {
+        case RealmPackets.CMD_AUTH_LOGON_CHALLENGE =>
+          if (in.readableBytes < 2) {
+            in.resetReaderIndex
+            return
+          }
 
-        in.markReaderIndex
-        in.skipBytes(1)
-        val result = in.readByte
-        size = if (RealmPackets.AuthResult.isSuccess(result)) {
-          118
-        } else {
-          2
-        }
-        in.resetReaderIndex
-      case RealmPackets.CMD_AUTH_LOGON_PROOF =>
-        if (in.readableBytes < 1) {
-          return
-        }
+          in.markReaderIndex
+          in.skipBytes(1)
+          val result = in.readByte
+          size = if (RealmPackets.AuthResult.isSuccess(result)) {
+            118
+          } else {
+            2
+          }
+          in.resetReaderIndex
+        case RealmPackets.CMD_AUTH_LOGON_PROOF =>
+          if (in.readableBytes < 1) {
+            in.resetReaderIndex
+            return
+          }
 
-        // size is error dependent
-        in.markReaderIndex
-        val result = in.readByte
-        size = if (RealmPackets.AuthResult.isSuccess(result)) {
-          25
-        } else {
-          if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 1 else 3
-        }
-        in.resetReaderIndex
-      case RealmPackets.CMD_REALM_LIST =>
-        if (in.readableBytes < 2) {
-          return
-        }
+          // size is error dependent
+          in.markReaderIndex
+          val result = in.readByte
+          size = if (RealmPackets.AuthResult.isSuccess(result)) {
+            if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 25 else 31
+          } else {
+            if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 1 else 3
+          }
+          in.resetReaderIndex
+        case RealmPackets.CMD_REALM_LIST =>
+          if (in.readableBytes < 2) {
+            in.resetReaderIndex
+            return
+          }
 
-        size = in.readShortLE
+          size = in.readShortLE
+      }
     }
 
     if (size > in.readableBytes) {
       return
     }
 
-    if (size > 0) {
-      val byteBuf = in.readBytes(size)
+    val byteBuf = in.readBytes(size)
+    val packet = Packet(id, byteBuf)
 
-      logger.debug(f"RECV REALM PACKET: $id%04X - ${ByteUtils.toHexString(byteBuf, true, false)}")
+    logger.debug(f"RECV REALM PACKET: $id%04X - ${ByteUtils.toHexString(byteBuf, true, false)}")
 
-      out.add(Packet(id, byteBuf))
-    }
+    out.add(packet)
+    size = 0
+    id = 0
   }
 }

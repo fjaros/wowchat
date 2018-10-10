@@ -10,6 +10,8 @@ import scala.io.Source
 
 object WoWChat extends StrictLogging {
 
+  private val RELEASE = "v1.1.0"
+
   def main(args: Array[String]): Unit = {
     val confFile = if (args.nonEmpty) {
       args(0)
@@ -47,33 +49,20 @@ object WoWChat extends StrictLogging {
   }
 
   def checkForNewVersion: Unit = {
-    val gitProperties = getClass.getClassLoader.getResourceAsStream("git.properties")
-    Option(gitProperties).fold({
-      logger.error("Failed to find git.properties file to check for new version!")
-    })(gitProperties => {
-      // This is JSON, but I really just didn't want to import a full blown JSON library for one string.
-      val myCommitIdRegex = "\"git\\.commit\\.id\"\\s+:\\s+\"(.+?)\"".r
-      val myCommitId = myCommitIdRegex
-        .findFirstMatchIn(Source.fromInputStream(gitProperties).mkString)
-        .map(m => m.group(1))
-        .getOrElse("NOT FOUND")
+    // This is JSON, but I really just didn't want to import a full blown JSON library for one string.
+    val data = Source.fromURL("https://api.github.com/repos/fjaros/wowchat/releases/latest").mkString
+    val regex = "\"tag_name\":\"(.+?)\",".r
+    val repoTagName = regex
+      .findFirstMatchIn(data)
+      .map(_.group(1))
+      .getOrElse("NOT FOUND")
 
-      val repoCommitId = Source
-        .fromURL("https://api.github.com/repos/fjaros/wowchat/commits/master")
-        .dropWhile(_ != ':')
-        .takeWhile(_ != ',')
-        .drop(2)
-        .takeWhile(_ != '"')
-        .mkString
-
-      if (myCommitId != repoCommitId) {
-        logger.error( "~~~ !!!                YOUR WoWChat VERSION IS OUT OF DATE                !!! ~~~")
-        logger.error(s"~~~ !!!  Current Version hash: $myCommitId   !!! ~~~")
-        logger.error(s"~~~ !!!  Repo    Version hash: $repoCommitId   !!! ~~~")
-        logger.error( "~~~ !!! RUN git pull OR GO TO https://github.com/fjaros/wowchat TO UPDATE !!! ~~~")
-        logger.error( "~~~ !!!                YOUR WoWChat VERSION IS OUT OF DATE                !!! ~~~")
-      }
-    })
-    gitProperties.close()
+    if (repoTagName != RELEASE) {
+      logger.error( "~~~ !!!                YOUR WoWChat VERSION IS OUT OF DATE                !!! ~~~")
+      logger.error(s"~~~ !!!                     Current Version:  $RELEASE                      !!! ~~~")
+      logger.error(s"~~~ !!!                     Repo    Version:  $repoTagName                      !!! ~~~")
+      logger.error( "~~~ !!! RUN git pull OR GO TO https://github.com/fjaros/wowchat TO UPDATE !!! ~~~")
+      logger.error( "~~~ !!!                YOUR WoWChat VERSION IS OUT OF DATE                !!! ~~~")
+    }
   }
 }

@@ -95,11 +95,11 @@ class MessageResolver(jda: JDA) {
     if (matches.size == 1) {
       onSuccess(s"<@${if (isRole) "&" else ""}${matches.head._2}>")
     } else if (matches.size > 1 && matches.size < 5) {
-      onError(s"Your tag @$tag matches multiple channelConfig members: ${
+      onError(s"Your tag @$tag matches multiple channel members: ${
         matches.map(_._1).mkString(", ")
       }. Be more specific in your tag!")
     } else if (matches.size >= 5) {
-      onError(s"Your tag @$tag matches too many channelConfig members. Be more specific in your tag!")
+      onError(s"Your tag @$tag matches too many channel members. Be more specific in your tag!")
     }
 
     matches.nonEmpty

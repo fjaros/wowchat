@@ -6,7 +6,7 @@
 
     <groupId>wowchat</groupId>
     <artifactId>wowchat</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <properties>
         <java.version>1.8</java.version>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>3.8.0_430</version>
+            <version>3.8.0_436</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.restcomm.media.core.codec</groupId>
@@ -95,35 +95,6 @@
                         <javacArg>-target</javacArg>
                         <javacArg>${java.version}</javacArg>
                     </javacArgs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>2.2.5</version>
-                <executions>
-                    <execution>
-                        <id>get-the-git-infos</id>
-                        <goals>
-                            <goal>revision</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-                    <prefix>git</prefix>
-                    <verbose>false</verbose>
-                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-                    <format>json</format>
-                    <gitDescribe>
-                        <skip>false</skip>
-                        <always>false</always>
-                        <dirty>-dirty</dirty>
-                    </gitDescribe>
-                    <includeOnlyProperties>
-                        <includeOnlyProperty>git.commit.id$</includeOnlyProperty>
-                    </includeOnlyProperties>
                 </configuration>
             </plugin>
             <plugin>
