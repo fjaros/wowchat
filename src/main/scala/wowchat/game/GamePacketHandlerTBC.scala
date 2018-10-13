@@ -2,6 +2,7 @@ package wowchat.game
 
 import java.nio.charset.Charset
 
+import io.netty.buffer.ByteBuf
 import wowchat.common.{CommonConnectionCallback, Global, Packet}
 
 class GamePacketHandlerTBC(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
@@ -85,5 +86,12 @@ class GamePacketHandlerTBC(realmId: Int, sessionKey: Array[Byte], gameEventCallb
         None
       }
     }).toMap
+  }
+
+  override protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
+    out.writeIntLE(0)
+    out.writeByte(0)
+    out.writeByte(1)
+    super.writeJoinChannel(out, channel)
   }
 }

@@ -36,6 +36,32 @@ object ByteUtils {
     )
   }
 
+  def longToBytes(long: Long): Array[Byte] = {
+    Array(
+      (long >> 56).toByte,
+      (long >> 48).toByte,
+      (long >> 40).toByte,
+      (long >> 32).toByte,
+      (long >> 24).toByte,
+      (long >> 16).toByte,
+      (long >> 8).toByte,
+      long.toByte
+    )
+  }
+
+  def longToBytesLE(long: Long): Array[Byte] = {
+    Array(
+      long.toByte,
+      (long >> 8).toByte,
+      (long >> 16).toByte,
+      (long >> 24).toByte,
+      (long >> 32).toByte,
+      (long >> 40).toByte,
+      (long >> 48).toByte,
+      (long >> 56).toByte
+    )
+  }
+
   def stringToInt(str: String): Int = {
     bytesToLong(str.getBytes).toInt
   }
@@ -72,6 +98,23 @@ object ByteUtils {
       }
       if (addSpaces)
         ret += ' '
+    }
+    copy.release
+    ret.mkString.trim
+  }
+
+  def toBinaryString(byteBuf: ByteBuf): String = {
+    val ret = StringBuilder.newBuilder
+
+    val copy = byteBuf.copy()
+    var i = 0
+    while (copy.readableBytes() > 0) {
+      val byte = copy.readByte
+      if (i != 0 && i % 4 == 0) {
+        ret += '\n'
+      }
+      ret ++= f"${(byte & 0xFF).toBinaryString.toInt}%08d "
+      i += 1
     }
     copy.release
     ret.mkString.trim

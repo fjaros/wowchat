@@ -1,20 +1,51 @@
 package wowchat.game
 
+import java.nio.charset.Charset
 import java.security.MessageDigest
 
-import io.netty.buffer.PooledByteBufAllocator
+import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import wowchat.common._
 
 import scala.util.Random
 
 class GamePacketHandlerCataclysm(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandlerTBC(realmId, sessionKey, gameEventCallback) with GamePacketsCataclysm {
-
+  extends GamePacketHandlerWotLK(realmId, sessionKey, gameEventCallback) with GamePacketsCataclysm {
 
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case WOW_CONNECTION => handle_WOW_CONNECTION(msg)
       case _ => super.channelParse(msg)
+    }
+  }
+
+  override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
+    ctx.foreach(ctx => {
+      val out = PooledByteBufAllocator.DEFAULT.buffer(100, 4096)
+      out.writeIntLE(languageId)
+      target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
+        logger.info(s"Discord->WoW($target): $message")
+        writeBits(out, target.length, 10)
+      })
+      writeBits(out, message.length, 9)
+      flushBits(out)
+      // note for whispers (if the bot ever supports them, the order is opposite, person first then msg
+      out.writeBytes(message.getBytes)
+      if (target.isDefined) {
+        out.writeBytes(target.get.getBytes)
+      }
+      ctx.writeAndFlush(Packet(getChatPacketFromType(tp), out))
+    })
+  }
+
+  private def getChatPacketFromType(tp: Byte): Int = {
+    tp match {
+      case ChatEvents.CHAT_MSG_CHANNEL => CMSG_MESSAGECHAT_CHANNEL
+      case ChatEvents.CHAT_MSG_EMOTE => CMSG_MESSAGECHAT_EMOTE
+      case ChatEvents.CHAT_MSG_GUILD => CMSG_MESSAGECHAT_GUILD
+      case ChatEvents.CHAT_MSG_OFFICER => CMSG_MESSAGECHAT_OFFICER
+      case ChatEvents.CHAT_MSG_SAY => CMSG_MESSAGECHAT_SAY
+      case ChatEvents.CHAT_MSG_WHISPER => CMSG_MESSAGECHAT_WHISPER
+      case ChatEvents.CHAT_MSG_YELL => CMSG_MESSAGECHAT_YELL
     }
   }
 
@@ -78,18 +109,115 @@ class GamePacketHandlerCataclysm(realmId: Int, sessionKey: Array[Byte], gameEven
   }
 
   override protected def parseCharEnum(msg: Packet): Option[CharEnumMessage] = {
-    val unpack = new BitUnpack(msg.byteBuf)
-    var guidBytes = new Array[Byte](8)
-
     msg.readBits(24) // unkn
-    println(ByteUtils.toHexString(msg.byteBuf, true, false))
     val charactersNum = msg.readBits(17)
 
-//    guidBytes(3) |= unpack.get
+    val guids = new Array[Array[Byte]](charactersNum)
+    val guildGuids = new Array[Array[Byte]](charactersNum)
+    val nameLenghts = new Array[Int](charactersNum)
 
+    (0 until charactersNum).foreach(i => {
+      guids(i) = new Array[Byte](8)
+      guildGuids(i) = new Array[Byte](8)
+      guids(i)(3) = msg.readBit
+      guildGuids(i)(1) = msg.readBit
+      guildGuids(i)(7) = msg.readBit
+      guildGuids(i)(2) = msg.readBit
+      nameLenghts(i) = msg.readBits(7)
+      guids(i)(4) = msg.readBit
+      guids(i)(7) = msg.readBit
+      guildGuids(i)(3) = msg.readBit
+      guids(i)(5) = msg.readBit
+      guildGuids(i)(6) = msg.readBit
+      guids(i)(1) = msg.readBit
+      guildGuids(i)(5) = msg.readBit
+      guildGuids(i)(4) = msg.readBit
+      msg.readBit // is first login
+      guids(i)(0) = msg.readBit
+      guids(i)(2) = msg.readBit
+      guids(i)(6) = msg.readBit
+      guildGuids(i)(0) = msg.readBit
+    })
 
+    (0 until charactersNum).foreach(i => {
+      msg.byteBuf.skipBytes(1) // char class
+      msg.byteBuf.skipBytes(207) // inventory
+      msg.byteBuf.readIntLE
+      guildGuids(i)(2) = msg.readXorByte(guildGuids(i)(2))
+      msg.byteBuf.skipBytes(2)
+      guildGuids(i)(3) = msg.readXorByte(guildGuids(i)(3))
+      msg.byteBuf.skipBytes(9)
+      guids(i)(4) = msg.readXorByte(guids(i)(4))
+      msg.byteBuf.readIntLE // map
+      guildGuids(i)(5) = msg.readXorByte(guildGuids(i)(5))
+      msg.byteBuf.skipBytes(4)
+      guildGuids(i)(6) = msg.readXorByte(guildGuids(i)(6))
+      msg.byteBuf.skipBytes(4)
+      guids(i)(3) = msg.readXorByte(guids(i)(3))
+      msg.byteBuf.skipBytes(9)
+      guids(i)(7) = msg.readXorByte(guids(i)(7))
+      msg.byteBuf.skipBytes(1)
+      val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.defaultCharset).toString
+      msg.byteBuf.skipBytes(1)
+      guids(i)(0) = msg.readXorByte(guids(i)(0))
+      guids(i)(2) = msg.readXorByte(guids(i)(2))
+      guildGuids(i)(1) = msg.readXorByte(guildGuids(i)(1))
+      guildGuids(i)(7) = msg.readXorByte(guildGuids(i)(7))
+      msg.byteBuf.skipBytes(5)
+      val race = msg.byteBuf.readByte
+      msg.byteBuf.skipBytes(1) // char level
+      guids(i)(6) = msg.readXorByte(guids(i)(6))
+      guildGuids(i)(4) = msg.readXorByte(guildGuids(i)(4))
+      guildGuids(i)(0) = msg.readXorByte(guildGuids(i)(0))
+      guids(i)(5) = msg.readXorByte(guids(i)(5))
+      guids(i)(1) = msg.readXorByte(guids(i)(1))
+
+      if (name.equalsIgnoreCase(Global.config.wow.character)) {
+        return Some(CharEnumMessage(ByteUtils.bytesToLongLE(guids(i)), race))
+      }
+
+      msg.byteBuf.skipBytes(4) // zone
+    })
 
     None
+  }
+
+  override protected def writePlayerLogin(out: ByteBuf): Unit = {
+    val bytes = ByteUtils.longToBytesLE(selfCharacterId.get)
+
+    writeBit(out, bytes(2))
+    writeBit(out, bytes(3))
+    writeBit(out, bytes(0))
+    writeBit(out, bytes(6))
+    writeBit(out, bytes(4))
+    writeBit(out, bytes(5))
+    writeBit(out, bytes(1))
+    writeBit(out, bytes(7))
+
+    writeXorByte(out, bytes(2))
+    writeXorByte(out, bytes(7))
+    writeXorByte(out, bytes(0))
+    writeXorByte(out, bytes(3))
+    writeXorByte(out, bytes(5))
+    writeXorByte(out, bytes(6))
+    writeXorByte(out, bytes(1))
+    writeXorByte(out, bytes(4))
+  }
+
+  override protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
+    out.writeIntLE(0) // channel id
+    writeBit(out, 0) // has voice
+    writeBit(out, 0) // zone update
+    writeBits(out, channel.length, 8)
+    writeBits(out, 0, 8)
+    flushBits(out)
+
+    out.writeBytes(channel.getBytes)
+  }
+
+  override protected def parseNotification(msg: Packet): String = {
+    val length = msg.readBits(13)
+    msg.byteBuf.readCharSequence(length, Charset.defaultCharset).toString
   }
 
   private def handle_WOW_CONNECTION(msg: Packet): Unit = {
@@ -99,5 +227,42 @@ class GamePacketHandlerCataclysm(realmId: Int, sessionKey: Array[Byte], gameEven
     byteBuf.writeBytes(connectionString.getBytes)
     byteBuf.writeByte(0)
     ctx.get.writeAndFlush(Packet(WOW_CONNECTION, byteBuf))
+  }
+
+  // bit manipulation for cata+
+  private var bitPosition = 8
+  private var byte = 0
+
+  def writeBits(out: ByteBuf, value: Int, bitCount: Int): Unit = {
+    (bitCount - 1 to 0 by -1).foreach(i => {
+      writeBit(out, (value >> i) & 1)
+    })
+  }
+
+  def writeBit(out: ByteBuf, bit: Int): Unit = {
+    bitPosition -= 1
+    if (bit != 0) {
+      byte |= (1 << bitPosition)
+    }
+
+    if (bitPosition == 0) {
+      flushBits(out)
+    }
+  }
+
+  def writeXorByte(out: ByteBuf, byte: Byte): Unit = {
+    if (byte != 0) {
+      out.writeByte((byte ^ 1).toByte)
+    }
+  }
+
+  def flushBits(out: ByteBuf): Unit = {
+    if (bitPosition == 8) {
+      return
+    }
+
+    out.writeByte((byte & 0xFF).toByte)
+    bitPosition = 8
+    byte = 0
   }
 }

@@ -32,20 +32,31 @@ case class Packet(
     this
   }
 
-  var bitPosition = 0
-  var byte: Byte = 0
+  // bit manipulation for cata+
+  private var bitPosition = 7
+  private var byte: Byte = 0
+
+  def readBit: Byte = {
+    bitPosition += 1
+    if (bitPosition > 7) {
+      bitPosition = 0
+      byte = byteBuf.readByte
+    }
+
+    (byte >> (7 - bitPosition) & 1).toByte
+  }
 
   def readBits(length: Int): Int = {
-    (0 until length).foldLeft(0) {
-      case (result, i) =>
-        if (bitPosition == 0) {
-          byte = byteBuf.readByte
-        }
-        bitPosition = (bitPosition + 1) % 8
+    (length - 1 to 0 by -1).foldLeft(0) {
+      case (result, i) => result | (readBit << i)
+    }
+  }
 
-        val ret = result | ((byte >> (8 - bitPosition)) & 1)
-        byte = (byte >> 1).toByte
-        ret
+  def readXorByte(mask: Byte): Byte = {
+    if (mask != 0) {
+      (mask ^ byteBuf.readByte).toByte
+    } else {
+      mask
     }
   }
 }

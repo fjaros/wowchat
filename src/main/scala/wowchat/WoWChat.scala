@@ -21,7 +21,7 @@ object WoWChat extends StrictLogging {
     }
     Global.config = WowChatConfig(confFile)
 
-    //checkForNewVersion
+//    checkForNewVersion
 
     val gameEventCallback = new CommonConnectionCallback {
 
@@ -36,17 +36,16 @@ object WoWChat extends StrictLogging {
 
       override def error: Unit = sys.exit(1)
     })
-    realmConnector.connect
-//
-//    Global.discord = new Discord(new CommonConnectionCallback {
-//      override def connected: Unit = realmConnector.connect
-//
-//      override def reconnected: Unit = Global.game.foreach(_.sendNotification("Reconnected to Discord!"))
-//
-//      override def disconnected: Unit = Global.game.foreach(_.sendNotification("Disconnected from Discord!"))
-//
-//      override def error: Unit = sys.exit(1)
-//    })
+
+    Global.discord = new Discord(new CommonConnectionCallback {
+      override def connected: Unit = realmConnector.connect
+
+      override def reconnected: Unit = Global.game.foreach(_.sendNotification("Reconnected to Discord!"))
+
+      override def disconnected: Unit = Global.game.foreach(_.sendNotification("Disconnected from Discord!"))
+
+      override def error: Unit = sys.exit(1)
+    })
   }
 
   def checkForNewVersion: Unit = {

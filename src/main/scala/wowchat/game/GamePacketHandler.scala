@@ -16,7 +16,6 @@ import wowchat.commands.{CommandHandler, WhoResponse}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.util.control.Breaks._
 import scala.util.Random
 
 case class Player(name: String, charClass: Byte)
@@ -41,6 +40,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   ).map(_.toByte)
 
   protected var selfCharacterId: Option[Long] = None
+  protected var languageId: Byte = _
 
   var isShutdown = false
 
@@ -49,7 +49,6 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
   protected var ctx: Option[ChannelHandlerContext] = None
   private val playerRoster = mutable.Map.empty[Long, Player]
-  private var languageId: Byte = _
 
   // cannot use multimap here because need deterministic order
   private val queuedChatMessages = new mutable.HashMap[Long, mutable.ListBuffer[ChatMessage]]
@@ -310,7 +309,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       languageId = Races.getLanguage(character.race)
 
       val out = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
-      out.writeLongLE(selfCharacterId.get)
+      writePlayerLogin(out)
       ctx.get.writeAndFlush(Packet(CMSG_PLAYER_LOGIN, out))
     })
   }
@@ -344,6 +343,10 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     None
   }
 
+  protected def writePlayerLogin(out: ByteBuf): Unit = {
+    out.writeLongLE(selfCharacterId.get)
+  }
+
   private def handle_SMSG_LOGIN_VERIFY_WORLD(msg: Packet): Unit = {
     logger.info("Successfully joined the world!")
     runPingExecutor
@@ -355,16 +358,15 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       .foreach(channel => {
         logger.info(s"Joining channel $channel")
         val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(50, 200)
-        if (WowChatConfig.getBuild >= 8606) {
-          byteBuf.writeIntLE(0)
-          byteBuf.writeByte(0)
-          byteBuf.writeByte(1)
-        }
-        byteBuf.writeBytes(channel.getBytes)
-        byteBuf.writeByte(0)
-        byteBuf.writeByte(0)
+        writeJoinChannel(byteBuf, channel)
         ctx.get.writeAndFlush(Packet(CMSG_JOIN_CHANNEL, byteBuf))
       })
+  }
+
+  protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
+    out.writeBytes(channel.getBytes)
+    out.writeByte(0)
+    out.writeByte(0)
   }
 
   private def handle_SMSG_GUILD_EVENT(msg: Packet): Unit = {
@@ -498,7 +500,11 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   }
 
   private def handle_SMSG_NOTIFICATION(msg: Packet): Unit = {
-    logger.info(s"Notification: ${msg.readString}")
+    logger.info(s"Notification: ${parseNotification(msg)}")
+  }
+
+  protected def parseNotification(msg: Packet): String = {
+    msg.readString
   }
 
   // This is actually really hard to map back to a specific request
