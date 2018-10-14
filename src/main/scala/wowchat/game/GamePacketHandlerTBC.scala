@@ -55,4 +55,35 @@ class GamePacketHandlerTBC(realmId: Int, sessionKey: Array[Byte], gameEventCallb
 
     Some(ChatMessage(guid, tp, txt, channelName))
   }
+
+  override def parseGuildRoster(msg: Packet): Map[Long, Player] = {
+    val count = msg.byteBuf.readIntLE
+    val motd = msg.readString
+    val ginfo = msg.readString
+    val rankscount = msg.byteBuf.readIntLE
+    (0 until rankscount).foreach(i => {
+      msg.byteBuf.skipBytes(8 + 48) // rank info + guild bank
+    })
+    (0 until count).flatMap(i => {
+      val guid = msg.byteBuf.readLongLE
+      val isOnline = msg.byteBuf.readBoolean
+      val name = msg.readString
+      msg.byteBuf.skipBytes(4) // guild rank
+      msg.byteBuf.skipBytes(1) // level
+      val charClass = msg.byteBuf.readByte
+      msg.byteBuf.skipBytes(1) // tbc unkn
+      msg.byteBuf.skipBytes(4) // zone id
+      if (!isOnline) {
+        // last logoff time
+        msg.byteBuf.skipBytes(4)
+      }
+      msg.skipString
+      msg.skipString
+      if (isOnline) {
+        Some(guid -> Player(name, charClass))
+      } else {
+        None
+      }
+    }).toMap
+  }
 }

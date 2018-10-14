@@ -389,13 +389,17 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
   private def handle_SMSG_GUILD_ROSTER(msg: Packet): Unit = {
     playerRoster.clear
+    playerRoster ++= parseGuildRoster(msg)
+    updateGuildiesOnline
+  }
 
+  protected def parseGuildRoster(msg: Packet): Map[Long, Player] = {
     val count = msg.byteBuf.readIntLE
     val motd = msg.readString
     val ginfo = msg.readString
     val rankscount = msg.byteBuf.readIntLE
     (0 until rankscount).foreach(i => msg.byteBuf.skipBytes(4))
-    (0 until count).foreach(i => {
+    (0 until count).flatMap(i => {
       val guid = msg.byteBuf.readLongLE
       val isOnline = msg.byteBuf.readBoolean
       val name = msg.readString
@@ -403,16 +407,18 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       msg.byteBuf.skipBytes(1) // level
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // zone id
-      if (isOnline) {
-        playerRoster += guid -> Player(name, charClass)
-      } else {
+      if (!isOnline) {
         // last logoff time
         msg.byteBuf.skipBytes(4)
       }
       msg.skipString
       msg.skipString
-    })
-    updateGuildiesOnline
+      if (isOnline) {
+        Some(guid -> Player(name, charClass))
+      } else {
+        None
+      }
+    }).toMap
   }
 
   private def handle_SMSG_CHATMESSAGE(msg: Packet): Unit = {
