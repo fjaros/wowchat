@@ -57,7 +57,7 @@ class GamePacketHandlerTBC(realmId: Int, sessionKey: Array[Byte], gameEventCallb
     Some(ChatMessage(guid, tp, txt, channelName))
   }
 
-  override def parseGuildRoster(msg: Packet): Map[Long, Player] = {
+  override protected def parseGuildRoster(msg: Packet): Map[Long, Player] = {
     val count = msg.byteBuf.readIntLE
     val motd = msg.readString
     val ginfo = msg.readString

@@ -83,11 +83,11 @@ trait GamePackets {
   }
 
   object GuildEvents {
-    val GE_JOINED = 0x03
-    val GE_LEFT = 0x04
-    val GE_REMOVED = 0x05
-    val GE_SIGNED_ON = 0x0C
-    val GE_SIGNED_OFF = 0x0D
+    val GE_JOINED = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x04 else 0x03
+    val GE_LEFT = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x05 else 0x04
+    val GE_REMOVED = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x06 else 0x05
+    val GE_SIGNED_ON = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x10 else 0x0C
+    val GE_SIGNED_OFF = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x11 else 0x0D
   }
 
   object Races {
@@ -99,12 +99,14 @@ trait GamePackets {
     val RACE_TAUREN = 0x06
     val RACE_GNOME = 0x07
     val RACE_TROLL = 0x08
+    val RACE_GOBLIN = 0x09
     val RACE_BLOODELF = 0x0A
     val RACE_DRAENEI = 0x0B
+    val RACE_WORGEN = 0x16
 
     def getLanguage(race: Byte): Byte = {
       race match {
-        case RACE_ORC | RACE_UNDEAD | RACE_TAUREN | RACE_TROLL | RACE_BLOODELF => 0x01 // orcish
+        case RACE_ORC | RACE_UNDEAD | RACE_TAUREN | RACE_TROLL | RACE_BLOODELF | RACE_GOBLIN => 0x01 // orcish
         case _ => 0x07 // common
       }
     }
@@ -119,8 +121,10 @@ trait GamePackets {
         case RACE_TAUREN => "Tauren"
         case RACE_GNOME => "Gnome"
         case RACE_TROLL => "Troll"
+        case RACE_GOBLIN => "Goblin"
         case RACE_BLOODELF => "Blood Elf"
         case RACE_DRAENEI => "Draenei"
+        case RACE_WORGEN => "Worgen"
         case _ => "Unknown"
       }
     }
