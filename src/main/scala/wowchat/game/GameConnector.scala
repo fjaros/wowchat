@@ -16,6 +16,7 @@ import scala.util.Try
 
 class GameConnector(host: String,
                     port: Int,
+                    realmName: String,
                     realmId: Int,
                     sessionKey: Array[Byte],
                     gameEventCallback: CommonConnectionCallback)
@@ -67,7 +68,7 @@ class GameConnector(host: String,
       return
     }
 
-    logger.info(s"Logging into game server ${Global.config.wow.realmlist.name} ($host:$port)")
+    logger.info(s"Logging into game server $realmName ($host:$port)")
 
     val bootstrap = new Bootstrap
     bootstrap.group(Global.group)
@@ -79,7 +80,13 @@ class GameConnector(host: String,
         override protected def initChannel(socketChannel: SocketChannel): Unit = {
           val encoder = WowChatConfig.getExpansion match {
             case WowExpansion.Cataclysm => new GamePacketEncoderCataclysm
+            case WowExpansion.MoP => new GamePacketEncoderMoP
             case _ => new GamePacketEncoder
+          }
+
+          val decoder = WowChatConfig.getExpansion match {
+            case WowExpansion.MoP => new GamePacketDecoderMoP
+            case _ => new GamePacketDecoder
           }
 
           handler = Some(
@@ -96,13 +103,16 @@ class GameConnector(host: String,
               case WowExpansion.Cataclysm =>
                 socketChannel.attr(CRYPT).set(new GameHeaderCryptWotLK)
                 new GamePacketHandlerCataclysm(realmId, sessionKey, gameEventCallback)
+              case WowExpansion.MoP =>
+                socketChannel.attr(CRYPT).set(new GameHeaderCryptMoP)
+                new GamePacketHandlerMoP(realmId, sessionKey, gameEventCallback)
             }
           )
 
           socketChannel.pipeline.addLast(
             new IdleStateHandler(60, 120, 0),
             disconnectListener.reconnectDelay,
-            new GamePacketDecoder,
+            decoder,
             encoder,
             handler.get)
         }

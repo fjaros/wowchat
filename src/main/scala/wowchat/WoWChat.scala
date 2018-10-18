@@ -31,21 +31,22 @@ object WoWChat extends StrictLogging {
     }
 
     val realmConnector = new RealmConnector(new RealmConnectionCallback {
-      override def success(host: String, port: Int, realmId: Int, sessionKey: Array[Byte]): Unit =
-        new GameConnector(host, port, realmId, sessionKey, gameEventCallback).connect
+      override def success(host: String, port: Int, realmName: String, realmId: Int, sessionKey: Array[Byte]): Unit =
+        new GameConnector(host, port, realmName, realmId, sessionKey, gameEventCallback).connect
 
       override def error: Unit = sys.exit(1)
     })
+    realmConnector.connect
 
-    Global.discord = new Discord(new CommonConnectionCallback {
-      override def connected: Unit = realmConnector.connect
-
-      override def reconnected: Unit = Global.game.foreach(_.sendNotification("Reconnected to Discord!"))
-
-      override def disconnected: Unit = Global.game.foreach(_.sendNotification("Disconnected from Discord!"))
-
-      override def error: Unit = sys.exit(1)
-    })
+//    Global.discord = new Discord(new CommonConnectionCallback {
+//      override def connected: Unit = realmConnector.connect
+//
+//      override def reconnected: Unit = Global.game.foreach(_.sendNotification("Reconnected to Discord!"))
+//
+//      override def disconnected: Unit = Global.game.foreach(_.sendNotification("Disconnected from Discord!"))
+//
+//      override def error: Unit = sys.exit(1)
+//    })
   }
 
   def checkForNewVersion: Unit = {

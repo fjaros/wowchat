@@ -28,17 +28,11 @@ class GameHeaderCryptWotLK extends GameHeaderCrypt {
   override def init(key: Array[Byte]): Unit = {
     val md = Mac.getInstance("HmacSHA1")
 
-    val serverHmacSeed = Array(
-      0xCC, 0x98, 0xAE, 0x04, 0xE8, 0x97, 0xEA, 0xCA, 0x12, 0xDD, 0xC0, 0x93, 0x42, 0x91, 0x53, 0x57
-    ).map(_.toByte)
-    md.init(new SecretKeySpec(serverHmacSeed, "HmacSHA1"))
+    md.init(new SecretKeySpec(getServerHmacSeed, "HmacSHA1"))
     md.update(key)
     val serverKey = md.doFinal()
 
-    val clientHmacSeed = Array(
-      0xC2, 0xB3, 0x72, 0x3C, 0xC6, 0xAE, 0xD9, 0xB5, 0x34, 0x3C, 0x53, 0xEE, 0x2F, 0x43, 0x67, 0xCE
-    ).map(_.toByte)
-    md.init(new SecretKeySpec(clientHmacSeed, "HmacSHA1"))
+    md.init(new SecretKeySpec(getClientHmacSeed, "HmacSHA1"))
     md.update(key)
     val clientKey = md.doFinal()
 
@@ -52,5 +46,17 @@ class GameHeaderCryptWotLK extends GameHeaderCrypt {
 
   override def isInit: Boolean = {
     _initialized
+  }
+
+  protected def getServerHmacSeed = {
+    Array(
+      0xCC, 0x98, 0xAE, 0x04, 0xE8, 0x97, 0xEA, 0xCA, 0x12, 0xDD, 0xC0, 0x93, 0x42, 0x91, 0x53, 0x57
+    ).map(_.toByte)
+  }
+
+  protected def getClientHmacSeed= {
+    Array(
+      0xC2, 0xB3, 0x72, 0x3C, 0xC6, 0xAE, 0xD9, 0xB5, 0x34, 0x3C, 0x53, 0xEE, 0x2F, 0x43, 0x67, 0xCE
+    ).map(_.toByte)
   }
 }

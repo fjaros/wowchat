@@ -7,7 +7,9 @@
     </appender>
 
     <logger name="net.dv8tion.jda.core.requests.Requester" level="INFO" />
-    <logger name="wowchat.game.GamePacketDecoder" level="DEBUG" />
+    <logger name="wowchat.game.GamePacketDecoder" level="INFO" />
+    <logger name="wowchat.game.GamePacketEncoderMoP" level="DEBUG" />
+
 
     <root level="DEBUG">
         <appender-ref ref="STDOUT" />

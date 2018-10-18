@@ -77,6 +77,7 @@ object WowChatConfig extends GamePackets {
       case "3.3.3" => 11723
       case "3.3.5" => 12340
       case "4.3.4" => 15595
+      case "5.4.8" => 18414
     }
   }
 
@@ -165,7 +166,7 @@ object WowChatConfig extends GamePackets {
 
 object WowExpansion extends Enumeration {
   type WowExpansion = Value
-  val Vanilla, TBC, WotLK, Cataclysm = Value
+  val Vanilla, TBC, WotLK, Cataclysm, MoP = Value
 
   def valueOf(version: String): WowExpansion = {
     if (version.startsWith("1.")) {
@@ -176,6 +177,8 @@ object WowExpansion extends Enumeration {
       WowExpansion.WotLK
     } else if (version.startsWith("4.")) {
       WowExpansion.Cataclysm
+    } else if (version.startsWith("5.")) {
+      WowExpansion.MoP
     } else {
       throw new IllegalArgumentException(s"Version $version not supported!")
     }

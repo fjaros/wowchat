@@ -308,7 +308,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       selfCharacterId = Some(character.guid)
       languageId = Races.getLanguage(character.race)
 
-      val out = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
+      val out = PooledByteBufAllocator.DEFAULT.buffer(16, 16) // increase to 16 for MoP
       writePlayerLogin(out)
       ctx.get.writeAndFlush(Packet(CMSG_PLAYER_LOGIN, out))
     })
@@ -546,7 +546,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       wardenHandler = Some(new WardenHandler(sessionKey))
     }
 
-    val out = wardenHandler.get.handle(msg)
+    val out = None //wardenHandler.get.handle(msg)
     if (out.isDefined) {
       ctx.get.writeAndFlush(Packet(CMSG_WARDEN_DATA, out.get))
     }

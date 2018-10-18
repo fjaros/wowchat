@@ -2,7 +2,7 @@ package wowchat.game
 
 import java.util
 
-import wowchat.common.{ByteUtils, Packet}
+import wowchat.common.{ByteUtils, Packet, WowChatConfig, WowExpansion}
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
@@ -23,16 +23,16 @@ class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with Stric
     val crypt = ctx.channel.attr(CRYPT).get
 
     if (size == 0 && id == 0) {
-      if (crypt.isInit) {
+      val tuple = if (crypt.isInit) {
         val header = new Array[Byte](HEADER_LENGTH)
         in.readBytes(header)
         val decrypted = crypt.decrypt(header)
-        size = (decrypted(0) << 8 | decrypted(1) & 0xFF) - 2
-        id = decrypted(3) << 8 | decrypted(2) & 0xFF
+        parseGameHeaderEncrypted(decrypted)
       } else {
-        size = in.readShort() - 2
-        id = in.readShortLE
+        parseGameHeader(in)
       }
+      id = tuple._1
+      size = tuple._2
     }
 
     if (size > in.readableBytes) {
@@ -53,5 +53,17 @@ class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with Stric
     logger.error("EXCEPTION CAUGHT: " + cause.getMessage)
 
     super.exceptionCaught(ctx, cause)
+  }
+
+  def parseGameHeader(in: ByteBuf): (Int, Int) = {
+    val size = in.readShort - 2
+    val id = in.readShortLE
+    (id, size)
+  }
+
+  def parseGameHeaderEncrypted(decrypted: Array[Byte]): (Int, Int) = {
+    val size = (decrypted(0) << 8 | decrypted(1) & 0xFF) - 2
+    val id = decrypted(3) << 8 | decrypted(2) & 0xFF
+    (id, size)
   }
 }

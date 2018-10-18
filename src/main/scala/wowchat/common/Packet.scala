@@ -52,9 +52,17 @@ case class Packet(
     }
   }
 
-  def readXorByte(mask: Byte): Byte = {
+  def readXorByte(mask: Byte, debug: Boolean = false): Byte = {
     if (mask != 0) {
-      (mask ^ byteBuf.readByte).toByte
+      if (debug) {
+        val b = byteBuf.readByte
+        println(f"$b%02X - " + mask)
+        val result = (mask ^ b).toByte
+        println(f"$result%02X - " + mask)
+        result
+      } else {
+        (mask ^ byteBuf.readByte).toByte
+      }
     } else {
       mask
     }
