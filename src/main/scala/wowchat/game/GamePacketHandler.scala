@@ -41,6 +41,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
   protected var selfCharacterId: Option[Long] = None
   protected var languageId: Byte = _
+  protected var inWorld: Boolean = false
 
   var isShutdown = false
 
@@ -348,7 +349,13 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   }
 
   private def handle_SMSG_LOGIN_VERIFY_WORLD(msg: Packet): Unit = {
+    // for some reason some servers send this packet more than once.
+    if (inWorld) {
+      return
+    }
+
     logger.info("Successfully joined the world!")
+    inWorld = true
     runPingExecutor
     updateGuildRoster
 
@@ -546,7 +553,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       wardenHandler = Some(new WardenHandler(sessionKey))
     }
 
-    val out = None //wardenHandler.get.handle(msg)
+    val out = wardenHandler.get.handle(msg)
     if (out.isDefined) {
       ctx.get.writeAndFlush(Packet(CMSG_WARDEN_DATA, out.get))
     }

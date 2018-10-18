@@ -23,15 +23,15 @@ trait GamePacketsMoP extends GamePacketsCataclysm {
   override val CMSG_PLAYER_LOGIN = 0x158F
   override val CMSG_LOGOUT_REQUEST = 0x1349
   override val CMSG_NAME_QUERY = 0x0328
-  override val SMSG_NAME_QUERY = 0x6E04
+  override val SMSG_NAME_QUERY = 0x169B
   override val CMSG_WHO = 0x18A3
   override val SMSG_WHO = 0x161B
   override val CMSG_GUILD_ROSTER = 0x1459
   override val SMSG_GUILD_ROSTER = 0x0BE0
-  override val SMSG_GUILD_EVENT = 0x0705
+  override val SMSG_GUILD_EVENT = 0x0705 // needs to be implemented in separate packets. obsolete in mop
   override val SMSG_CHATMESSAGE = 0x2026
-  override val CMSG_JOIN_CHANNEL = 0x0156
-  override val SMSG_CHANNEL_NOTIFY = 0x0825
+  override val CMSG_JOIN_CHANNEL = 0x148E
+  override val SMSG_CHANNEL_NOTIFY = 0x0F06
 
   override val SMSG_NOTIFICATION = 0x0C2A
   override val CMSG_PING = 0x0012

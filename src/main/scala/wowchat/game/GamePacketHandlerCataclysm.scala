@@ -14,6 +14,8 @@ class GamePacketHandlerCataclysm(realmId: Int, sessionKey: Array[Byte], gameEven
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case WOW_CONNECTION => handle_WOW_CONNECTION(msg)
+      case SMSG_WARDEN_DATA =>
+        logger.error(s"WARDEN IS ENABLED ON THIS SERVER BUT UNSUPPORTED BY THE BOT FOR ${WowChatConfig.getExpansion}!")
       case _ => super.channelParse(msg)
     }
   }

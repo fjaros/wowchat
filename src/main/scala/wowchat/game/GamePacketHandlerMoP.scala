@@ -137,39 +137,30 @@ class GamePacketHandlerMoP(realmId: Int, sessionKey: Array[Byte], gameEventCallb
     val guildGuids = new Array[Array[Byte]](charactersNum)
     val nameLenghts = new Array[Int](charactersNum)
 
-    /*
-    010 01001000 10101000 010001
-
-    00
-    00000000 00000000 00000000 00000000
-     */
     (0 until charactersNum).foreach(i => {
       guids(i) = new Array[Byte](8)
       guildGuids(i) = new Array[Byte](8)
-      guildGuids(i)(4) = msg.readBit // 0
-      guids(i)(0) = msg.readBit // 1
-      guildGuids(i)(3) = msg.readBit // 0
-      guids(i)(3) = msg.readBit // 0
-      guids(i)(7) = msg.readBit // 1
-      msg.readBits(2) // boost + first login // 0 0
-      guids(i)(6) = msg.readBit // 1
-      guildGuids(i)(6) = msg.readBit // 0
-      nameLenghts(i) = msg.readBits(6) // 0 0 1 0 1 0
-      guids(i)(1) = msg.readBit // 1
-      guildGuids(i)(1) = msg.readBit // 0
-      guildGuids(i)(0) = msg.readBit // 0
-      guids(i)(4) = msg.readBit // 0
-      guildGuids(i)(7) = msg.readBit // 0
-      guids(i)(2) = msg.readBit // 1
-      guids(i)(5) = msg.readBit // 0
-      guildGuids(i)(2) = msg.readBit // 0
-      guildGuids(i)(5) = msg.readBit // 0
-//      val b =PooledByteBufAllocator.DEFAULT.buffer(100)
-//      b.writeBytes(guids(i))
-//      println(ByteUtils.toBinaryString(b))
+      guildGuids(i)(4) = msg.readBit
+      guids(i)(0) = msg.readBit
+      guildGuids(i)(3) = msg.readBit
+      guids(i)(3) = msg.readBit
+      guids(i)(7) = msg.readBit
+      msg.readBits(2)
+      guids(i)(6) = msg.readBit
+      guildGuids(i)(6) = msg.readBit
+      nameLenghts(i) = msg.readBits(6)
+      guids(i)(1) = msg.readBit
+      guildGuids(i)(1) = msg.readBit
+      guildGuids(i)(0) = msg.readBit
+      guids(i)(4) = msg.readBit
+      guildGuids(i)(7) = msg.readBit
+      guids(i)(2) = msg.readBit
+      guids(i)(5) = msg.readBit
+      guildGuids(i)(2) = msg.readBit
+      guildGuids(i)(5) = msg.readBit
     })
 
-    msg.readBit // packet success flag? // 1
+    msg.readBit // packet success flag?
 
     (0 until charactersNum).foreach(i => {
       msg.byteBuf.skipBytes(4) // unkn
@@ -206,9 +197,6 @@ class GamePacketHandlerMoP(realmId: Int, sessionKey: Array[Byte], gameEventCallb
       msg.byteBuf.skipBytes(4) // z
 
       if (name.equalsIgnoreCase(Global.config.wow.character)) {
-        val b =PooledByteBufAllocator.DEFAULT.buffer(100)
-        b.writeBytes(guids(i))
-        println(ByteUtils.toHexString(b, true, false))
         return Some(CharEnumMessage(ByteUtils.bytesToLongLE(guids(i)), race))
       }
     })
@@ -218,11 +206,6 @@ class GamePacketHandlerMoP(realmId: Int, sessionKey: Array[Byte], gameEventCallb
 
   override protected def writePlayerLogin(out: ByteBuf): Unit = {
     val bytes = ByteUtils.longToBytesLE(selfCharacterId.get)
-    val b = PooledByteBufAllocator.DEFAULT.buffer(100)
-    b.writeBytes(bytes)
-    println(ByteUtils.toHexString(b, true, false))
-
-//    println("CUCK:\n" + ByteUtils.toBinaryString(b))
 
     out.writeIntLE(0x43480000) // unkn
 
@@ -247,10 +230,10 @@ class GamePacketHandlerMoP(realmId: Int, sessionKey: Array[Byte], gameEventCallb
 
   override protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
     out.writeIntLE(0) // channel id
-    writeBit(out, 0) // has voice
-    writeBit(out, 0) // zone update
-    writeBits(out, channel.length, 8)
-    writeBits(out, 0, 8)
+    writeBit(out, 0) // unkn
+    writeBits(out, channel.length, 7)
+    writeBits(out, 0, 7)
+    writeBit(out, 0) // unkn
     flushBits(out)
 
     out.writeBytes(channel.getBytes)
@@ -323,7 +306,7 @@ class GamePacketHandlerMoP(realmId: Int, sessionKey: Array[Byte], gameEventCallb
   }
 
   override protected def parseNotification(msg: Packet): String = {
-    val length = msg.readBits(13)
+    val length = msg.readBits(12)
     msg.byteBuf.readCharSequence(length, Charset.defaultCharset).toString
   }
 }

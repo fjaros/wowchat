@@ -72,7 +72,7 @@ object ByteUtils {
       .zipWithIndex
       .foldLeft(0L) {
         case (result, (byte, i)) =>
-          result | ((byte & 0xFF) << (i * 8))
+          result | ((byte & 0xFFL) << (i * 8))
       }
   }
 
@@ -81,7 +81,7 @@ object ByteUtils {
       .zipWithIndex
       .foldLeft(0L) {
         case (result, (byte, i)) =>
-          result | ((byte & 0xFF) << (i * 8))
+          result | ((byte & 0xFFL) << (i * 8))
       }
   }
 

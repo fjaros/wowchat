@@ -2,7 +2,7 @@ package wowchat.game
 
 import java.util
 
-import wowchat.common.{ByteUtils, Packet, WowChatConfig, WowExpansion}
+import wowchat.common.{ByteUtils, Packet}
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
