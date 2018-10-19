@@ -550,13 +550,17 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
   private def handle_SMSG_WARDEN_DATA(msg: Packet): Unit = {
     if (wardenHandler.isEmpty) {
-      wardenHandler = Some(new WardenHandler(sessionKey))
+      wardenHandler = Some(initializeWardenHandler)
     }
 
     val out = wardenHandler.get.handle(msg)
     if (out.isDefined) {
       ctx.get.writeAndFlush(Packet(CMSG_WARDEN_DATA, out.get))
     }
+  }
+
+  protected def initializeWardenHandler: WardenHandler = {
+    new WardenHandler(sessionKey)
   }
 
   // tbc & wotlk only

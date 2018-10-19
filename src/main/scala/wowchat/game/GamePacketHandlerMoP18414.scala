@@ -5,6 +5,7 @@ import java.security.MessageDigest
 
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import wowchat.common._
+import wowchat.game.warden.{WardenHandler, WardenHandlerMoP18414}
 
 import scala.util.Random
 
@@ -309,5 +310,9 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
   override protected def parseNotification(msg: Packet): String = {
     val length = msg.readBits(12)
     msg.byteBuf.readCharSequence(length, Charset.defaultCharset).toString
+  }
+
+  override protected def initializeWardenHandler: WardenHandler = {
+    new WardenHandlerMoP18414(sessionKey)
   }
 }
