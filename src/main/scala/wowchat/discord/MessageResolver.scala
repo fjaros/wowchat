@@ -13,7 +13,7 @@ object MessageResolver {
     WowChatConfig.getExpansion match {
       case WowExpansion.Vanilla => new MessageResolver(jda)
       case WowExpansion.TBC => new MessageResolverTBC(jda)
-      case WowExpansion.WotLK | WowExpansion.Cataclysm => new MessageResolverWotLK(jda)
+      case _ => new MessageResolverWotLK(jda)
     }
   }
 }

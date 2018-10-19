@@ -80,12 +80,12 @@ class GameConnector(host: String,
         override protected def initChannel(socketChannel: SocketChannel): Unit = {
           val encoder = WowChatConfig.getExpansion match {
             case WowExpansion.Cataclysm => new GamePacketEncoderCataclysm
-            case WowExpansion.MoP => new GamePacketEncoderMoP
+            case WowExpansion.MoP => new GamePacketEncoderMoP18414
             case _ => new GamePacketEncoder
           }
 
           val decoder = WowChatConfig.getExpansion match {
-            case WowExpansion.MoP => new GamePacketDecoderMoP
+            case WowExpansion.MoP => new GamePacketDecoderMoP18414
             case _ => new GamePacketDecoder
           }
 
@@ -104,8 +104,8 @@ class GameConnector(host: String,
                 socketChannel.attr(CRYPT).set(new GameHeaderCryptWotLK)
                 new GamePacketHandlerCataclysm(realmId, sessionKey, gameEventCallback)
               case WowExpansion.MoP =>
-                socketChannel.attr(CRYPT).set(new GameHeaderCryptMoP)
-                new GamePacketHandlerMoP(realmId, sessionKey, gameEventCallback)
+                socketChannel.attr(CRYPT).set(new GameHeaderCryptMoP18414)
+                new GamePacketHandlerMoP18414(realmId, sessionKey, gameEventCallback)
             }
           )
 

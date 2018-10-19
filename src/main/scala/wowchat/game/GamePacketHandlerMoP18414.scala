@@ -8,7 +8,7 @@ import wowchat.common._
 
 import scala.util.Random
 
-class GamePacketHandlerMoP(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
+class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends GamePacketHandlerCataclysm(realmId, sessionKey, gameEventCallback) with GamePacketsMoP {
 
   override protected val addonInfo: Array[Byte] = Array(
@@ -39,14 +39,15 @@ class GamePacketHandlerMoP(realmId: Int, sessionKey: Array[Byte], gameEventCallb
   ).map(_.toByte)
 
   override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
+    // channel only todo impl whisper
     ctx.foreach(ctx => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(100, 4096)
       out.writeIntLE(languageId)
       target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
         logger.info(s"Discord->WoW($target): $message")
-        writeBits(out, target.length, 10)
+        writeBits(out, target.length, 9)
       })
-      writeBits(out, message.length, 9)
+      writeBits(out, message.length, 8)
       flushBits(out)
       // note for whispers (if the bot ever supports them, the order is opposite, person first then msg
       out.writeBytes(message.getBytes)

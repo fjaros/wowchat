@@ -3,7 +3,7 @@ package wowchat.game
 import io.netty.buffer.ByteBuf
 import wowchat.common.ByteUtils
 
-class GamePacketDecoderMoP extends GamePacketDecoder {
+class GamePacketDecoderMoP18414 extends GamePacketDecoder {
 
   override def parseGameHeader(in: ByteBuf): (Int, Int) = {
     val size = in.readShortLE - 2

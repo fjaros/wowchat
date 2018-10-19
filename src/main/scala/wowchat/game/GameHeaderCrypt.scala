@@ -8,7 +8,7 @@ package wowchat.game
   */
 class GameHeaderCrypt {
 
-  private var _initialized = false
+  protected var _initialized = false
   private var _send_i = 0
   private var _send_j = 0
   private var _recv_i = 0

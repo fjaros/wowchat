@@ -2,11 +2,11 @@ package wowchat.game
 
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
-import wowchat.common.{ByteUtils, Packet, WowChatConfig, WowExpansion}
+import wowchat.common.{ByteUtils, Packet}
 
 import scala.collection.mutable.ArrayBuffer
 
-class GamePacketEncoderMoP extends GamePacketEncoderCataclysm with GamePacketsMoP {
+class GamePacketEncoderMoP18414 extends GamePacketEncoderCataclysm with GamePacketsMoP {
 
   override def encode(ctx: ChannelHandlerContext, msg: Packet, out: ByteBuf): Unit = {
     val crypt = ctx.channel.attr(CRYPT).get

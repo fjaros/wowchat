@@ -43,24 +43,19 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
 
   // sent by server at beginning of warden handshake. contains module name & its rc4 seed
   private def handle_WARDEN_SMSG_MODULE_USE(decrypted: ByteBuf): Option[ByteBuf] = {
-    val moduleNameArray = new Array[Byte](16)
-    val x = new Array[Byte](16)
+    val moduleNameArray = new Array[Byte](32)
     decrypted.readBytes(moduleNameArray)
     moduleName = moduleNameArray.map(byte => f"$byte%02X").mkString
     decrypted.readBytes(moduleSeed)
-    decrypted.readBytes(x)
     moduleLength = decrypted.readIntLE
     moduleCrypt = new RC4(moduleSeed)
-    clientCrypt = new RC4(x)
-    clientCrypt.crypt(new Array[Byte](1024))
+    //clientCrypt.crypt(new Array[Byte](1024))
 
 //     we can send WARDEN_CMSG_MODULE_MISSING if we need to download the module, or WARDEN_CMSG_MODULE_OK if we have it
     val o = PooledByteBufAllocator.DEFAULT.buffer(100)
     o.writeIntLE(1)
     o.writeBytes(clientCrypt.crypt(WardenPackets.WARDEN_CMSG_MODULE_OK.toByte))
     Some(o)
-//    None
-//    Some(clientCrypt.crypt(WardenPackets.WARDEN_CMSG_MODULE_OK.toByte))
   }
 
   // sent by server while sending us the module payload in case we do not yet have it
@@ -115,7 +110,11 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     mdMD5.update(strArray)
     ret.writeBytes(mdMD5.digest)
 
-    Some(clientCrypt.crypt(ret))
+    val total = PooledByteBufAllocator.DEFAULT.buffer(100)
+    total.writeIntLE(33)
+    total.writeBytes(clientCrypt.crypt(ret))
+
+    Some(total)
   }
 
   private def handle_WARDEN_SMSG_HASH_REQUEST(decrypted: ByteBuf): Option[ByteBuf] = {
@@ -162,6 +161,10 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     serverKeyBuf.release
     serverCrypt = new RC4(serverKeyOutBytes)
 
-    Some(encrypted)
+    val total = PooledByteBufAllocator.DEFAULT.buffer(100)
+    total.writeIntLE(21)
+    total.writeBytes(encrypted)
+
+    Some(total)
   }
 }

@@ -88,8 +88,8 @@ object ByteUtils {
   def toHexString(byteBuf: ByteBuf, addSpaces: Boolean = false, resolvePlainText: Boolean = true): String = {
     val ret = StringBuilder.newBuilder
 
-    val copy = byteBuf.copy()
-    while (copy.readableBytes() > 0) {
+    val copy = byteBuf.copy
+    while (copy.readableBytes > 0) {
       val byte = copy.readByte
       if (resolvePlainText && byte >= 0x20 && byte < 0x7F) {
         ret ++= byte.toChar + " "
@@ -106,12 +106,12 @@ object ByteUtils {
   def toBinaryString(byteBuf: ByteBuf): String = {
     val ret = StringBuilder.newBuilder
 
-    val copy = byteBuf.copy()
+    val copy = byteBuf.copy
     var i = 0
-    while (copy.readableBytes() > 0) {
+    while (copy.readableBytes > 0) {
       val byte = copy.readByte
       if (i != 0 && i % 4 == 0) {
-        ret += '\n'
+        ret ++= System.lineSeparator
       }
       ret ++= f"${(byte & 0xFF).toBinaryString.toInt}%08d "
       i += 1
