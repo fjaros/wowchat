@@ -8,8 +8,8 @@
 
     <logger name="net.dv8tion.jda.core.requests.Requester" level="INFO" />
     <logger name="wowchat.game.GamePacketDecoder" level="INFO" />
-    <logger name="wowchat.game.GamePacketDecoderMoP18414" level="INFO" />
-    <logger name="wowchat.game.GamePacketEncoderMoP18414" level="DEBUG" />
+    <logger name="wowchat.game.GamePacketDecoderMoP" level="DEBUG" />
+    <logger name="wowchat.game.GamePacketEncoderMoP" level="DEBUG" />
 
 
     <root level="DEBUG">

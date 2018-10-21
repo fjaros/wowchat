@@ -6,7 +6,7 @@ import wowchat.common.{ByteUtils, Packet}
 
 import scala.collection.mutable.ArrayBuffer
 
-class GamePacketEncoderMoP18414 extends GamePacketEncoderCataclysm with GamePacketsMoP {
+class GamePacketEncoderMoP extends GamePacketEncoderCataclysm with GamePacketsMoP18414 {
 
   override def encode(ctx: ChannelHandlerContext, msg: Packet, out: ByteBuf): Unit = {
     val crypt = ctx.channel.attr(CRYPT).get

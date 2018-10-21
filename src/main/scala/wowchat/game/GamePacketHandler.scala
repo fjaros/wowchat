@@ -49,7 +49,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   var ginfo: String = ""
 
   protected var ctx: Option[ChannelHandlerContext] = None
-  private val playerRoster = mutable.Map.empty[Long, Player]
+  protected val playerRoster = mutable.Map.empty[Long, Player]
 
   // cannot use multimap here because need deterministic order
   private val queuedChatMessages = new mutable.HashMap[Long, mutable.ListBuffer[ChatMessage]]
@@ -147,14 +147,13 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(64, 128)
       byteBuf.writeIntLE(0)  // level min
       byteBuf.writeIntLE(100) // level max
+      byteBuf.writeBytes(arguments.get.getBytes)
       byteBuf.writeByte(0) // ?
       byteBuf.writeByte(0) // ?
       byteBuf.writeIntLE(0xFFFFFFFF) // race mask (all races)
       byteBuf.writeIntLE(0xFFFFFFFF) // class mask (all classes)
       byteBuf.writeIntLE(0) // zones count
-      byteBuf.writeIntLE(1) // strings count
-      byteBuf.writeBytes(arguments.get.getBytes)
-      byteBuf.writeByte(0)
+      byteBuf.writeIntLE(0) // strings count
       ctx.get.writeAndFlush(Packet(CMSG_WHO, byteBuf))
       None
     } else {
@@ -516,7 +515,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
   // This is actually really hard to map back to a specific request
   // because the packet doesn't include a cookie/id/requested name if none found
-  private def handle_SMSG_WHO(msg: Packet): Unit = {
+  protected def handle_SMSG_WHO(msg: Packet): Unit = {
     val displayCount = msg.byteBuf.readIntLE
     val matchCount = msg.byteBuf.readIntLE
 

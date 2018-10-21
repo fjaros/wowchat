@@ -1,6 +1,6 @@
 package wowchat.game
 
-class GameHeaderCryptMoP18414 extends GameHeaderCryptWotLK {
+class GameHeaderCryptMoP extends GameHeaderCryptWotLK {
 
   override protected val serverHmacSeed: Array[Byte] = Array(
     0x08, 0xF1, 0x95, 0x9F, 0x47, 0xE5, 0xD2, 0xDB, 0xA1, 0x3D, 0x77, 0x8F, 0x3F, 0x3E, 0xE7, 0x00

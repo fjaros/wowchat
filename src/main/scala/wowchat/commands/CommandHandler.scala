@@ -60,7 +60,7 @@ object CommandHandler {
   // eww
   def handleWhoResponse(whoResponse: Option[WhoResponse]) = {
     val response = whoResponse.map(r => {
-      s"${r.playerName} <${r.guildName}> is a level ${r.lvl}${r.gender.fold(" ")(g => s" $g ")}${r.race} ${r.cls} currently in ${r.zone}."
+      s"${r.playerName} ${if (r.guildName.nonEmpty) s"<${r.guildName}> " else ""}is a level ${r.lvl}${r.gender.fold(" ")(g => s" $g ")}${r.race} ${r.cls} currently in ${r.zone}."
     }).getOrElse(s"No player named ${whoRequest.playerName} is currently playing.")
     whoRequest.messageChannel.sendMessage(response).queue()
   }

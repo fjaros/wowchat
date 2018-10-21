@@ -5,7 +5,7 @@ import java.io.File
 import wowchat.common.ChatDirection.ChatDirection
 import wowchat.common.WowExpansion.WowExpansion
 import com.typesafe.config.{Config, ConfigFactory}
-import wowchat.game.{GamePackets, GamePacketsCataclysm}
+import wowchat.game.GamePackets
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.{typeOf, TypeTag}

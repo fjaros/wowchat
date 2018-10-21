@@ -36,6 +36,11 @@ case class Packet(
   private var bitPosition = 7
   private var byte: Byte = 0
 
+  def resetBitReader: Unit = {
+    bitPosition = 7
+    byte = 0
+  }
+
   def readBit: Byte = {
     bitPosition += 1
     if (bitPosition > 7) {
@@ -52,19 +57,25 @@ case class Packet(
     }
   }
 
-  def readXorByte(mask: Byte, debug: Boolean = false): Byte = {
+  def readBitSeq(indices: Int*): Array[Byte] = {
+    val ret = new Array[Byte](indices.length)
+    indices.foreach(i => {
+      ret(i) = readBit
+    })
+    ret
+  }
+
+  def readXorByte(mask: Byte): Byte = {
     if (mask != 0) {
-      if (debug) {
-        val b = byteBuf.readByte
-        println(f"$b%02X - " + mask)
-        val result = (mask ^ b).toByte
-        println(f"$result%02X - " + mask)
-        result
-      } else {
-        (mask ^ byteBuf.readByte).toByte
-      }
+      (mask ^ byteBuf.readByte).toByte
     } else {
       mask
     }
+  }
+
+  def readXorByteSeq(mask: Array[Byte], indices: Int*): Unit = {
+    indices.foreach(i => {
+      mask(i) = readXorByte(mask(i))
+    })
   }
 }

@@ -1,6 +1,6 @@
 package wowchat.game
 
-trait GamePacketsMoP extends GamePacketsCataclysm {
+trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
 
   override val CMSG_MESSAGECHAT_AFK = 0x0EAB
   override val CMSG_MESSAGECHAT_CHANNEL = 0x00BB

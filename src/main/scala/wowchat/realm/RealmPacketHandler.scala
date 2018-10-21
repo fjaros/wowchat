@@ -57,6 +57,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
           case RealmPackets.CMD_AUTH_LOGON_PROOF => handle_CMD_AUTH_LOGON_PROOF(msg)
           case RealmPackets.CMD_REALM_LIST => handle_CMD_REALM_LIST(msg)
         }
+        msg.byteBuf.release
       case msg =>
         logger.error(s"Packet is instance of ${msg.getClass}")
     }

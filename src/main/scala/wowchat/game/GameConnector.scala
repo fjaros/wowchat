@@ -54,6 +54,7 @@ class GameConnector(host: String,
       connected = false
       val delay = reconnectDelay.getNext
       logger.info(s"Disconnected from game server! Reconnecting in $delay seconds...")
+      Global.discord.changeStatus("Not online")
       channel.get.eventLoop().schedule(new Runnable {
         override def run(): Unit = connect
       }, delay, TimeUnit.SECONDS)
@@ -80,12 +81,12 @@ class GameConnector(host: String,
         override protected def initChannel(socketChannel: SocketChannel): Unit = {
           val encoder = WowChatConfig.getExpansion match {
             case WowExpansion.Cataclysm => new GamePacketEncoderCataclysm
-            case WowExpansion.MoP => new GamePacketEncoderMoP18414
+            case WowExpansion.MoP => new GamePacketEncoderMoP
             case _ => new GamePacketEncoder
           }
 
           val decoder = WowChatConfig.getExpansion match {
-            case WowExpansion.MoP => new GamePacketDecoderMoP18414
+            case WowExpansion.MoP => new GamePacketDecoderMoP
             case _ => new GamePacketDecoder
           }
 
@@ -102,9 +103,9 @@ class GameConnector(host: String,
                 new GamePacketHandlerWotLK(realmId, sessionKey, gameEventCallback)
               case WowExpansion.Cataclysm =>
                 socketChannel.attr(CRYPT).set(new GameHeaderCryptWotLK)
-                new GamePacketHandlerCataclysm(realmId, sessionKey, gameEventCallback)
+                new GamePacketHandlerCataclysm15595(realmId, sessionKey, gameEventCallback)
               case WowExpansion.MoP =>
-                socketChannel.attr(CRYPT).set(new GameHeaderCryptMoP18414)
+                socketChannel.attr(CRYPT).set(new GameHeaderCryptMoP)
                 new GamePacketHandlerMoP18414(realmId, sessionKey, gameEventCallback)
             }
           )

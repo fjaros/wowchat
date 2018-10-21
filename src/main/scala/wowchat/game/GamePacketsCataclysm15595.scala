@@ -1,6 +1,6 @@
 package wowchat.game
 
-trait GamePacketsCataclysm extends GamePackets {
+trait GamePacketsCataclysm15595 extends GamePackets {
 
   // this might just use the same bit obfuscating as some of the other variables like player guid
   // but mangos hardcodes the values.

@@ -62,6 +62,7 @@ trait GamePackets {
         case "officer" => CHAT_MSG_OFFICER
         case "yell" => CHAT_MSG_YELL
         case "emote" => CHAT_MSG_EMOTE
+        case "whisper" => CHAT_MSG_WHISPER
         case "channel" | "custom" => CHAT_MSG_CHANNEL
         case _ => -1
       }).toByte

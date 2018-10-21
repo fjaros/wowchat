@@ -4,13 +4,14 @@ import java.nio.charset.Charset
 import java.security.MessageDigest
 
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
+import wowchat.commands.{CommandHandler, WhoResponse}
 import wowchat.common._
 import wowchat.game.warden.{WardenHandler, WardenHandlerMoP18414}
 
 import scala.util.Random
 
 class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandlerCataclysm(realmId, sessionKey, gameEventCallback) with GamePacketsMoP {
+  extends GamePacketHandlerCataclysm15595(realmId, sessionKey, gameEventCallback) with GamePacketsMoP18414 {
 
   override protected val addonInfo: Array[Byte] = Array(
     0x30, 0x05, 0x00, 0x00, 0x78, 0x9C, 0x75, 0x93, 0x61, 0x6E, 0x83, 0x30, 0x0C, 0x85, 0xD9, 0x3D,
@@ -40,15 +41,19 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
   ).map(_.toByte)
 
   override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
-    // channel only todo impl whisper
     ctx.foreach(ctx => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(100, 4096)
       out.writeIntLE(languageId)
       target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
         logger.info(s"Discord->WoW($target): $message")
-        writeBits(out, target.length, 9)
+        if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
+          writeBits(out, target.length, 9)
+        }
       })
       writeBits(out, message.length, 8)
+      if (tp == ChatEvents.CHAT_MSG_WHISPER) {
+        writeBits(out, target.get.length, 9)
+      }
       flushBits(out)
       // note for whispers (if the bot ever supports them, the order is opposite, person first then msg
       out.writeBytes(message.getBytes)
@@ -68,6 +73,227 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
       case ChatEvents.CHAT_MSG_SAY => CMSG_MESSAGECHAT_SAY
       case ChatEvents.CHAT_MSG_WHISPER => CMSG_MESSAGECHAT_WHISPER
       case ChatEvents.CHAT_MSG_YELL => CMSG_MESSAGECHAT_YELL
+    }
+  }
+
+  // technically MoP sends sender name as part of chat message,
+  // but i'll just stick to the old system to keep it consistent.
+  override def sendNameQuery(guid: Long): Unit = {
+    ctx.foreach(ctx => {
+      val out = PooledByteBufAllocator.DEFAULT.buffer(10, 10)
+      val guidBytes = ByteUtils.longToBytesLE(guid)
+
+      writeBit(out, guidBytes(4))
+      writeBit(out, 0)
+      writeBit(out, guidBytes(6))
+      writeBit(out, guidBytes(0))
+      writeBit(out, guidBytes(7))
+      writeBit(out, guidBytes(1))
+      writeBit(out, 0)
+      writeBit(out, guidBytes(5))
+      writeBit(out, guidBytes(2))
+      writeBit(out, guidBytes(3))
+      flushBits(out)
+
+      writeXorByteSeq(out, guidBytes, 7, 5, 1, 2, 6, 3, 0, 4)
+
+      ctx.writeAndFlush(Packet(CMSG_NAME_QUERY, out))
+    })
+  }
+
+  override protected def parseNameQuery(msg: Packet): NameQueryMessage = {
+    val guid = msg.readBitSeq(3, 6, 7, 2, 5, 4, 0, 1)
+    val guid2 = new Array[Byte](8) // ??
+    val guid3 = new Array[Byte](8) // ??
+
+    msg.readXorByteSeq(guid, 5, 4, 7, 6, 1, 2)
+
+    val hasNameData = msg.readBit == 0
+    val charClass = if (hasNameData) {
+      msg.byteBuf.readBytes(8) // realm id, acc id?
+      val charClass = msg.byteBuf.readByte
+      msg.byteBuf.skipBytes(3) // race, level, gender
+      charClass
+    } else {
+      0xFF.toByte
+    }
+
+    msg.readXorByteSeq(guid, 0, 3)
+
+    if (!hasNameData) {
+      val longGuid = ByteUtils.bytesToLongLE(guid)
+      logger.error(s"RECV SMSG_NAME_QUERY - Name not known for guid $longGuid")
+      return NameQueryMessage(longGuid, "UNKNOWN", charClass)
+    }
+
+    msg.resetBitReader
+    guid2(2) = msg.readBit
+    guid2(7) = msg.readBit
+    guid3(7) = msg.readBit
+    guid3(2) = msg.readBit
+    guid3(0) = msg.readBit
+    msg.readBit // unkn
+    guid2(4) = msg.readBit
+    guid3(5) = msg.readBit
+    guid2(1) = msg.readBit
+    guid2(3) = msg.readBit
+    guid2(0) = msg.readBit
+
+    msg.readBits(7 * 5) // declined names
+
+    guid3(6) = msg.readBit
+    guid3(3) = msg.readBit
+    guid2(5) = msg.readBit
+    guid3(1) = msg.readBit
+    guid3(4) = msg.readBit
+    val nameLength = msg.readBits(6)
+    guid2(6) = msg.readBit
+
+    guid3(6) = msg.readXorByte(guid3(6))
+    guid3(0) = msg.readXorByte(guid3(0))
+    val name = msg.byteBuf.readCharSequence(nameLength, Charset.defaultCharset).toString
+
+    // can't be bothered to parse the rest of this crap
+    NameQueryMessage(ByteUtils.bytesToLongLE(guid), name, charClass)
+  }
+
+  override def handleWho(arguments: Option[String]): Option[String] = {
+    val characterName = Global.config.wow.character
+
+    if (arguments.isDefined) {
+      val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(64, 128)
+      byteBuf.writeIntLE(0xFFFFFFFF) // class mask (all classes)
+      byteBuf.writeIntLE(0xFFFFFFFF) // race mask (all races)
+      byteBuf.writeIntLE(100) // level max
+      byteBuf.writeIntLE(0)  // level min
+      writeBit(byteBuf, 1) // show enemies
+      writeBit(byteBuf, 1) // exact name
+      writeBit(byteBuf, 0) // request server info
+      writeBits(byteBuf, 0, 9) // guild realm name length
+      writeBit(byteBuf, 1) // show arena players
+      writeBits(byteBuf, arguments.get.length, 6) // name length
+      writeBits(byteBuf, 0, 4) // zones count
+      writeBits(byteBuf, 0, 9) // realm length name
+      writeBits(byteBuf, 0, 7) // guild name length
+      writeBits(byteBuf, 0, 3) // word count
+      flushBits(byteBuf)
+      byteBuf.writeBytes(arguments.get.getBytes)
+      ctx.get.writeAndFlush(Packet(CMSG_WHO, byteBuf))
+      None
+    } else {
+      Some(playerRoster
+        .valuesIterator
+        .filter(!_.name.equalsIgnoreCase(characterName))
+        .toSeq
+        .sortBy(_.name)
+        .map(m => {
+          s"${m.name} (${Classes.valueOf(m.charClass)})"
+        })
+        .mkString(getGuildiesOnlineMessage(false), ", ", ""))
+    }
+  }
+
+  override protected def handle_SMSG_WHO(msg: Packet): Unit = {
+    val displayCount = msg.readBits(6)
+
+    if (displayCount == 0) {
+      CommandHandler.handleWhoResponse(None)
+    } else {
+      val fetchCount = Math.min(displayCount, 3)
+      val accountId = new Array[Array[Byte]](fetchCount)
+      val playerGuid = new Array[Array[Byte]](fetchCount)
+      val guildGuid = new Array[Array[Byte]](fetchCount)
+      val guildNameLengths = new Array[Int](fetchCount)
+      val playerNameLengths = new Array[Int](fetchCount)
+
+      (0 until fetchCount).foreach(i => {
+        accountId(i) = new Array[Byte](8)
+        playerGuid(i) = new Array[Byte](8)
+        guildGuid(i) = new Array[Byte](8)
+
+        accountId(i)(2) = msg.readBit
+        playerGuid(i)(2) = msg.readBit
+        accountId(i)(7) = msg.readBit
+        guildGuid(i)(5) = msg.readBit
+        guildNameLengths(i) = msg.readBits(7)
+        accountId(i)(1) = msg.readBit
+        accountId(i)(5) = msg.readBit
+        guildGuid(i)(7) = msg.readBit
+        playerGuid(i)(5) = msg.readBit
+        msg.readBit // unkn
+        guildGuid(i)(1) = msg.readBit
+        playerGuid(i)(6) = msg.readBit
+        guildGuid(i)(2) = msg.readBit
+        playerGuid(i)(4) = msg.readBit
+        guildGuid(i)(0) = msg.readBit
+        guildGuid(i)(3) = msg.readBit
+        accountId(i)(6) = msg.readBit
+        msg.readBit // unkn
+        playerGuid(i)(1) = msg.readBit
+        guildGuid(i)(4) = msg.readBit
+        accountId(i)(0) = msg.readBit
+        msg.readBits(7 * 5) // declined names
+        playerGuid(i)(3) = msg.readBit
+        guildGuid(i)(6) = msg.readBit
+        playerGuid(i)(0) = msg.readBit
+        accountId(i)(4) = msg.readBit
+        accountId(i)(3) = msg.readBit
+        playerGuid(i)(7) = msg.readBit
+        playerNameLengths(i) = msg.readBits(6)
+      })
+
+      // skip rest
+      (fetchCount until displayCount).foreach(i => msg.readBits(74))
+
+      (0 until fetchCount).foreach(i => {
+        playerGuid(i)(1) = msg.readXorByte(playerGuid(i)(1))
+        msg.byteBuf.skipBytes(4) // realm id
+        playerGuid(i)(7) = msg.readXorByte(playerGuid(i)(7))
+        msg.byteBuf.skipBytes(4) // realm id
+        playerGuid(i)(4) = msg.readXorByte(playerGuid(i)(4))
+        val playerName = msg.byteBuf.readCharSequence(playerNameLengths(i), Charset.defaultCharset).toString
+        guildGuid(i)(1) = msg.readXorByte(guildGuid(i)(1))
+        playerGuid(i)(0) = msg.readXorByte(playerGuid(i)(0))
+        guildGuid(i)(2) = msg.readXorByte(guildGuid(i)(2))
+        guildGuid(i)(0) = msg.readXorByte(guildGuid(i)(0))
+        guildGuid(i)(4) = msg.readXorByte(guildGuid(i)(4))
+        playerGuid(i)(3) = msg.readXorByte(playerGuid(i)(3))
+        guildGuid(i)(6) = msg.readXorByte(guildGuid(i)(6))
+        msg.byteBuf.skipBytes(4) // account id?
+        val guildName = msg.byteBuf.readCharSequence(guildNameLengths(i), Charset.defaultCharset).toString
+        guildGuid(i)(3) = msg.readXorByte(guildGuid(i)(3))
+        accountId(i)(4) = msg.readXorByte(accountId(i)(4))
+        val cls = Classes.valueOf(msg.byteBuf.readByte)
+        accountId(i)(7) = msg.readXorByte(accountId(i)(7))
+        playerGuid(i)(6) = msg.readXorByte(playerGuid(i)(6))
+        playerGuid(i)(2) = msg.readXorByte(playerGuid(i)(2))
+
+        // assume no declined names
+
+        accountId(i)(2) = msg.readXorByte(accountId(i)(2))
+        accountId(i)(3) = msg.readXorByte(accountId(i)(3))
+        val race = Races.valueOf(msg.byteBuf.readByte)
+        guildGuid(i)(7) = msg.readXorByte(guildGuid(i)(7))
+        accountId(i)(1) = msg.readXorByte(accountId(i)(1))
+        accountId(i)(5) = msg.readXorByte(accountId(i)(5))
+        accountId(i)(6) = msg.readXorByte(accountId(i)(6))
+        playerGuid(i)(5) = msg.readXorByte(playerGuid(i)(5))
+        accountId(i)(0) = msg.readXorByte(accountId(i)(0))
+        val gender = Some(Genders.valueOf(msg.byteBuf.readByte))
+        guildGuid(i)(5) = msg.readXorByte(guildGuid(i)(5))
+        val lvl = msg.byteBuf.readByte
+        val zone = msg.byteBuf.readIntLE
+
+        CommandHandler.handleWhoResponse(Some(WhoResponse(
+          playerName,
+          guildName,
+          lvl,
+          cls,
+          race,
+          gender,
+          AreaTable.AREA.getOrElse(zone, "Unknown Zone")))
+        )
+      })
     }
   }
 
@@ -211,23 +437,8 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
 
     out.writeIntLE(0x43480000) // unkn
 
-    writeBit(out, bytes(1))
-    writeBit(out, bytes(4))
-    writeBit(out, bytes(7))
-    writeBit(out, bytes(3))
-    writeBit(out, bytes(2))
-    writeBit(out, bytes(6))
-    writeBit(out, bytes(5))
-    writeBit(out, bytes(0))
-
-    writeXorByte(out, bytes(5))
-    writeXorByte(out, bytes(1))
-    writeXorByte(out, bytes(0))
-    writeXorByte(out, bytes(6))
-    writeXorByte(out, bytes(2))
-    writeXorByte(out, bytes(4))
-    writeXorByte(out, bytes(7))
-    writeXorByte(out, bytes(3))
+    writeBitSeq(out, bytes, 1, 4, 7, 3, 2, 6, 5, 0)
+    writeXorByteSeq(out, bytes, 5, 1, 0, 6, 2, 4, 7, 3)
   }
 
   override protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
@@ -241,6 +452,132 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
     out.writeBytes(channel.getBytes)
   }
 
+  override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
+    val hasSenderName = msg.readBit == 0
+    msg.readBit // hide in chat log
+
+    val senderNameLength = if (hasSenderName) {
+      msg.readBits(11)
+    } else {
+      0
+    }
+
+    msg.readBit // unkn
+    val hasChannelName = msg.readBit == 0
+    msg.readBit // unkn
+    msg.readBit // send fake time?
+    val hasChatTag = msg.readBit == 0
+    msg.readBit // realm id?
+
+    val groupGuid = msg.readBitSeq(0, 1, 5, 4, 3, 2, 6, 7)
+
+    if (hasChatTag) {
+      msg.readBits(9)
+    }
+
+    msg.readBit // unkn
+
+    val receiverGuid = msg.readBitSeq(7, 6, 1, 4, 0, 2, 3, 5)
+
+    msg.readBit // unkn
+    val hasLanguage = msg.readBit == 0
+    val hasPrefix = msg.readBit == 0
+
+    val senderGuid = msg.readBitSeq(0, 3, 7, 2, 1, 5, 4, 6)
+
+    val hasAchievement = msg.readBit == 0
+    val hasMessage = msg.readBit == 0
+
+    val channelNameLength = if (hasChannelName) {
+      msg.readBits(7)
+    } else {
+      0
+    }
+
+    val messageLength = if (hasMessage) {
+      msg.readBits(12)
+    } else {
+      0
+    }
+
+    if (!hasMessage || messageLength == 0) {
+      return None
+    }
+
+    val hasReceiver = msg.readBit == 0
+
+    val addonPrefixLength = if (hasPrefix) {
+      msg.readBits(5)
+    } else {
+      0
+    }
+
+    msg.readBit // realm id?
+
+    val receiverLength = if (hasReceiver) {
+      msg.readBits(11)
+    } else {
+      0
+    }
+
+    msg.readBit // unkn
+
+    val guildGuid = msg.readBitSeq(2, 5, 7, 4, 0, 1, 3, 6)
+
+    msg.readXorByteSeq(guildGuid, 4, 5, 7, 3, 2, 6, 0, 1)
+
+    val channelName = if (hasChannelName) {
+      Some(msg.byteBuf.readCharSequence(channelNameLength, Charset.defaultCharset).toString)
+    } else {
+      None
+    }
+
+    if (hasPrefix) {
+      msg.byteBuf.readBytes(addonPrefixLength)
+    }
+
+    msg.readXorByteSeq(senderGuid, 4, 7, 1, 5, 0, 6, 2, 3)
+
+    // ignore messages from itself
+    if (ByteUtils.bytesToLongLE(senderGuid) == selfCharacterId.get) {
+      return None
+    }
+
+    val tp = msg.byteBuf.readByte
+
+    // ignore if from an unhandled channel
+    if (!Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
+      return None
+    }
+
+    if (hasAchievement) {
+      msg.byteBuf.skipBytes(4)
+    }
+
+    msg.readXorByteSeq(groupGuid, 1, 3, 4, 6, 0, 2, 5, 7)
+
+    msg.readXorByteSeq(receiverGuid, 4, 7, 1, 5, 0, 6, 2, 3)
+
+    val language = if (hasLanguage) {
+      msg.byteBuf.readByte
+    } else {
+      0
+    }
+
+    // ignore addon messages
+    if (language == -1) {
+      return None
+    }
+
+    val txt = if (hasMessage) {
+      msg.byteBuf.readCharSequence(messageLength, Charset.defaultCharset).toString
+    } else {
+      ""
+    }
+
+    Some(ChatMessage(ByteUtils.bytesToLongLE(senderGuid), tp, txt, channelName))
+  }
+
   override def updateGuildRoster: Unit = {
     // it apparently sends 2 masked guids,
     // but in fact MaNGOS does not do anything with them so we can just send 0s
@@ -250,8 +587,8 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
   }
 
   override protected def parseGuildRoster(msg: Packet): Map[Long, Player] = {
-    val motdLength = msg.readBits(11)
-    val count = msg.readBits(18)
+    val count = msg.readBits(17)
+    val motdLength = msg.readBits(10)
     val guids = new Array[Array[Byte]](count)
     val pNoteLengths = new Array[Int](count)
     val oNoteLengths = new Array[Int](count)
@@ -259,45 +596,49 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
 
     (0 until count).foreach(i => {
       guids(i) = new Array[Byte](8)
+      oNoteLengths(i) = msg.readBits(8)
+      guids(i)(5) = msg.readBit
+      msg.readBit // scroll of resurrect
+      pNoteLengths(i) = msg.readBits(8)
+      guids(i)(7) = msg.readBit
+      guids(i)(0) = msg.readBit
+      guids(i)(6) = msg.readBit
+      nameLengths(i) = msg.readBits(6)
+      msg.readBit // has authenticator
       guids(i)(3) = msg.readBit
       guids(i)(4) = msg.readBit
-      msg.readBits(2) // bnet client flags
-      pNoteLengths(i) = msg.readBits(8)
-      oNoteLengths(i) = msg.readBits(8)
-      guids(i)(0) = msg.readBit
-      nameLengths(i) = msg.readBits(7)
       guids(i)(1) = msg.readBit
       guids(i)(2) = msg.readBit
-      guids(i)(6) = msg.readBit
-      guids(i)(5) = msg.readBit
-      guids(i)(7) = msg.readBit
     })
 
-    val gInfoLength = msg.readBits(12)
+    val gInfoLength = msg.readBits(11)
 
     (0 until count).flatMap(i => {
       val charClass = msg.byteBuf.readByte
-      msg.byteBuf.skipBytes(4) // unkn
+      msg.byteBuf.skipBytes(4) // total reputation
+      val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.defaultCharset).toString
       guids(i)(0) = msg.readXorByte(guids(i)(0))
-      msg.byteBuf.skipBytes(40) // weekly activity, achievments, professions
-      guids(i)(2) = msg.readXorByte(guids(i)(2))
+      msg.byteBuf.skipBytes(24) // professions
+      msg.byteBuf.skipBytes(1) // level
       val flags = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // zone id
-      msg.byteBuf.skipBytes(8) // total activity (0)
-      guids(i)(7) = msg.readXorByte(guids(i)(7))
-      msg.byteBuf.skipBytes(4) // guild rep?
-      msg.byteBuf.skipBytes(pNoteLengths(i)) // public note
+      msg.byteBuf.skipBytes(4) // rep cap
       guids(i)(3) = msg.readXorByte(guids(i)(3))
-      msg.byteBuf.skipBytes(1) // level
-      msg.byteBuf.skipBytes(4) // unkn
-      guids(i)(5) = msg.readXorByte(guids(i)(5))
-      guids(i)(4) = msg.readXorByte(guids(i)(4))
-      msg.byteBuf.skipBytes(1) // unkn
-      guids(i)(1) = msg.readXorByte(guids(i)(1))
-      msg.byteBuf.skipBytes(4) // last logoff time
+      msg.byteBuf.skipBytes(8) // total activity
       msg.byteBuf.skipBytes(oNoteLengths(i)) // officer note
+      msg.byteBuf.skipBytes(4) // logout time
+      msg.byteBuf.skipBytes(1) // gender? always 0?
+      msg.byteBuf.skipBytes(4) // rank
+      msg.byteBuf.skipBytes(4) // realm id
+      guids(i)(5) = msg.readXorByte(guids(i)(5))
+      guids(i)(7) = msg.readXorByte(guids(i)(7))
+      msg.byteBuf.skipBytes(pNoteLengths(i)) // public note
+      guids(i)(4) = msg.readXorByte(guids(i)(4))
+      msg.byteBuf.skipBytes(8) // weekly activity
+      msg.byteBuf.skipBytes(4) // achievement points
       guids(i)(6) = msg.readXorByte(guids(i)(6))
-      val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.defaultCharset).toString
+      guids(i)(1) = msg.readXorByte(guids(i)(1))
+      guids(i)(2) = msg.readXorByte(guids(i)(2))
 
       if ((flags & 0x01) == 0x01) {
         Some(ByteUtils.bytesToLongLE(guids(i)) -> Player(name, charClass))

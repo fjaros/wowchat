@@ -8,14 +8,12 @@ import wowchat.common._
 
 import scala.util.Random
 
-class GamePacketHandlerCataclysm(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandlerWotLK(realmId, sessionKey, gameEventCallback) with GamePacketsCataclysm {
+class GamePacketHandlerCataclysm15595(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
+  extends GamePacketHandlerWotLK(realmId, sessionKey, gameEventCallback) with GamePacketsCataclysm15595 {
 
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case WOW_CONNECTION => handle_WOW_CONNECTION(msg)
-//      case SMSG_WARDEN_DATA =>
-//        logger.error(s"WARDEN IS ENABLED ON THIS SERVER BUT UNSUPPORTED BY THE BOT FOR ${WowChatConfig.getExpansion}!")
       case _ => super.channelParse(msg)
     }
   }
@@ -318,10 +316,22 @@ class GamePacketHandlerCataclysm(realmId: Int, sessionKey: Array[Byte], gameEven
     }
   }
 
+  def writeBitSeq(out: ByteBuf, bytes: Array[Byte], indices: Int*): Unit = {
+    indices.foreach(i => {
+      writeBit(out, bytes(i))
+    })
+  }
+
   def writeXorByte(out: ByteBuf, byte: Byte): Unit = {
     if (byte != 0) {
       out.writeByte((byte ^ 1).toByte)
     }
+  }
+
+  def writeXorByteSeq(out: ByteBuf, bytes: Array[Byte], indices: Int*): Unit = {
+    indices.foreach(i => {
+      writeXorByte(out, bytes(i))
+    })
   }
 
   def flushBits(out: ByteBuf): Unit = {

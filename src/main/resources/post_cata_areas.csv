@@ -2907,7 +2907,7 @@
 5517,Blackfathom Deeps Entrance
 5518,Razorfen Kraul Entrance
 5519,Rhea's Camp
-5520,Maruadon - The Wicked Grotto Entrance
+5520,Maraudon - The Wicked Grotto Entrance
 5521,Maraudon - Foulspore Cavern Entrance
 5522,Maraudon - Earth Song Falls Entrance
 5523,Uldaman Entrance
@@ -3104,6 +3104,9 @@
 5731,Whelgar's Retreat
 5732,Halls of Origination
 5733,Molten Front
+5734,Sarahland
+5736,The Wandering Isle
+5737,Pei-Wu Forest
 5738,Malfurion's Breach
 5739,Ashen Fields
 5740,Magma Springs
@@ -3134,6 +3137,7 @@
 5782,Darsok's Outpost
 5783,Alcaz Island
 5784,Cloudtop Terrace
+5785,The Jade Forest
 5786,The Nexus
 5787,Schnottz's Frigate
 5788,Well of Eternity
@@ -3152,6 +3156,7 @@
 5802,Draenei Ruins
 5803,Fel Reaver Ruins
 5804,Mage Tower
+5805,Valley of the Four Winds
 5806,Spine of the Destroyer UNUSED
 5807,Beth'tilac's Lair
 5808,Sulfuron Keep Courtyard
@@ -3165,42 +3170,822 @@
 5816,The Ridge of Ancient Flame
 5817,Rhyolith Plateau
 5818,Firelands
+5820,Temple of Five Dawns
 5821,The Path of Corruption
 5823,Circle of Thorns
 5824,Bluff of the South Wind
+5825,The Dawning Valley
+5826,The Singing Pools
+5827,The Rows
+5828,Mandori Village
+5829,Ridge of Laughing Winds
+5830,Morning Breeze Village
+5831,Fe-Feng Village
+5832,The Wood of Staves
+5833,Wreck of the Skyseeker
+5834,Shang Xi Training Grounds
+5835,Wu-Song Village
+5836,Forest Heart
+5837,The Dawning Span
 5838,Whispering Forest
 5839,The Great Divide
+5840,Vale of Eternal Blossoms
+5841,Kun-Lai Summit
+5842,Townlong Steppes
+5843,Tranquil Grotto
 5844,Hour of Twilight
 5845,Wyrmrest Temple
+5846,Fu's Pond
+5847,The Dawning Stair
+5848,Cave of Meditation
+5849,Shrine of Inner-Light
+5850,Silken Shore
+5851,Paw'don Glade
+5852,Wreck of the Vanguard
+5853,Garrosh'ar Point
+5854,Nectarbreeze Orchard
+5855,Tian Monastery
+5856,Shrine of Remembrance
+5857,Camp Gormal
+5859,The Elders' Path
+5860,Liang's Retreat
 5861,Darkmoon Island
+5862,Pool of Reflection
+5863,Banquet Grounds
+5865,Wreck of Hellscream's Fist
+5866,Ascent of Swirling Winds
+5867,Strongarm Airstrip
+5868,The Ring of Inner Focus
 5869,The Great Sea
 5870,The Darkmoon Faire
+5871,The Ring of Balance
+5872,Slingtail Pits
+5873,Sea Mist Ridge
+5874,Waxwood
+5875,Lair of the Jade Witch
+5876,Serpent's Heart
 5877,Darkmoon Deathmatch
+5878,Orchid Hollow
+5879,Terrace of Ten Thunders
 5880,Maelstrom Deathwing Fight
+5881,The Dai-Lo Farmstead
+5882,Virmen Grotto
+5883,Teeming Burrow
+5884,Ki-Han Brewery
+5885,Shrine of Dreaming Stones
+5886,Chamber of Whispers
+5887,Shadybranch Pocket
+5890,Fox Grove
+5891,Shang's Valley
 5892,Dragon Soul
 5893,The Maelstrom
 5894,Testing02
 5895,Testing SubZone A
+5896,The Orchid Pond - NOT USED
+5897,The Fertile Copse
+5898,Serenity Falls
+5899,Path of Enlightenment
+5900,Exclamation Point
+5901,Cave of Words
 5902,Darkmoon Path
 5904,Darkmoon Boardwalk
+5905,Camp Nooka Nooka
+5906,Spire of Solitude
+5907,Lake Kittitata
+5908,Circle of Scale
+5909,Circle of Blood
+5910,Circle of Bone
+5911,Circle of Stone
+5912,Tideview Thicket
 5913,Dire Maul - North
 5914,Dire Maul - East
 5915,Dire Maul - West
 5916,Stratholme - Main Gate
 5917,Stratholme - Service Entrance
+5918,Shado-Pan Monastery
+5919,Uncharted Sea
 5920,Eye of Eternity
+5921,Tasters' Arena
 5922,Above the Frozen Sea
 5923,The Dragon Wastes
 5924,Azure Dragonshrine
 5925,Emerald Dragonshrine
 5926,Path of the Titans
 5928,Wyrmrest Summit
+5929,The Silkwood
+5930,Dawn's Blossom
+5931,The Arboretum
+5932,Shrine of the Dawn
+5933,The Gong of Hope
+5934,Pearl Lake
+5935,Pearlfin Village
+5936,Pang's Stead
+5937,Thunderfoot Fields
+5938,Thunderfoot Ranch
+5939,Thunderfoot Farm
+5940,Dreamer's Pavilion
+5941,The Great Sea
+5942,Tigers' Wood
+5943,Amberfly Bog
+5944,Forlorn Hut
+5945,Pool of the Paw
+5946,Morning Breeze Lake
+5947,Shrine of Five Dawns
+5948,Grassy Cline
+5949,Shang's Stead
+5950,Grookin Hill
+5951,Dookin' Grounds
+5952,Scenic Overlook
+5953,Murky Bank
+5954,Den of Sorrow
+5955,Greenstone Quarry
+5956,Temple of the Jade Serpent
+5957,Mudmug's Place
+5958,Sunsoaked Meadow
+5959,The Twisted Warren
 5960,Deathwing
+5961,Slicky Stream
+5962,Emperor's Omen
+5963,Stormstout Brewery
+5964,The Bamboo Wilds
+5966,Woods of the Lost
+5967,Paoquan Hollow
+5968,Stoneplow
+5969,Stoneplow Fields
+5970,Singing Marshes
+5972,Pools of Purity
+5973,New Cifera
+5974,Jade Temple Grounds
+5975,Temple of the Jade Serpent
+5976,Gate of the Setting Sun
+5978,Ancient Courtyard
 5979,The Great Sea
+5980,Halfhill
+5981,The Halfhill Market
+5982,The Imperial Granary
+5983,Plain of Thieves
+5984,Gilded Fan
+5985,Winds' Edge
+5986,Silken Fields
+5987,The Gilding Stream
 5988,The Crystal Vice
 5989,The Dragon Wastes
 5990,Galakrond's Rest
 5991,Path of the Titans
+5992,The Heartland
 5993,Courtyard of Lights
 5994,Shores of the Well
 5995,Azshara's Palace
+5996,Springtail Warren
+6000,Zhu's Watch
+6001,Stormstout Brewery
+6002,Thirsty Alley
+6004,The Deepwild
+6005,Zhu Province
+6006,The Veiled Stair
+6007,Thunder Cleft
+6008,Ruins of Dojan
+6009,The Incursion
+6010,Dojani River
+6011,Pools of Youth
+6012,Windward Isle
+6013,Dawnchaser Retreat
+6014,Krasarang River
+6015,Ruins of Korja
+6016,Sentinel Basecamp
+6017,Fallsong Village
+6018,Krasari Falls
+6019,The Forbidden Jungle
+6020,The Southern Wall
+6021,Huangtze Falls
+6022,Mistveil Sea
+6023,Windspire Bridge
+6024,The Windspire
+6025,Nesingwary's Safari
+6026,The Krasari Ruins
+6027,Virmen Nest
+6028,Dustback Gorge
+6029,The Torjari Pit
+6030,The Wild Plains
+6031,Mistfall Village
+6032,Ruins of Guo-Lai
+6033,The Golden Stair
+6034,Whitepetal Lake
+6035,Setting Sun Garrison
+6036,The Golden Pagoda
+6037,Tu Shen Burial Ground
+6038,Lair of the Beast
+6039,Sunsong Ranch
+6040,Dustwallow Marsh
+6041,The Great Sea
+6042,Theramore Isle
+6043,Dustwallow Marsh
+6044,Dustwallow Bay
+6045,Alcaz Island
+6046,Foothold Citadel
+6047,The Sea Wolf
+6048,Temple of the Red Crane
+6049,Crane Wing Refuge
+6050,Spiritsong River
+6051,Temple of Kotmogu
+6052,Scarlet Halls
+6053,Ruins Rise
+6054,Winterbough Glade
+6055,The Five Sisters
+6058,Shattered Convoy
+6059,Binan Village
+6060,Temple of Kotmogu
+6061,Temple of Kotmogu
+6062,Kun-Lai Pass
+6063,Moonwater Retreat
+6064,Skyrange
+6065,Kunzen Village
+6066,Scholomance
+6067,Terrace of Endless Spring
+6069,Inkgill Mere
+6071,The Drunken Hozen
+6072,Lao & Son's Yakwash
+6073,The Autumn Plains
+6074,Guo-Lai Halls
+6075,The Golden Gateway
+6076,Auburn Bluffs
+6077,Sri-La Village
+6078,Seat of the Spirit Waker
+6079,The Grummle Bazaar
+6080,Serpent's Overlook
+6081,Peak of Serenity
+6082,The Splintered Path
+6083,Camp Broketooth
+6084,The Deeper
+6085,One Keg
+6086,Broketooth Outpost
+6087,The Dooker Dome
+6088,Knucklethump Hole
+6089,Yeti Mountain Basecamp
+6090,The Burlap Trail
+6091,The Burlap Valley
+6092,Greenstone Masons' Quarter
+6093,Fire Camp Bataar
+6094,Eastwind Rest
+6095,Westwind Rest
+6096,Cattail Lake
+6097,Kunzen Cave
+6098,Chow Farmstead
+6099,Pranksters' Hollow
+6100,Muskpaw Ranch
+6101,A Brewing Storm
+6102,Thunderpaw Refuge
+6103,Thunderpaw Overlook
+6104,Thunderpaw Refuge
+6105,Thunderpaw Overlook
+6106,Anglers Wharf
+6107,Verdant Belt
+6108,Narsong Trench
+6109,Scarlet Monastery
+6110,The Thunderwood
+6111,The Burlap Waystation
+6112,CTF3
+6113,Narsong Spires
+6114,Mogujia
+6117,Fountain of the Everseeing
+6118,The Scrollkeeper's Sanctum
+6119,Terrace of the Twin Dragons
+6120,The Heart of Jade
+6121,Fire Camp Ruqin
+6122,Grove of Falling Blossoms
+6123,SM Cathedral/GY (TEMP)
+6124,Fire Camp Ordo
+6125,Mogu'shan Vaults
+6126,Silvershard Mines
+6127,The Silent Sanctuary
+6128,Shado-Pan Fallback
+6129,Firebough Nook
+6134,Krasarang Wilds
+6135,Nayeli Lagoon
+6136,Temple of Kotmogu
+6137,Frostmane Hovel
+6138,Dread Wastes
+6140,Mogu Ruins Bural Pit (TEMP)
+6141,Shrine of Two Moons
+6142,Shrine of Seven Stars
+6143,Mogu'shan Palace
+6144,Jin Yang Road
+6145,The Summer Fields
+6146,Marista
+6147,Kea Krak
+6148,Unga Ingoo
+6149,Ancestral Rise
+6150,The Ox Gate
+6151,Mortbreath Grotto
+6152,Fire Camp Yongqi
+6153,Peak of Serenity
+6154,Yinying Village
+6155,Cradle of Chi-Ji
+6156,Kota Peak
+6157,Kota Basecamp
+6158,Sandy Shallows
+6159,Sarjun Depths
+6160,Angkhal Pavilion
+6161,Pedestal of Hope
+6162,Dome Balrissa
+6163,Fire Camp Osul
+6164,Lower Sumprushes
+6165,Upper Sumprushes
+6166,Longying Outpost
+6168,Zouchin Strand
+6169,Zouchin Village
+6170,Northshire
+6171,Hatred's Vice
+6172,Tallmug's Camp
+6173,Shado-Pan Monastery
+6174,Temple of the White Tiger
+6175,Seeker's Folly
+6176,Coldridge Valley
+6179,Owen's Wishing Well
+6180,Neverest Pinnacle
+6181,Waterspeaker's Sanctuary
+6182,Mogu'shan Palace
+6184,Seeker's Point
+6185,Mount Neverest
+6186,Neverest Basecamp
+6187,Gao-Ran Battlefront
+6188,Shallowstep Pass
+6189,The Widening Deep
+6190,Dampsoil Burrow
+6191,Dusklight Hollow
+6192,Dusklight Bridge
+6193,Rensai's Watchpost
+6194,Farwatch Overlook
+6195,Sik'vess
+6196,Sik'vess Lair
+6197,Shado-Pan Garrison
+6198,Valley of Emperors
+6199,Tomb of Shadows
+6200,Tomb of Secrets
+6201,Tomb of Conquerors
+6202,Shrine of the Merciless One
+6203,Emperor Rikktik's Rest
+6204,Greenstone Village
+6205,Kri'vess
+6206,Whispercloud Rise
+6207,The Zandalari Vanguard
+6208,Crypt of Forgotten Kings
+6209,The Jade Forest
+6210,Greenstone Village
+6211,Greenstone Masons' Quarter
+6212,Sra'thik Incursion
+6213,Niuzao Temple
+6214,Siege of Niuzao Temple
+6215,Valley Of Power - Scenario
+6216,Valley of Power
+6218,The Dark Hollow
+6219,Arena of Annihilation
+6220,Fields of Niuzao
+6234,Dread Expanse
+6292,Stormwind Keep
+6293,Lake of Stars
+6294,Shado-Li Basin
+6295,Seat of Knowledge
+6296,Tol'viron Arena
+6297,Heart of Fear
+6298,Brawl'gar Arena
+6299,The Amber Womb
+6300,Kypari Zar
+6301,Training Grounds
+6302,Huntsman's Cloister
+6303,The Kennel
+6304,Black Ox Temple
+6306,Terrace of Gurthan
+6307,Shan'ze Dao
+6308,Sri-La Inn
+6309,Unga Ingoo
+6310,Unga Ingoo
+6311,Niuzao Catacombs
+6312,Fire Camp Gai-Cho
+6313,Scenario - Black Ox Temple
+6314,Sra'vess
+6315,Klaxxi'vess
+6316,Ik'vess
+6317,Klik'vess
+6318,Set'vess
+6319,Scenario - Mogu Ruins
+6328,Assault on Zan'vess
+6329,Kor'vess
+6331,Westersea
+6332,The Overlook Inn
+6333,Paur's Pub
+6334,The Sunset Brewgarden
+6335,The Horrid March
+6336,Rikkitun Village
+6337,Gokk'lok Shallows
+6338,The Amber Hibernal
+6339,Rikkilea
+6340,Kun-Lai Pass
+6341,Binan Village
+6342,Ambermarsh
+6343,Kypari Vor
+6345,Nook of Konk
+6346,Morrowchamber
+6347,The Amber Vault
+6348,Deadtalker's Plateau
+6349,The Dancing Serpent
+6354,The Lazy Turnip
+6355,Thunderfoot Inn
+6356,Stone Mug Tavern
+6358,Wilds' Edge Inn
+6359,Binan Brew & Stew
+6360,The Lucky Traveller
+6361,The Two Fisted Brew
+6362,North Wind Tavern
+6363,The Golden Rose
+6364,Tavern in the Mists
+6365,The Chum Bucket
+6366,Marista's Bait & Brew
+6367,Greenstone Inn
+6368,Soggy's Gamble
+6369,Krasarang Cove
+6370,Turtle Beach
+6371,The Southern Isles
+6372,Gate of Endless Spring
+6373,The Secret Aerie
+6375,Tavern in the Mists
+6376,The Ancient Passage
+6377,Hatescale Burrow
+6378,Field of Korja
+6379,Greenstone Dojo
+6380,Path of a Hundred Steps
+6381,The Spring Road
+6382,Mason's Folly
+6383,Winter's Blossom
+6384,Forlorn Cloister
+6385,Crusader's Chapel
+6386,Chapel Gardens
+6387,Rumbling Terrace
+6388,Zhu's Descent
+6389,Howlingwind Cavern
+6390,Gai-Cho Battlefield
+6391,The Briny Muck
+6392,The Underbough
+6393,Serpent's Spine
+6394,Serpent's Spine
+6395,Serpent's Spine
+6396,Gate of the Setting Sun
+6397,The Clarion Bell
+6398,Shrine of Twin Serpents
+6401,Shelf of Mazu
+6402,Wreck of the Mist-Hopper
+6403,Muckscale Grotto
+6404,Muckscale Shallows
+6405,Zouchin Province
+6406,Isle of Reckoning
+6407,Thunder's Call
+6408,Forward Assault Camp
+6409,Rear Staging Area
+6410,Hollowed Out Tree
+6411,Forward Assault Camp
+6412,Rear Staging Area
+6413,Hollowed Out Tree
+6414,Grove of Falling Blossoms
+6415,The Yaungol Advance
+6417,Yan-Zhe River
+6418,Venomous Ledge
+6419,Kun-Lai Summit
+6420,The Feeding Pits
+6421,Kzzok Warcamp
+6422,Sra'thik Swarmdock
+6423,Ikz'ka Ridge
+6424,Sra'vess Rootchamber
+6425,Forgotten Mire
+6426,Brewmoon Festival
+6427,Inkgill Mere
+6428,The Ancient Passage
+6429,Chittering Coast
+6430,Anglers Expedition
+6431,Seaspittle Cove
+6432,Amberglow Hollow
+6433,Lonesome Cove
+6434,The Thundering Run
+6435,Heart of Fear
+6436,Dread Clutch
+6437,Fear Clutch
+6438,Horror Clutch
+6439,Panic Clutch
+6440,Kypari Ik
+6441,Duskroot Fen
+6442,The Clutches of Shek'zeer
+6443,Writhingwood
+6444,Zan'vess
+6445,Whispering Stones
+6446,Amber Quarry
+6447,The Stinging Trail
+6448,Mazu's Overlook
+6449,Temple of Kotmogu
+6450,Shadowglen
+6451,Valley of Trials
+6452,Camp Narache
+6453,Echo Isles
+6454,Deathknell
+6455,Sunstrider Isle
+6456,Ammen Vale
+6457,New Tinkertown
+6458,Kyparite Quarry
+6459,Venomsting Pits
+6460,The Briny Muck
+6461,Whispering Stones
+6462,Path of Conquerors
+6463,Dustwallow Marsh
+6466,Cavern of Endless Echoes
+6467,Mogu'shan Terrace
+6468,The Emperor's Reach
+6469,Howlingwind Trail
+6470,The Gilded Foyer
+6471,The Crimson Assembly Hall
+6472,Forgotten Passageway
+6473,Vault of Kings Past
+6474,Throne of Ancient Conquerors
+6475,Bladelord's Retreat
+6476,Shrine of Nala'shi
+6477,South Seas
+6478,South Seas
+6479,South Seas
+6480,South Seas
+6481,South Seas
+6482,The Summer Terrace
+6483,The Emperor's Step
+6484,The Golden Lantern
+6485,Chamber of Enlightenment
+6486,The Celestial Vault
+6487,Ethereal Corridor
+6488,The Star's Bazaar
+6489,The Imperial Exchange
+6490,Nightingale Lounge
+6492,Chamber of Reflection
+6494,Shrine of Fellowship
+6495,The Hall of Tiles
+6496,Guo-Lai Ritual Chamber
+6497,The Hall of Statues
+6498,Gate of the August Celestials
+6499,The Hall of the Serpent
+6500,Dustwallow Marsh
+6501,The Lady Mehley
+6502,Theramore Isle
+6503,Guo-Lai Vault
+6504,The Emperor's Approach
+6505,The Riverblade Den
+6506,Motherseed Pit
+6507,Isle of Thunder
+6508,Springtail Crag
+6509,Stormstout Brewery Interior
+6510,The Deadmines
+6511,Wailing Caverns
+6512,The Widow's Wail
+6513,Oona Kagu
+6514,Maraudon
+6515,Terrace of Endless Spring
+6516,Paw'don Village
+6517,Twinspire Keep
+6518,Path of Serenity
+6519,Summer's Rest
+6520,Gokk'lok's Grotto
+6521,Honeydew Village
+6522,Honeydew Glade
+6523,Honeydew Farm
+6524,Thunder Hold
+6525,Hellscream's Fist
+6526,Training Grounds
+6527,Terrace of the Tiger
+6528,Serpent's Spine
+6529,Hellscream's Fist
+6530,Serpent's Spine
+6533,The Skyfire
+6534,Twinspire Keep Interior
+6535,Den of Defiance
+6538,Autumnshade Ridge
+6539,Sunblossom Hill
+6540,Spiritsong's Rest
+6541,Applebloom Tavern
+6542,Terrace of Gurthan
+6543,Mistblade Den
+6544,Coldbite Burrow
+6545,Greymane Manor
+6546,Emberstone Mine
+6547,The Deepwild
+6548,Venomous Ledge
+6549,Sra'vess
+6550,Fields of Niuzao
+6551,Townlong Steppes
+6552,Kun-Lai Summit
+6553,Shrine of Seven Stars
+6554,Shrine of Two Moons
+6555,Northern Elwynn Mountains
+6556,Valiant Rest
+6557,Zouchin Province
+6558,The Zandalari Vanguard
+6560,The Golden Terrace
+6561,Kril'Mandar Point
+6562,The Southern Isles
+6563,Krasarang Cove
+6565,Dagger in the Dark
+6566,Domination Point
+6567,Battle on the High Seas
+6572,Snicklefritz Mine
+6573,Defense of the Alehouse
+6574,Krasarang Wilds
+6575,Krasarang Wilds
+6576,Diremoor
+6577,The Thunderspire
+6578,Court of Bones
+6579,Za'Tual
+6580,Ihgaluk Crag
+6581,Zeb'tula
+6582,Shaol'mara
+6583,Violet Rise
+6584,Dawnseeker Promontory
+6585,The Emperor's Gate
+6586,The Beast Pens
+6587,Conqueror's Terrace
+6588,Bloodied Crossing
+6589,Lightning Vein Mine
+6590,The Thunder Forges
+6591,Stormsea Landing
+6592,The Swollen Vault
+6593,The Foot of Lei Shen
+6594,Hall of the Defamed
+6595,The Skyfire
+6596,Lion's Landing
+6597,Sparkrocket Outpost
+6600,Blacksand Spillway
+6601,Bilgewater Beach
+6602,The Boiling Crustacean
+6603,Oregrind's Dig
+6604,Quickchop's Lumber Farm
+6605,Heart of Zan'vess
+6606,Class Quest
+6608,Heyman's Hubris
+6609,Ruins of Ogudei
+6610,The Ancient Passage
+6611,Dalaran
+6612,Horde Landing Site
+6613,Black Temple
+6614,Illidari Training Grounds
+6615,Krasarang Wilds
+6616,A Little Patience
+6617,Garrosh'ar Advance
+6618,Bizmo's Brawlpub
+6619,Ruins of Korune
+6620,Lair of Skiggit
+6621,Temple of the Red Crane
+6622,Throne of Thunder
+6623,Antonidas Memorial
+6624,Circle of Wills
+6625,Krasus' Landing
+6626,Krasus' Landing
+6627,The Silver Enclave
+6628,Dalaran City
+6629,The Violet Citadel
+6630,The Violet Citadel Spire
+6631,Sewer Exit Pipe
+6632,Sewer Exit Pipe
+6633,Dalaran Floating Rocks
+6634,Sunreaver's Sanctuary
+6635,Dalaran Island
+6636,The Violet Hold
+6637,The Underbelly
+6638,The Eventide
+6639,Magus Commerce Exchange
+6640,Vargoth's Retreat
+6641,Violet Citadel Balcony
+6642,Runeweaver Square
+6643,Lion's Landing
+6644,Domination Point
+6645,Crane Wing Refuge
+6646,Fallsong Village
+6647,The Jade Forest
+6648,The Spring Road
+6649,Valley of the Four Winds
+6650,Kun-Lai Summit
+6651,Vale of Eternal Blossoms
+6652,The Veiled Stair
+6653,The Skyfire
+6654,Predator's Perch
+6661,Isle of Giants
+6665,Deepwind Gorge
+6666,Infiltrating the Shipyard
+6667,Troll War Camp Outskirts
+6668,Shipyard
+6669,Warship
+6670,Sea
+6671,Hall of the Exalted
+6672,Bleak Hollow
+6673,To The Skies!
+6674,Dawnseeker Promontory
+6675,Isle of Thunder
+6676,Bay of Echoes
+6677,Isle of Thunder
+6678,Dun Morogh
+6679,Shimmer Ridge
+6680,Battlefront Provisions
+6681,Lightning Vein Mine
+6682,[TEMP] JT
+6683,Misty Shores
+6686,Diremoor
+6687,Court of Bones
+6688,Za'Tual
+6689,Ihgaluk Crag
+6690,Violet Rise
+6691,Dawnseeker Promontory
+6692,The Emperor's Gate
+6693,The Beast Pens
+6694,Conqueror's Terrace
+6695,Bloodied Crossing
+6696,The Thunder Forges
+6697,Stormsea Landing
+6698,The Foot of Lei Shen
+6699,Heyman's Hubris
+6700,Bay of Echoes
+6701,Beeble's Wreck
+6702,Bozzle's Wreck
+6703,Whispering Inlet
+6704,Whispering Inlet
+6705,Outdoor Ruins
+6706,Forgotten Depths
+6707,Thunder King's Citadel
+6708,The Crimson Treader
+6709,Salabria
+6710,The Starchaser
+6711,Spellsails
+6712,The Seabolt
+6713,Rhonin's Beard
+6714,Hall of the Grand Imperion
+6716,Thunder King's Citadel
+6717,Zeb'tula
+6718,Shaol'mara
+6724,Backbreaker Bay
+6725,Greymist Firth
+6726,Wildvine Marsh
+6727,Shadewood Thicket
+6728,Isle of Giants
+6729,Isle of Thunder
+6730,Hidden Cell
+6731,The Secrets of Ragefire
+6732,The Tiger's Peak
+6733,Vale of Eternal Blossoms
+6734,Big Blossom Excavation
+6735,Big Blossom Mine
+6736,Deepwind Gorge
+6737,Deepwind Gorge
+6738,Siege of Orgrimmar
+6739,The Swollen Vault
+6746,Siege of Orgrimmar (OLD DO NOT USE)
+6747,Razor Hill Outskirts
+6748,Sen'jin Village Outskirts
+6749,Vault of Y'Shaarj
+6750,Razor Hill Watchtower
+6751,Big Blossom Excavation
+6752,Big Blossom Mine
+6753,Deepwind Gorge
+6754,Deepwind Gorge
+6757,Timeless Isle
+6760,Stromgarde Keep
+6763,Theramore's Fall
+6770,Blackguard's Forgotten Cove
+6771,Celestial Tournament
+6773,Old Pi'jiu
+6780,Cavern of Lost Spirits
+6798,Scarred Vale
+6799,Bladefist Bay
+6800,Dranosh'ar Landing
+6801,The Darkspear Offensive
+6802,Before the Gates
+6803,Valley of Strength
+6804,The Drag
+6807,Dark Heart of Pandaria
+6812,Greenstone Village
+6813,Lion's Landing
+6814,Blood in the Snow
+6815,Domination Point
+6816,Stormwind
+6821,South Seas
+6822,Ruby Lake
+6823,Ordon Sanctuary
+6824,Croaking Hollow
+6825,Firewalker Ruins
+6830,The Celestial Court
+6831,Mossgreen Lake
+6832,The Timeless Shore
+6833,Tushui Landing
+6834,Huojin Landing
+6835,The Misty Strand
+6836,Three-Breeze Terrace
+6837,Kukuru's Grotto
+6838,Tsavo'ka's Den
+6839,Mysterious Den
+6840,Whispershade Hollow
+6841,Red Stone Run
+6842,Firewalkers' Path
+6843,Shrine of the Black Flame
+6844,The Blazing Way
+6846,Time-Lost Waters
+6852,Proving Grounds
+6862,The Halfhill Market
+6863,The Secret Ingredient
