@@ -57,12 +57,10 @@ case class Packet(
     }
   }
 
-  def readBitSeq(indices: Int*): Array[Byte] = {
-    val ret = new Array[Byte](indices.length)
+  def readBitSeq(mask: Array[Byte], indices: Int*): Unit = {
     indices.foreach(i => {
-      ret(i) = readBit
+      mask(i) = readBit
     })
-    ret
   }
 
   def readXorByte(mask: Byte): Byte = {

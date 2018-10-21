@@ -44,6 +44,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
         val formatted = channelConfig
           .format
+          .replace("%time", Global.getTime)
           .replace("%user", from.getOrElse(""))
           .replace("%message", parsedResolvedTags)
           .replace("%target", wowChannel.getOrElse(""))
@@ -131,6 +132,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         .foreach(_.foreach {
           case (_, channelConfig) =>
             val finalMessage = channelConfig.format
+              .replace("%time", Global.getTime)
               .replace("%user", effectiveName)
               .replace("%message", message)
 

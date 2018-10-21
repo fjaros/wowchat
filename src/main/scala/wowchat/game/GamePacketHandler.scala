@@ -381,6 +381,10 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     msg.byteBuf.skipBytes(1)
     val name = msg.readString
 
+    handleGuildEvent(event, name)
+  }
+
+  protected def handleGuildEvent(event: Byte, name: String): Unit = {
     val guildNotificationConfig = Global.config.guildConfig.notificationConfigs(
       event match {
         case GuildEvents.GE_JOINED => "joined"
@@ -394,6 +398,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
     if (guildNotificationConfig.enabled) {
       val message = guildNotificationConfig
         .format
+        .replace("%time", Global.getTime)
         .replace("%user", name)
 
       Global.discord.sendGuildNotification(message)

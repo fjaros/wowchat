@@ -12,7 +12,12 @@ WoWChat is a Discord integration chat bot for old versions of World of Warcraft.
   * Query other players in the world
 * Runs as a Java program, and therefore works on Windows, Mac, and Linux.
 
-Currently supported expansions are Vanilla, The Burning Crusade, and Wrath of the Lich King.
+Currently supported versions are:
+  * Vanilla
+  * The Burning Crusade
+  * Wrath of the Lich King
+  * Cataclysm (4.3.4 build 15595)
+  * Mists of Pandaria (5.4.8 build 18414)
 
 ## How it works
 The bot uses Discord's API to login to your Discord server. It then uses supplied information
@@ -63,9 +68,9 @@ Even though this bot does not do anything malicious, some servers may not like a
      * **direction**: How do you want to relay each channel, put either
      **wow_to_discord**, **discord_to_wow**, or **both**.
      * **wow** section:
-       * In type put one of, **Say**, **Guild**, **Officer**, **Emote**, **Yell**, **System**, **Channel**. This is the type of chat the Bot will read for this section.
+       * In type put one of, **Say**, **Guild**, **Officer**, **Emote**, **Yell**, **System**, **Whisper**, **Channel**. This is the type of chat the Bot will read for this section.
          * If you put **type=Channel**, you also must provide a **channel=name of channel** value.
-       * In format put how you want to display the message, supported replacable values are **%user**, **%message**, and **%channel** if above type is **Channel**.
+       * In format put how you want to display the message, supported replacable values are **%time**, **%user**, **%message**, and **%channel** if above type is **Channel**.
      * **discord** section:
        * **channel**: The discord channel where to display the message.
        * **format**: Same options as in **wow** section above.
@@ -85,5 +90,5 @@ OR to compile yourself:
 1. WoW Chat is written in Scala and compiles to a Java executable using [maven](https://maven.apache.org).
 2. It uses Java JDK 1.8 and Scala 2.12.6.
 3. Run `mvn clean package` which will produce a file in the target folder called `wowchat.zip`
-4. unzip `wowchat-1.1.0.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
+4. unzip `wowchat-1.2.0.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
    * If no config file is supplied, the bot will try to use `wowchat.conf`

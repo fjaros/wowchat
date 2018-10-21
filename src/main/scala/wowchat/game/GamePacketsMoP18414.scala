@@ -23,7 +23,7 @@ trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
   override val SMSG_WHO = 0x161B
   override val CMSG_GUILD_ROSTER = 0x1459
   override val SMSG_GUILD_ROSTER = 0x0BE0
-  override val SMSG_GUILD_EVENT = 0x0705 // needs to be implemented in separate packets. obsolete in mop
+  override val SMSG_GUILD_EVENT = 0x0000 // needs to be implemented in separate packets. obsolete in mop
   override val SMSG_CHATMESSAGE = 0x1A9A
   override val CMSG_JOIN_CHANNEL = 0x148E
   override val SMSG_CHANNEL_NOTIFY = 0x0F06
@@ -40,4 +40,8 @@ trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
 
   override val SMSG_TIME_SYNC_REQ = 0x1A8F
   override val CMSG_TIME_SYNC_RESP = 0x01DB
+
+  val SMSG_GUILD_INVITE_ACCEPT = 0x0B69
+  val SMSG_GUILD_MEMBER_LOGGED = 0x0B70
+  val SMSG_GUILD_LEAVE = 0x0BF8
 }

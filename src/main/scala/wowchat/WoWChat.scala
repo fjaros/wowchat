@@ -10,7 +10,7 @@ import scala.io.Source
 
 object WoWChat extends StrictLogging {
 
-  private val RELEASE = "v1.1.0"
+  private val RELEASE = "v1.2.0"
 
   def main(args: Array[String]): Unit = {
     val confFile = if (args.nonEmpty) {
@@ -21,7 +21,7 @@ object WoWChat extends StrictLogging {
     }
     Global.config = WowChatConfig(confFile)
 
-//    checkForNewVersion
+    checkForNewVersion
 
     val gameEventCallback = new CommonConnectionCallback {
 
@@ -36,7 +36,6 @@ object WoWChat extends StrictLogging {
 
       override def error: Unit = sys.exit(1)
     })
-//    realmConnector.connect
 
     Global.discord = new Discord(new CommonConnectionCallback {
       override def connected: Unit = realmConnector.connect

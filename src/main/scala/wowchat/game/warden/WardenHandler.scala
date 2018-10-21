@@ -26,11 +26,11 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
   def handle(msg: Packet): Option[ByteBuf] = {
     val length = getEncryptedMessageLength(msg)
     val decrypted = serverCrypt.crypt(msg.byteBuf.readBytes(length))
-    logger.debug(s"WARDEN PACKET ($length): ${ByteUtils.toHexString(decrypted, true, false)}")
+//    logger.debug(s"WARDEN PACKET ($length): ${ByteUtils.toHexString(decrypted, true, false)}")
 
     val id = decrypted.readByte
 
-    id match {
+    val ret = id match {
       case WardenPackets.WARDEN_SMSG_MODULE_USE => handle_WARDEN_SMSG_MODULE_USE(decrypted)
       case WardenPackets.WARDEN_SMSG_MODULE_CACHE => handle_WARDEN_SMSG_MODULE_CACHE(decrypted)
       case WardenPackets.WARDEN_SMSG_CHEAT_CHECKS_REQUEST => handle_WARDEN_SMSG_CHEAT_CHECKS_REQUEST(decrypted)
@@ -39,6 +39,8 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
       case WardenPackets.WARDEN_SMSG_HASH_REQUEST => handle_WARDEN_SMSG_HASH_REQUEST(decrypted)
       case _ => None
     }
+    decrypted.release
+    ret
   }
 
   protected def getEncryptedMessageLength(msg: Packet): Int = {

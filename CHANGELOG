@@ -1,3 +1,10 @@
+2018-10-21 - v1.2.0
++ Support for Cataclysm (4.3.4 build 15595) and Mists of Pandaria (5.4.8 build 18414)
++ Added time parameter to message formats.
++ Added support for relaying whispers.
+* Fixed handling of ?who <name> command to more accurately search for specified names.
+* Fixed bot still showing Watching guild members when disconnected from WoW server.
+
 2018-10-10 - v1.1.0
 * Fixed bug when connecting to a realm with many game servers (ex: Project Ascension)
 + Added configuration support for guild notifications. Check new wowchat.conf for example.
