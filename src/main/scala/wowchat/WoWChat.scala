@@ -28,6 +28,8 @@ object WoWChat extends StrictLogging {
       override def reconnected: Unit = Global.discord.sendGuildNotification("Reconnected to WoW!")
 
       override def disconnected: Unit = Global.discord.sendGuildNotification("Disconnected from WoW!")
+
+      override def error: Unit = sys.exit(1)
     }
 
     val realmConnector = new RealmConnector(new RealmConnectionCallback {

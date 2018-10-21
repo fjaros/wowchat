@@ -43,8 +43,6 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   protected var languageId: Byte = _
   protected var inWorld: Boolean = false
 
-  var isShutdown = false
-
   var motd: String = ""
   var ginfo: String = ""
 
@@ -267,9 +265,8 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       ctx.get.writeAndFlush(Packet(CMSG_CHAR_ENUM))
     } else {
       logger.error(AuthResponseCodes.getMessage(code))
-      isShutdown = true
-      pingExecutor.shutdown()
       ctx.foreach(_.close)
+      gameEventCallback.error
     }
   }
 
@@ -385,6 +382,11 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   }
 
   protected def handleGuildEvent(event: Byte, name: String): Unit = {
+    // ignore events from self
+    if (Global.config.wow.character.equalsIgnoreCase(name)) {
+      return
+    }
+
     val guildNotificationConfig = Global.config.guildConfig.notificationConfigs(
       event match {
         case GuildEvents.GE_JOINED => "joined"

@@ -71,6 +71,8 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
           return
         }
 
+        changeStatus("Not online")
+
         // getNext seq of needed channels from config
         val configChannels = Global.config.channels.map(channelConfig => {
           channelConfig.discord.channel.toLowerCase -> channelConfig

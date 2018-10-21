@@ -46,6 +46,12 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
       case SMSG_GUILD_INVITE_ACCEPT => handle_SMSG_GUILD_INVITE_ACCEPT(msg)
       case SMSG_GUILD_MEMBER_LOGGED => handle_SMSG_GUILD_MEMBER_LOGGED(msg)
       case SMSG_GUILD_LEAVE => handle_SMSG_GUILD_LEAVE(msg)
+      case 0x1568 => // seems to be opcode for compressed data and is sent if account has >= 4 characters for SMSG_CHAR_ENUM
+        if (!inWorld) {
+          logger.error("You are trying to use this bot on an account with 4 or more characters. This is NOT supported!")
+          ctx.foreach(_.close)
+          gameEventCallback.error
+        }
       case _ => super.channelParse(msg)
     }
   }
@@ -478,7 +484,7 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
     msg.readBit // unkn
     msg.readBit // send fake time?
     val hasChatTag = msg.readBit == 0
-    msg.readBit // realm id?
+    val hasRealmId = msg.readBit == 0
 
     val groupGuid = new Array[Byte](8)
     msg.readBitSeq(groupGuid, 0, 1, 5, 4, 3, 2, 6, 7)
@@ -582,6 +588,11 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
     // ignore addon messages
     if (language == -1) {
       return None
+    }
+
+    // i am not sure about this
+    if (hasRealmId) {
+      msg.byteBuf.skipBytes(4)
     }
 
     val txt = if (hasMessage) {

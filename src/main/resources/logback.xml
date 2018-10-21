@@ -9,10 +9,9 @@
     <logger name="net.dv8tion.jda.core.requests.Requester" level="INFO" />
     <logger name="wowchat.game.GamePacketDecoder" level="INFO" />
     <logger name="wowchat.game.GamePacketDecoderMoP" level="INFO" />
-    <logger name="wowchat.game.GamePacketEncoderMoP" level="DEBUG" />
+    <logger name="wowchat.game.GamePacketEncoderMoP" level="INFO" />
 
-
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>
