@@ -13,7 +13,9 @@ object MessageResolver {
     WowChatConfig.getExpansion match {
       case WowExpansion.Vanilla => new MessageResolver(jda)
       case WowExpansion.TBC => new MessageResolverTBC(jda)
-      case _ => new MessageResolverWotLK(jda)
+      case WowExpansion.WotLK => new MessageResolverWotLK(jda)
+      case WowExpansion.Cataclysm => new MessageResolverCataclysm(jda)
+      case WowExpansion.MoP => new MessageResolverMoP(jda)
     }
   }
 }
@@ -128,4 +130,14 @@ class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
   )
 
   override protected val linkSite = "http://wotlk-twinhead.twinstar.cz"
+}
+
+class MessageResolverCataclysm(jda: JDA) extends MessageResolverWotLK(jda) {
+
+  override protected val linkSite = "https://cata-twinhead.twinstar.cz/"
+}
+
+class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
+
+  override protected val linkSite = "http://mop-shoot.tauri.hu"
 }

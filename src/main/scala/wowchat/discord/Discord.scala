@@ -133,10 +133,14 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         .get(event.getMessage.getChannel.getName.toLowerCase)
         .foreach(_.foreach {
           case (_, channelConfig) =>
-            val finalMessage = channelConfig.format
-              .replace("%time", Global.getTime)
-              .replace("%user", effectiveName)
-              .replace("%message", message)
+            val finalMessage = if (message.startsWith(".")) {
+              message
+            } else {
+              channelConfig.format
+                .replace("%time", Global.getTime)
+                .replace("%user", effectiveName)
+                .replace("%message", message)
+            }
 
             Global.game.foreach(handler => {
               handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)

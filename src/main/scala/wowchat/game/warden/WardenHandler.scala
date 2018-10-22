@@ -25,7 +25,7 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
 
   def handle(msg: Packet): Option[ByteBuf] = {
     val length = getEncryptedMessageLength(msg)
-    val decrypted = serverCrypt.crypt(msg.byteBuf.readBytes(length))
+    val decrypted = serverCrypt.crypt(msg.byteBuf, length)
 //    logger.debug(s"WARDEN PACKET ($length): ${ByteUtils.toHexString(decrypted, true, false)}")
 
     val id = decrypted.readByte
@@ -119,7 +119,7 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     ret.writeByte(WardenPackets.WARDEN_CMSG_CHEAT_CHECKS_RESULT)
 
     formCheatChecksRequestDigest(ret, strArray)
-    Some(formResponse(clientCrypt.crypt(ret)))
+    Some(formResponse(clientCrypt.crypt(ret, ret.readableBytes)))
   }
 
   private def handle_WARDEN_SMSG_HASH_REQUEST(decrypted: ByteBuf): Option[ByteBuf] = {
@@ -154,7 +154,7 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     ret.writeByte(WardenPackets.WARDEN_CMSG_HASH_RESULT)
     ret.writeBytes(md.digest)
 
-    val encrypted = clientCrypt.crypt(ret)
+    val encrypted = clientCrypt.crypt(ret, ret.readableBytes)
 
     // change crypto keys based on module for next message
     clientCrypt = new RC4(clientKeyBytes)

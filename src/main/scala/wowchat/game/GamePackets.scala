@@ -105,10 +105,14 @@ trait GamePackets {
     val RACE_BLOODELF = 0x0A
     val RACE_DRAENEI = 0x0B
     val RACE_WORGEN = 0x16
+    val RACE_PANDAREN_NEUTRAL = 0x18
+    val RACE_PANDAREN_ALLIANCE = 0x19
+    val RACE_PANDAREN_HORDE = 0x1A
 
     def getLanguage(race: Byte): Byte = {
       race match {
-        case RACE_ORC | RACE_UNDEAD | RACE_TAUREN | RACE_TROLL | RACE_BLOODELF | RACE_GOBLIN => 0x01 // orcish
+        case RACE_ORC | RACE_UNDEAD | RACE_TAUREN | RACE_TROLL | RACE_BLOODELF | RACE_GOBLIN | RACE_PANDAREN_HORDE => 0x01 // orcish
+        case RACE_PANDAREN_NEUTRAL => 0x2A.toByte // pandaren neutral?
         case _ => 0x07 // common
       }
     }
@@ -127,6 +131,9 @@ trait GamePackets {
         case RACE_BLOODELF => "Blood Elf"
         case RACE_DRAENEI => "Draenei"
         case RACE_WORGEN => "Worgen"
+        case RACE_PANDAREN_NEUTRAL => "Pandaren"
+        case RACE_PANDAREN_ALLIANCE => "Alliance Pandaren"
+        case RACE_PANDAREN_HORDE => "Horde Pandaren"
         case _ => "Unknown"
       }
     }
@@ -138,9 +145,11 @@ trait GamePackets {
     val CLASS_HUNTER = 0x03
     val CLASS_ROGUE = 0x04
     val CLASS_PRIEST = 0x05
+    val CLASS_DEATH_KNIGHT = 0x06
     val CLASS_SHAMAN = 0x07
     val CLASS_MAGE = 0x08
     val CLASS_WARLOCK = 0x09
+    val CLASS_MONK = 0x0A
     val CLASS_DRUID = 0x0B
 
     def valueOf(charClass: Byte): String = {
@@ -149,10 +158,12 @@ trait GamePackets {
         case CLASS_PALADIN => "Paladin"
         case CLASS_HUNTER => "Hunter"
         case CLASS_ROGUE => "Rogue"
+        case CLASS_DEATH_KNIGHT => "Death Knight"
         case CLASS_PRIEST => "Priest"
         case CLASS_SHAMAN => "Shaman"
         case CLASS_MAGE => "Mage"
         case CLASS_WARLOCK => "Warlock"
+        case CLASS_MONK => "Monk"
         case CLASS_DRUID => "Druid"
         case _ => "Unknown"
       }
