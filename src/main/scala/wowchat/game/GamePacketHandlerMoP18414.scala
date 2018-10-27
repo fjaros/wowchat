@@ -10,8 +10,8 @@ import wowchat.game.warden.{WardenHandler, WardenHandlerMoP18414}
 
 import scala.util.Random
 
-class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandlerCataclysm15595(realmId, sessionKey, gameEventCallback) with GamePacketsMoP18414 {
+class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
+  extends GamePacketHandlerCataclysm15595(realmId, realmName, sessionKey, gameEventCallback) with GamePacketsMoP18414 {
 
   override protected val addonInfo: Array[Byte] = Array(
     0x30, 0x05, 0x00, 0x00, 0x78, 0x9C, 0x75, 0x93, 0x61, 0x6E, 0x83, 0x30, 0x0C, 0x85, 0xD9, 0x3D,
@@ -46,12 +46,6 @@ class GamePacketHandlerMoP18414(realmId: Int, sessionKey: Array[Byte], gameEvent
       case SMSG_GUILD_INVITE_ACCEPT => handle_SMSG_GUILD_INVITE_ACCEPT(msg)
       case SMSG_GUILD_MEMBER_LOGGED => handle_SMSG_GUILD_MEMBER_LOGGED(msg)
       case SMSG_GUILD_LEAVE => handle_SMSG_GUILD_LEAVE(msg)
-      case 0x1568 => // seems to be opcode for compressed data and is sent if account has >= 4 characters for SMSG_CHAR_ENUM
-        if (!inWorld) {
-          logger.error("You are trying to use this bot on an account with 4 or more characters. This is NOT supported!")
-          ctx.foreach(_.close)
-          gameEventCallback.error
-        }
       case _ => super.channelParse(msg)
     }
   }

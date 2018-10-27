@@ -8,8 +8,8 @@ import wowchat.common._
 
 import scala.util.Random
 
-class GamePacketHandlerCataclysm15595(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandlerWotLK(realmId, sessionKey, gameEventCallback) with GamePacketsCataclysm15595 {
+class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
+  extends GamePacketHandlerWotLK(realmId, realmName, sessionKey, gameEventCallback) with GamePacketsCataclysm15595 {
 
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {

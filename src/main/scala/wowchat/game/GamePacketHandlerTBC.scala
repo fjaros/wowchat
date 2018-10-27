@@ -1,12 +1,13 @@
 package wowchat.game
 
+import java.lang.management.ManagementFactory
 import java.nio.charset.Charset
 
-import io.netty.buffer.ByteBuf
+import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import wowchat.common.{CommonConnectionCallback, Global, Packet}
 
-class GamePacketHandlerTBC(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandler(realmId, sessionKey, gameEventCallback) {
+class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
+  extends GamePacketHandler(realmId, realmName, sessionKey, gameEventCallback) {
 
   override protected val addonInfo: Array[Byte] = Array(
     0xD0, 0x01, 0x00, 0x00, 0x78, 0x9C, 0x75, 0xCF, 0x3B, 0x0E, 0xC2, 0x30, 0x0C, 0x80, 0xE1, 0x72,
@@ -20,6 +21,13 @@ class GamePacketHandlerTBC(realmId: Int, sessionKey: Array[Byte], gameEventCallb
     0x72, 0x06, 0x8A, 0x26, 0x0C, 0x90, 0x90, 0xED, 0x7B, 0x83, 0x40, 0xC4, 0x7E, 0xA6, 0x94, 0xB6,
     0x98, 0x18, 0xC5, 0x36, 0xCA, 0xE8, 0x81, 0x61, 0x42, 0xF9, 0xEB, 0x07, 0x63, 0xAB, 0x8B, 0xEC
   ).map(_.toByte)
+
+  override protected def channelParse(msg: Packet): Unit = {
+    msg.id match {
+      case SMSG_TIME_SYNC_REQ => handle_SMSG_TIME_SYNC_REQ(msg)
+      case _ => super.channelParse(msg)
+    }
+  }
 
   override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
     val tp = msg.byteBuf.readByte
@@ -93,5 +101,18 @@ class GamePacketHandlerTBC(realmId: Int, sessionKey: Array[Byte], gameEventCallb
     out.writeByte(0)
     out.writeByte(1)
     super.writeJoinChannel(out, channel)
+  }
+
+  private def handle_SMSG_TIME_SYNC_REQ(msg: Packet): Unit = {
+    // jvm uptime should work for this?
+    val jvmUptime = ManagementFactory.getRuntimeMXBean.getUptime
+
+    val counter = msg.byteBuf.readIntLE
+
+    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
+    byteBuf.writeIntLE(counter)
+    byteBuf.writeIntLE(jvmUptime.toInt)
+
+    ctx.get.writeAndFlush(Packet(CMSG_TIME_SYNC_RESP, byteBuf))
   }
 }

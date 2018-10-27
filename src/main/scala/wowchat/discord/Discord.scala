@@ -6,6 +6,7 @@ import com.typesafe.scalalogging.StrictLogging
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.core.JDA.Status
 import net.dv8tion.jda.core.entities.Game
+import net.dv8tion.jda.core.entities.Game.GameType
 import net.dv8tion.jda.core.events.StatusChangeEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
@@ -24,8 +25,16 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
   private val messageResolver = MessageResolver(jda)
 
-  def changeStatus(message: String): Unit = {
-    jda.getPresence.setGame(Game.watching(message))
+  def changeStatus(gameType: GameType, message: String): Unit = {
+    jda.getPresence.setGame(Game.of(gameType, message))
+  }
+
+  def changeGuildStatus(message: String): Unit = {
+    changeStatus(GameType.WATCHING, message)
+  }
+
+  def changeRealmStatus(message: String): Unit = {
+    changeStatus(GameType.DEFAULT, message)
   }
 
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String]): Unit = {
@@ -70,8 +79,6 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
           discordConnectionCallback.reconnected
           return
         }
-
-        changeStatus("Not online")
 
         // getNext seq of needed channels from config
         val configChannels = Global.config.channels.map(channelConfig => {

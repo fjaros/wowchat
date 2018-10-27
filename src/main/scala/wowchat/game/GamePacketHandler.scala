@@ -24,7 +24,7 @@ case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
 case class CharEnumMessage(guid: Long, race: Byte)
 
-class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
+class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends ChannelInboundHandlerAdapter with GameCommandHandler with GamePackets with StrictLogging {
 
   protected val addonInfo: Array[Byte] = Array(
@@ -55,6 +55,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
   override def channelInactive(ctx: ChannelHandlerContext): Unit = {
     pingExecutor.shutdown()
+    gameEventCallback.disconnected
     super.channelInactive(ctx)
   }
 
@@ -93,7 +94,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   }
 
   def updateGuildiesOnline: Unit = {
-    Global.discord.changeStatus(getGuildiesOnlineMessage(true))
+    Global.discord.changeGuildStatus(getGuildiesOnlineMessage(true))
   }
 
   def updateGuildRoster: Unit = {
@@ -215,9 +216,6 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
       case SMSG_WHO => handle_SMSG_WHO(msg)
 
       case SMSG_WARDEN_DATA => handle_SMSG_WARDEN_DATA(msg)
-
-      // tbc/wotlk only
-      case SMSG_TIME_SYNC_REQ => handle_SMSG_TIME_SYNC_REQ(msg)
 
       case unhandled =>
     }
@@ -352,6 +350,8 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
     logger.info("Successfully joined the world!")
     inWorld = true
+    Global.discord.changeRealmStatus(realmName)
+    gameEventCallback.connected
     runPingExecutor
     updateGuildRoster
 
@@ -567,19 +567,5 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
 
   protected def initializeWardenHandler: WardenHandler = {
     new WardenHandler(sessionKey)
-  }
-
-  // tbc & wotlk only
-  private def handle_SMSG_TIME_SYNC_REQ(msg: Packet): Unit = {
-    // jvm uptime should work for this?
-    val jvmUptime = ManagementFactory.getRuntimeMXBean.getUptime
-
-    val counter = msg.byteBuf.readIntLE
-
-    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
-    byteBuf.writeIntLE(counter)
-    byteBuf.writeIntLE(jvmUptime.toInt)
-
-    ctx.get.writeAndFlush(Packet(CMSG_TIME_SYNC_RESP, byteBuf))
   }
 }
