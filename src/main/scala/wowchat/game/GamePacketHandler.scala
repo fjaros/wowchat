@@ -444,7 +444,7 @@ class GamePacketHandler(realmId: Int, sessionKey: Array[Byte], gameEventCallback
   }
 
   private def handle_SMSG_CHATMESSAGE(msg: Packet): Unit = {
-    logger.error(s"RECV CHAT: ${ByteUtils.toHexString(msg.byteBuf, true, true)}")
+    logger.debug(s"RECV CHAT: ${ByteUtils.toHexString(msg.byteBuf, true, true)}")
 
     parseChatMessage(msg).foreach(chatMessage => {
       if (chatMessage.guid == 0) {

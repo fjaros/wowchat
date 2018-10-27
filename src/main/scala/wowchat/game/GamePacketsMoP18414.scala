@@ -44,4 +44,6 @@ trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
   val SMSG_GUILD_INVITE_ACCEPT = 0x0B69
   val SMSG_GUILD_MEMBER_LOGGED = 0x0B70
   val SMSG_GUILD_LEAVE = 0x0BF8
+
+  val SMSG_COMPRESSED_DATA = 0x1568
 }

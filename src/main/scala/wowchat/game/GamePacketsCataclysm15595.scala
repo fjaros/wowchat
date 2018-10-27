@@ -2,22 +2,6 @@ package wowchat.game
 
 trait GamePacketsCataclysm15595 extends GamePackets {
 
-  // this might just use the same bit obfuscating as some of the other variables like player guid
-  // but mangos hardcodes the values.
-  val WOW_CONNECTION = 0x4F57 // same hack as in mangos :D
-
-  val CMSG_MESSAGECHAT_AFK = 0x0D44
-  val CMSG_MESSAGECHAT_BATTLEGROUND = 0x2156
-  val CMSG_MESSAGECHAT_CHANNEL = 0x1D44
-  val CMSG_MESSAGECHAT_DND = 0x2946
-  val CMSG_MESSAGECHAT_EMOTE = 0x1156
-  val CMSG_MESSAGECHAT_GUILD = 0x3956
-  val CMSG_MESSAGECHAT_OFFICER = 0x1946
-  val CMSG_MESSAGECHAT_PARTY = 0x1D46
-  val CMSG_MESSAGECHAT_SAY = 0x1154
-  val CMSG_MESSAGECHAT_WHISPER = 0x0D56
-  val CMSG_MESSAGECHAT_YELL = 0x3544
-
   override val CMSG_CHAR_ENUM = 0x0502
   override val SMSG_CHAR_ENUM = 0x10B0
   override val CMSG_PLAYER_LOGIN = 0x05B1
@@ -45,4 +29,20 @@ trait GamePacketsCataclysm15595 extends GamePackets {
 
   override val SMSG_TIME_SYNC_REQ = 0x3CA4
   override val CMSG_TIME_SYNC_RESP = 0x3B0C
+
+  val WOW_CONNECTION = 0x4F57 // same hack as in mangos :D
+
+  val CMSG_MESSAGECHAT_AFK = 0x0D44
+  val CMSG_MESSAGECHAT_BATTLEGROUND = 0x2156
+  val CMSG_MESSAGECHAT_CHANNEL = 0x1D44
+  val CMSG_MESSAGECHAT_DND = 0x2946
+  val CMSG_MESSAGECHAT_EMOTE = 0x1156
+  val CMSG_MESSAGECHAT_GUILD = 0x3956
+  val CMSG_MESSAGECHAT_OFFICER = 0x1946
+  val CMSG_MESSAGECHAT_PARTY = 0x1D46
+  val CMSG_MESSAGECHAT_SAY = 0x1154
+  val CMSG_MESSAGECHAT_WHISPER = 0x0D56
+  val CMSG_MESSAGECHAT_YELL = 0x3544
+
+  final val COMPRESSED_DATA_MASK = 0x8000
 }

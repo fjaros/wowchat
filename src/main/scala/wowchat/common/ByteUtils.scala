@@ -1,6 +1,6 @@
 package wowchat.common
 
-import io.netty.buffer.ByteBuf
+import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 
 object ByteUtils {
 
@@ -83,6 +83,14 @@ object ByteUtils {
         case (result, (byte, i)) =>
           result | ((byte & 0xFFL) << (i * 8))
       }
+  }
+
+  def toHexString(bytes: Array[Byte]): String = {
+    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(bytes.length, bytes.length)
+    byteBuf.writeBytes(bytes)
+    val ret = toHexString(byteBuf, true, false)
+    byteBuf.release
+    ret
   }
 
   def toHexString(byteBuf: ByteBuf, addSpaces: Boolean = false, resolvePlainText: Boolean = true): String = {

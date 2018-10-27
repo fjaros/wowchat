@@ -87,6 +87,7 @@ class GameConnector(host: String,
 
           val decoder = WowChatConfig.getExpansion match {
             case WowExpansion.MoP => new GamePacketDecoderMoP
+            case WowExpansion.Cataclysm => new GamePacketDecoderCataclysm
             case _ => new GamePacketDecoder
           }
 
