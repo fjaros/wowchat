@@ -175,27 +175,6 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     byteBuf.writeIntLE(0) // strings count
   }
 
-  override def handleResets: Option[String] = {
-    val resetMap = Seq(
-      "Zul'Gurub / Ruins of Ahn'Qiraj" -> (1538301600, 3),
-      "Onyxia's Lair" -> (1538215200, 5),
-      "Molten Core / Blackwing Lair / Ahn'Qiraj Temple / Naxxramas" -> (1538560800, 7)
-    ).map {
-      case (name, (resettime, days)) =>
-        val now = LocalDateTime.now(ZoneId.of("PST8PDT"))
-        var date = LocalDateTime.ofEpochSecond(resettime, 0, ZoneOffset.ofHours(-7))
-        while (now.isAfter(date)) {
-          date = date.plusDays(days)
-        }
-        val relative = Duration.between(now, date).getSeconds
-        val formatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd HH:mm a")
-        name + " - " + ZonedDateTime.of(date, ZoneId.of("PST8PDT")).format(formatter) + " PST (" +
-          f"in ${relative / 86400}%dd ${(relative % 86400) / 3600}%02dh ${(relative % 3600) / 60}%02dm" + ")"
-    }
-
-    Some("Raid reset times:\n" + resetMap.mkString("\n"))
-  }
-
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
     this.ctx = Some(ctx)
     Global.game = Some(this)

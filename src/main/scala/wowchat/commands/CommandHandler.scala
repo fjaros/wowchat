@@ -35,9 +35,6 @@ object CommandHandler extends StrictLogging {
 
       Try {
         possibleCommand match {
-//          case "reset" | "resets" =>
-            // the construct only
-//            game.handleResets
           case "who" | "online" =>
             val whoSucceeded = game.handleWho(arguments)
             if (arguments.isDefined) {
