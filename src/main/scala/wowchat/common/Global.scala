@@ -1,5 +1,8 @@
 package wowchat.common
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 import wowchat.discord.Discord
 import wowchat.game.GameCommandHandler
 import io.netty.channel.nio.NioEventLoopGroup
@@ -19,4 +22,8 @@ object Global {
     with mutable.MultiMap[String, (TextChannel, WowChannelConfig)]
   val wowToDiscord = new mutable.HashMap[(Byte, Option[String]), mutable.Set[(TextChannel, DiscordChannelConfig)]]
     with mutable.MultiMap[(Byte, Option[String]), (TextChannel, DiscordChannelConfig)]
+
+  def getTime: String = {
+    LocalDateTime.now.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+  }
 }

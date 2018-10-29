@@ -14,6 +14,8 @@ object MessageResolver {
       case WowExpansion.Vanilla => new MessageResolver(jda)
       case WowExpansion.TBC => new MessageResolverTBC(jda)
       case WowExpansion.WotLK => new MessageResolverWotLK(jda)
+      case WowExpansion.Cataclysm => new MessageResolverCataclysm(jda)
+      case WowExpansion.MoP => new MessageResolverMoP(jda)
     }
   }
 }
@@ -35,6 +37,14 @@ class MessageResolver(jda: JDA) {
           s"[${m.group(2)}] ($linkSite?$classicDbKey=${m.group(1)}) "
         })
     }
+  }
+
+  def stripColorCoding(message: String): String = {
+    val hex = "\\|c[0-9a-fA-F]{8}"
+    val pass1 = s"$hex(.*?)\\|r".r
+    val pass2 = hex.r
+
+    pass2.replaceAllIn(pass1.replaceAllIn(message, _.group(1)), "")
   }
 
   def resolveTags(discordChannel: TextChannel, message: String, onError: String => Unit): String = {
@@ -128,4 +138,14 @@ class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
   )
 
   override protected val linkSite = "http://wotlk-twinhead.twinstar.cz"
+}
+
+class MessageResolverCataclysm(jda: JDA) extends MessageResolverWotLK(jda) {
+
+  override protected val linkSite = "https://cata-twinhead.twinstar.cz/"
+}
+
+class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
+
+  override protected val linkSite = "http://mop-shoot.tauri.hu"
 }

@@ -8,9 +8,9 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 
-class GamePacketDecoder extends ByteToMessageDecoder with StrictLogging {
+class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with StrictLogging {
 
-  private val HEADER_LENGTH = 4
+  protected val HEADER_LENGTH = 4
 
   private var size = 0
   private var id = 0
@@ -20,19 +20,17 @@ class GamePacketDecoder extends ByteToMessageDecoder with StrictLogging {
       return
     }
 
-    val crypt = ctx.channel.attr(GamePackets.CRYPT).get
+    val crypt = ctx.channel.attr(CRYPT).get
 
     if (size == 0 && id == 0) {
-      if (crypt.isInit) {
-        val header = new Array[Byte](HEADER_LENGTH)
-        in.readBytes(header)
-        val decrypted = crypt.decrypt(header)
-        size = (decrypted(0) << 8 | decrypted(1) & 0xFF) - 2
-        id = decrypted(3) << 8 | decrypted(2) & 0xFF
+      // decrypt if necessary
+      val tuple = if (crypt.isInit) {
+        parseGameHeaderEncrypted(in, crypt)
       } else {
-        size = in.readShort() - 2
-        id = in.readShortLE()
+        parseGameHeader(in)
       }
+      id = tuple._1
+      size = tuple._2
     }
 
     if (size > in.readableBytes) {
@@ -40,18 +38,36 @@ class GamePacketDecoder extends ByteToMessageDecoder with StrictLogging {
     }
 
     val byteBuf = in.readBytes(size)
-    val packet = Packet(id, byteBuf)
 
-    logger.debug(f"RECV PACKET: $id%04X - ${ByteUtils.toHexString(byteBuf, true, false)}")
+    // decompress if necessary
+    val (newId, decompressed) = decompress(id, byteBuf)
+
+    val packet = Packet(newId, decompressed)
+
+    logger.debug(f"RECV PACKET: $newId%04X - ${ByteUtils.toHexString(decompressed, true, false)}")
 
     out.add(packet)
     size = 0
     id = 0
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-    println("EXCEPTION CAUGHT: " + cause.getMessage)
+  def parseGameHeader(in: ByteBuf): (Int, Int) = {
+    val size = in.readShort - 2
+    val id = in.readShortLE
+    (id, size)
+  }
 
-    super.exceptionCaught(ctx, cause)
+  def parseGameHeaderEncrypted(in: ByteBuf, crypt: GameHeaderCrypt): (Int, Int) = {
+    val header = new Array[Byte](HEADER_LENGTH)
+    in.readBytes(header)
+    val decrypted = crypt.decrypt(header)
+    val size = ((decrypted(0) & 0xFF) << 8 | decrypted(1) & 0xFF) - 2
+    val id = (decrypted(3) & 0xFF) << 8 | decrypted(2) & 0xFF
+    (id, size)
+  }
+
+  // vanilla has no compression. starts in cata/mop
+  def decompress(id: Int, in: ByteBuf): (Int, ByteBuf) = {
+    (id, in)
   }
 }

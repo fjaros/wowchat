@@ -1,28 +1,27 @@
 package wowchat.game
 
-import wowchat.common.{ByteUtils, Packet}
-import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
-import io.netty.handler.codec.MessageToByteEncoder
+import wowchat.common.{ByteUtils, Packet}
 
 import scala.collection.mutable.ArrayBuffer
 
-class GamePacketEncoder extends MessageToByteEncoder[Packet] with GamePackets with StrictLogging {
+class GamePacketEncoderMoP extends GamePacketEncoderCataclysm with GamePacketsMoP18414 {
 
   override def encode(ctx: ChannelHandlerContext, msg: Packet, out: ByteBuf): Unit = {
     val crypt = ctx.channel.attr(CRYPT).get
     val unencrypted = isUnencryptedPacket(msg.id)
 
-    val headerSize = if (unencrypted) 4 else 6
+    val headerSize = 4
+    val size = msg.byteBuf.writerIndex
 
     val array = new ArrayBuffer[Byte](headerSize)
-    array ++= ByteUtils.shortToBytes(msg.byteBuf.writerIndex + headerSize - 2)
-    array ++= ByteUtils.shortToBytesLE(msg.id)
     val header = if (unencrypted) {
+      array ++= ByteUtils.shortToBytesLE(size + 2)
+      array ++= ByteUtils.shortToBytesLE(msg.id)
       array.toArray
     } else {
-      array.append(0, 0)
+      array ++= ByteUtils.intToBytesLE((size << 13) | (msg.id & 0x1FFF))
       crypt.encrypt(array.toArray)
     }
 
@@ -31,9 +30,5 @@ class GamePacketEncoder extends MessageToByteEncoder[Packet] with GamePackets wi
     out.writeBytes(header)
     out.writeBytes(msg.byteBuf)
     msg.byteBuf.release
-  }
-
-  protected def isUnencryptedPacket(id: Int): Boolean = {
-    id == CMSG_AUTH_CHALLENGE
   }
 }

@@ -11,6 +11,8 @@ import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 
 class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
 
+  protected val WARDEN_MODULE_LENGTH = 16
+
   private val sha1Randx = new SHA1Randx(sessionKey)
   private var clientCrypt = new RC4(sha1Randx.generate(16))
   private var serverCrypt = new RC4(sha1Randx.generate(16))
@@ -22,27 +24,47 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
   private var module: Option[ByteBuf] = None
 
   def handle(msg: Packet): Option[ByteBuf] = {
-    val length = msg.byteBuf.readableBytes
-    val decrypted = serverCrypt.crypt(msg.byteBuf.readBytes(length))
-    logger.debug("WARDEN PACKET: " + ByteUtils.toHexString(decrypted, true, false))
+    val length = getEncryptedMessageLength(msg)
+    val decrypted = serverCrypt.crypt(msg.byteBuf, length)
+//    logger.debug(s"WARDEN PACKET ($length): ${ByteUtils.toHexString(decrypted, true, false)}")
 
     val id = decrypted.readByte
 
-    id match {
+    val ret = id match {
       case WardenPackets.WARDEN_SMSG_MODULE_USE => handle_WARDEN_SMSG_MODULE_USE(decrypted)
       case WardenPackets.WARDEN_SMSG_MODULE_CACHE => handle_WARDEN_SMSG_MODULE_CACHE(decrypted)
       case WardenPackets.WARDEN_SMSG_CHEAT_CHECKS_REQUEST => handle_WARDEN_SMSG_CHEAT_CHECKS_REQUEST(decrypted)
       case WardenPackets.WARDEN_SMSG_MODULE_INITIALIZE => None
       case WardenPackets.WARDEN_SMSG_MEM_CHECKS_REQUEST => None
       case WardenPackets.WARDEN_SMSG_HASH_REQUEST => handle_WARDEN_SMSG_HASH_REQUEST(decrypted)
-      case unknown =>
-        None
+      case _ => None
     }
+    decrypted.release
+    ret
+  }
+
+  protected def getEncryptedMessageLength(msg: Packet): Int = {
+    msg.byteBuf.readableBytes
+  }
+
+  protected def formResponse(out: ByteBuf): ByteBuf = {
+    out
+  }
+
+  protected def formCheatChecksRequestDigest(ret: ByteBuf, key: Array[Byte]): Unit = {
+    val mdSHA1 = MessageDigest.getInstance("SHA1")
+    mdSHA1.update(key)
+    mdSHA1.update(ByteUtils.intToBytesLE(0xFEEDFACE))
+    ret.writeBytes(mdSHA1.digest)
+
+    val mdMD5 = MessageDigest.getInstance("MD5")
+    mdMD5.update(key)
+    ret.writeBytes(mdMD5.digest)
   }
 
   // sent by server at beginning of warden handshake. contains module name & its rc4 seed
   private def handle_WARDEN_SMSG_MODULE_USE(decrypted: ByteBuf): Option[ByteBuf] = {
-    val moduleNameArray = new Array[Byte](16)
+    val moduleNameArray = new Array[Byte](WARDEN_MODULE_LENGTH)
     decrypted.readBytes(moduleNameArray)
     moduleName = moduleNameArray.map(byte => f"$byte%02X").mkString
     decrypted.readBytes(moduleSeed)
@@ -50,7 +72,7 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     moduleCrypt = new RC4(moduleSeed)
 
     // we can send WARDEN_CMSG_MODULE_MISSING if we need to download the module, or WARDEN_CMSG_MODULE_OK if we have it
-    Some(clientCrypt.crypt(WardenPackets.WARDEN_CMSG_MODULE_OK.toByte))
+    Some(formResponse(clientCrypt.crypt(WardenPackets.WARDEN_CMSG_MODULE_OK.toByte)))
   }
 
   // sent by server while sending us the module payload in case we do not yet have it
@@ -81,14 +103,14 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
       fos.write(decompressedData)
       fos.close()
 
-      Some(clientCrypt.crypt(WardenPackets.WARDEN_CMSG_MODULE_OK.toByte))
+      Some(formResponse(clientCrypt.crypt(WardenPackets.WARDEN_CMSG_MODULE_OK.toByte)))
     } else {
       None
     }
   }
 
   private def handle_WARDEN_SMSG_CHEAT_CHECKS_REQUEST(decrypted: ByteBuf): Option[ByteBuf] = {
-    val ret = PooledByteBufAllocator.DEFAULT.buffer(37, 37)
+    val ret = PooledByteBufAllocator.DEFAULT.buffer(53, 53)
 
     val strLength = decrypted.readByte
     val strArray = new Array[Byte](strLength)
@@ -96,16 +118,8 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
 
     ret.writeByte(WardenPackets.WARDEN_CMSG_CHEAT_CHECKS_RESULT)
 
-    val mdSHA1 = MessageDigest.getInstance("SHA1")
-    mdSHA1.update(strArray)
-    mdSHA1.update(ByteUtils.intToBytesLE(0xFEEDFACE))
-    ret.writeBytes(mdSHA1.digest)
-
-    val mdMD5 = MessageDigest.getInstance("MD5")
-    mdMD5.update(strArray)
-    ret.writeBytes(mdMD5.digest)
-
-    Some(clientCrypt.crypt(ret))
+    formCheatChecksRequestDigest(ret, strArray)
+    Some(formResponse(clientCrypt.crypt(ret, ret.readableBytes)))
   }
 
   private def handle_WARDEN_SMSG_HASH_REQUEST(decrypted: ByteBuf): Option[ByteBuf] = {
@@ -140,7 +154,7 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     ret.writeByte(WardenPackets.WARDEN_CMSG_HASH_RESULT)
     ret.writeBytes(md.digest)
 
-    val encrypted = clientCrypt.crypt(ret)
+    val encrypted = clientCrypt.crypt(ret, ret.readableBytes)
 
     // change crypto keys based on module for next message
     clientCrypt = new RC4(clientKeyBytes)
@@ -152,6 +166,6 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     serverKeyBuf.release
     serverCrypt = new RC4(serverKeyOutBytes)
 
-    Some(encrypted)
+    Some(formResponse(encrypted))
   }
 }

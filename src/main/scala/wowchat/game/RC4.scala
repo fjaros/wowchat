@@ -30,8 +30,8 @@ class RC4(key: Array[Byte]) {
     crypt(Array(msg))
   }
 
-  def crypt(msg: ByteBuf): ByteBuf = {
-    val arr = new Array[Byte](msg.readableBytes)
+  def crypt(msg: ByteBuf, length: Int): ByteBuf = {
+    val arr = new Array[Byte](length)
     msg.readBytes(arr)
     crypt(arr)
   }

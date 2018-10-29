@@ -2,20 +2,21 @@ package wowchat.discord
 
 import wowchat.commands.CommandHandler
 import wowchat.common._
-import wowchat.game.GamePackets
 import com.typesafe.scalalogging.StrictLogging
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.core.JDA.Status
 import net.dv8tion.jda.core.entities.Game
+import net.dv8tion.jda.core.entities.Game.GameType
 import net.dv8tion.jda.core.events.StatusChangeEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 import net.dv8tion.jda.core.{AccountType, JDABuilder}
-import wowchat.game.GamePackets.ChatEvents
+import wowchat.game.GamePackets
 
 import scala.collection.JavaConverters._
 
-class Discord(discordConnectionCallback: CommonConnectionCallback) extends ListenerAdapter with StrictLogging {
+class Discord(discordConnectionCallback: CommonConnectionCallback) extends ListenerAdapter
+  with GamePackets with StrictLogging {
 
   private val jda = new JDABuilder(AccountType.BOT)
     .setToken(Global.config.discord.token)
@@ -24,13 +25,21 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
   private val messageResolver = MessageResolver(jda)
 
-  def changeStatus(message: String): Unit = {
-    jda.getPresence.setGame(Game.watching(message))
+  def changeStatus(gameType: GameType, message: String): Unit = {
+    jda.getPresence.setGame(Game.of(gameType, message))
+  }
+
+  def changeGuildStatus(message: String): Unit = {
+    changeStatus(GameType.WATCHING, message)
+  }
+
+  def changeRealmStatus(message: String): Unit = {
+    changeStatus(GameType.DEFAULT, message)
   }
 
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String]): Unit = {
     val discordChannels = Global.wowToDiscord((wowType, wowChannel.map(_.toLowerCase)))
-    val parsedLinks = messageResolver.resolveLinks(message)
+    val parsedLinks = messageResolver.stripColorCoding(messageResolver.resolveLinks(message))
 
     discordChannels.foreach {
       case (channel, channelConfig) =>
@@ -44,6 +53,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
         val formatted = channelConfig
           .format
+          .replace("%time", Global.getTime)
           .replace("%user", from.getOrElse(""))
           .replace("%message", parsedResolvedTags)
           .replace("%target", wowChannel.getOrElse(""))
@@ -54,7 +64,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   }
 
   def sendGuildNotification(message: String): Unit = {
-    Global.wowToDiscord.get((GamePackets.ChatEvents.CHAT_MSG_GUILD, None))
+    Global.wowToDiscord.get((ChatEvents.CHAT_MSG_GUILD, None))
       .foreach(_.foreach {
         case (discordChannel, _) => discordChannel.sendMessage(message).queue()
       })
@@ -130,9 +140,14 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         .get(event.getMessage.getChannel.getName.toLowerCase)
         .foreach(_.foreach {
           case (_, channelConfig) =>
-            val finalMessage = channelConfig.format
-              .replace("%user", effectiveName)
-              .replace("%message", message)
+            val finalMessage = if (Global.config.discord.enableDotCommands && message.startsWith(".")) {
+              message
+            } else {
+              channelConfig.format
+                .replace("%time", Global.getTime)
+                .replace("%user", effectiveName)
+                .replace("%message", message)
+            }
 
             Global.game.foreach(handler => {
               handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)

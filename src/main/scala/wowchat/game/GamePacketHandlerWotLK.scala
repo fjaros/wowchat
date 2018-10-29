@@ -7,8 +7,8 @@ import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 
 import scala.util.Random
 
-class GamePacketHandlerWotLK(realmId: Int, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandlerTBC(realmId, sessionKey, gameEventCallback) {
+class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
+  extends GamePacketHandlerTBC(realmId, realmName, sessionKey, gameEventCallback) {
 
   override protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
     val accountConfig = Global.config.wow.account.toUpperCase
@@ -71,7 +71,7 @@ class GamePacketHandlerWotLK(realmId: Int, sessionKey: Array[Byte], gameEventCal
       case (result, i) =>
         val onBit = 1 << i
         if ((set & onBit) == onBit) {
-          result | ((byteBuf.readByte & 0xFF) << (i * 8))
+          result | ((byteBuf.readByte & 0xFFL) << (i * 8))
         } else {
           result
         }

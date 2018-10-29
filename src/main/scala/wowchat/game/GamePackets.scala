@@ -3,7 +3,7 @@ package wowchat.game
 import wowchat.common.{WowChatConfig, WowExpansion}
 import io.netty.util.AttributeKey
 
-object GamePackets {
+trait GamePackets {
 
   val CRYPT: AttributeKey[GameHeaderCrypt] = AttributeKey.valueOf("CRYPT")
 
@@ -62,6 +62,7 @@ object GamePackets {
         case "officer" => CHAT_MSG_OFFICER
         case "yell" => CHAT_MSG_YELL
         case "emote" => CHAT_MSG_EMOTE
+        case "whisper" => CHAT_MSG_WHISPER
         case "channel" | "custom" => CHAT_MSG_CHANNEL
         case _ => -1
       }).toByte
@@ -83,11 +84,13 @@ object GamePackets {
   }
 
   object GuildEvents {
-    val GE_JOINED = 0x03
-    val GE_LEFT = 0x04
-    val GE_REMOVED = 0x05
-    val GE_SIGNED_ON = 0x0C
-    val GE_SIGNED_OFF = 0x0D
+    // quite a nice hack because MoP doesn't use these events directly. has separate packet for each.
+    val GE_MOTD = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x03 else 0x02
+    val GE_JOINED = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x04 else 0x03
+    val GE_LEFT = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x05 else 0x04
+    val GE_REMOVED = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x06 else 0x05
+    val GE_SIGNED_ON = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x10 else 0x0C
+    val GE_SIGNED_OFF = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x11 else 0x0D
   }
 
   object Races {
@@ -99,12 +102,18 @@ object GamePackets {
     val RACE_TAUREN = 0x06
     val RACE_GNOME = 0x07
     val RACE_TROLL = 0x08
+    val RACE_GOBLIN = 0x09
     val RACE_BLOODELF = 0x0A
     val RACE_DRAENEI = 0x0B
+    val RACE_WORGEN = 0x16
+    val RACE_PANDAREN_NEUTRAL = 0x18
+    val RACE_PANDAREN_ALLIANCE = 0x19
+    val RACE_PANDAREN_HORDE = 0x1A
 
     def getLanguage(race: Byte): Byte = {
       race match {
-        case RACE_ORC | RACE_UNDEAD | RACE_TAUREN | RACE_TROLL | RACE_BLOODELF => 0x01 // orcish
+        case RACE_ORC | RACE_UNDEAD | RACE_TAUREN | RACE_TROLL | RACE_BLOODELF | RACE_GOBLIN | RACE_PANDAREN_HORDE => 0x01 // orcish
+        case RACE_PANDAREN_NEUTRAL => 0x2A.toByte // pandaren neutral?
         case _ => 0x07 // common
       }
     }
@@ -119,8 +128,13 @@ object GamePackets {
         case RACE_TAUREN => "Tauren"
         case RACE_GNOME => "Gnome"
         case RACE_TROLL => "Troll"
+        case RACE_GOBLIN => "Goblin"
         case RACE_BLOODELF => "Blood Elf"
         case RACE_DRAENEI => "Draenei"
+        case RACE_WORGEN => "Worgen"
+        case RACE_PANDAREN_NEUTRAL => "Pandaren"
+        case RACE_PANDAREN_ALLIANCE => "Alliance Pandaren"
+        case RACE_PANDAREN_HORDE => "Horde Pandaren"
         case _ => "Unknown"
       }
     }
@@ -132,9 +146,11 @@ object GamePackets {
     val CLASS_HUNTER = 0x03
     val CLASS_ROGUE = 0x04
     val CLASS_PRIEST = 0x05
+    val CLASS_DEATH_KNIGHT = 0x06
     val CLASS_SHAMAN = 0x07
     val CLASS_MAGE = 0x08
     val CLASS_WARLOCK = 0x09
+    val CLASS_MONK = 0x0A
     val CLASS_DRUID = 0x0B
 
     def valueOf(charClass: Byte): String = {
@@ -143,10 +159,12 @@ object GamePackets {
         case CLASS_PALADIN => "Paladin"
         case CLASS_HUNTER => "Hunter"
         case CLASS_ROGUE => "Rogue"
+        case CLASS_DEATH_KNIGHT => "Death Knight"
         case CLASS_PRIEST => "Priest"
         case CLASS_SHAMAN => "Shaman"
         case CLASS_MAGE => "Mage"
         case CLASS_WARLOCK => "Warlock"
+        case CLASS_MONK => "Monk"
         case CLASS_DRUID => "Druid"
         case _ => "Unknown"
       }

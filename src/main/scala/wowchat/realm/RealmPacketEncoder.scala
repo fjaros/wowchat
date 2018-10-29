@@ -13,5 +13,6 @@ class RealmPacketEncoder extends MessageToByteEncoder[Packet] with StrictLogging
 
     out.writeByte(msg.id)
     out.writeBytes(msg.byteBuf)
+    msg.byteBuf.release
   }
 }

@@ -41,7 +41,8 @@ object RealmPackets {
       authResult match {
         case WOW_SUCCESS | WOW_SUCCESS_SURVEY => "Success!"
         case WOW_FAIL_BANNED => "Your account has been banned!"
-        case WOW_FAIL_UNKNOWN_ACCOUNT | WOW_FAIL_INCORRECT_PASSWORD => "Incorrect username or password!"
+        case WOW_FAIL_INCORRECT_PASSWORD => "Incorrect username or password!"
+        case WOW_FAIL_UNKNOWN_ACCOUNT => "Login failed. Wait a moment and try again!"
         case WOW_FAIL_ALREADY_ONLINE => "Your account is already online. Wait a moment and try again!"
         case WOW_FAIL_VERSION_INVALID | WOW_FAIL_VERSION_UPDATE => "Invalid game version for this server!"
         case WOW_FAIL_SUSPENDED => "Your account has been suspended!"

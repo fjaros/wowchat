@@ -31,4 +31,49 @@ case class Packet(
     while (byteBuf.readableBytes > 0 && byteBuf.readByte != 0) {}
     this
   }
+
+  // bit manipulation for cata+
+  private var bitPosition = 7
+  private var byte: Byte = 0
+
+  def resetBitReader: Unit = {
+    bitPosition = 7
+    byte = 0
+  }
+
+  def readBit: Byte = {
+    bitPosition += 1
+    if (bitPosition > 7) {
+      bitPosition = 0
+      byte = byteBuf.readByte
+    }
+
+    (byte >> (7 - bitPosition) & 1).toByte
+  }
+
+  def readBits(length: Int): Int = {
+    (length - 1 to 0 by -1).foldLeft(0) {
+      case (result, i) => result | (readBit << i)
+    }
+  }
+
+  def readBitSeq(mask: Array[Byte], indices: Int*): Unit = {
+    indices.foreach(i => {
+      mask(i) = readBit
+    })
+  }
+
+  def readXorByte(mask: Byte): Byte = {
+    if (mask != 0) {
+      (mask ^ byteBuf.readByte).toByte
+    } else {
+      mask
+    }
+  }
+
+  def readXorByteSeq(mask: Array[Byte], indices: Int*): Unit = {
+    indices.foreach(i => {
+      mask(i) = readXorByte(mask(i))
+    })
+  }
 }

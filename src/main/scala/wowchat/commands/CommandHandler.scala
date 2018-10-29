@@ -1,5 +1,6 @@
 package wowchat.commands
 
+import com.typesafe.scalalogging.StrictLogging
 import net.dv8tion.jda.core.entities.MessageChannel
 import wowchat.common.Global
 
@@ -8,7 +9,7 @@ import scala.util.Try
 case class WhoRequest(messageChannel: MessageChannel, playerName: String)
 case class WhoResponse(playerName: String, guildName: String, lvl: Int, cls: String, race: String, gender: Option[String], zone: String)
 
-object CommandHandler {
+object CommandHandler extends StrictLogging {
 
   private val NOT_ONLINE = "Bot is not yet online."
 
@@ -34,9 +35,6 @@ object CommandHandler {
 
       Try {
         possibleCommand match {
-//          case "reset" | "resets" =>
-            // the construct only
-//            game.handleResets
           case "who" | "online" =>
             val whoSucceeded = game.handleWho(arguments)
             if (arguments.isDefined) {
@@ -60,7 +58,7 @@ object CommandHandler {
   // eww
   def handleWhoResponse(whoResponse: Option[WhoResponse]) = {
     val response = whoResponse.map(r => {
-      s"${r.playerName} <${r.guildName}> is a level ${r.lvl}${r.gender.fold(" ")(g => s" $g ")}${r.race} ${r.cls} currently in ${r.zone}."
+      s"${r.playerName} ${if (r.guildName.nonEmpty) s"<${r.guildName}> " else ""}is a level ${r.lvl}${r.gender.fold(" ")(g => s" $g ")}${r.race} ${r.cls} currently in ${r.zone}."
     }).getOrElse(s"No player named ${whoRequest.playerName} is currently playing.")
     whoRequest.messageChannel.sendMessage(response).queue()
   }

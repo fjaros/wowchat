@@ -4,14 +4,14 @@ import java.io.File
 
 import wowchat.common.ChatDirection.ChatDirection
 import wowchat.common.WowExpansion.WowExpansion
-import wowchat.game.GamePackets
 import com.typesafe.config.{Config, ConfigFactory}
+import wowchat.game.GamePackets
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.{typeOf, TypeTag}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig])
-case class DiscordConfig(token: String)
+case class DiscordConfig(token: String, enableDotCommands: Boolean)
 case class Wow(realmlist: RealmListConfig, account: String, password: String, character: String)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
@@ -20,7 +20,7 @@ case class ChannelConfig(chatDirection: ChatDirection, wow: WowChannelConfig, di
 case class WowChannelConfig(tp: Byte, channel: Option[String] = None, format: String)
 case class DiscordChannelConfig(channel: String, format: String)
 
-object WowChatConfig {
+object WowChatConfig extends GamePackets {
 
   private var version: String = _
   private var expansion: WowExpansion = _
@@ -48,7 +48,8 @@ object WowChatConfig {
 
     WowChatConfig(
       DiscordConfig(
-        discordConf.getString("token")
+        discordConf.getString("token"),
+        getOpt[Boolean](discordConf, "enable_dot_commands").getOrElse(true)
       ),
       Wow(
         parseRealmlist(wowConf),
@@ -76,6 +77,8 @@ object WowChatConfig {
       case "3.3.2" => 11403
       case "3.3.3" => 11723
       case "3.3.5" => 12340
+      case "4.3.4" => 15595
+      case "5.4.8" => 18414
     }
   }
 
@@ -98,7 +101,8 @@ object WowChatConfig {
       "online" -> (false, "`[%user] has come online.`"),
       "offline" -> (false, "`[%user] has gone offline.`"),
       "joined" -> (true, "`[%user] has joined the guild.`"),
-      "left" -> (true, "`[%user] has left the guild.`")
+      "left" -> (true, "`[%user] has left the guild.`"),
+      "motd" -> (true, "`Guild Message of the Day: %message`")
     )
 
     guildConf.fold({
@@ -107,7 +111,7 @@ object WowChatConfig {
       })
     })(guildConf => {
       GuildConfig(
-        Seq("online", "offline", "joined", "left").map(key => {
+        defaults.keysIterator.map(key => {
           val conf = getConfigOpt(guildConf, key)
           val default = defaults(key)
           key -> conf.fold(GuildNotificationConfig(default._1, default._2))(conf => {
@@ -130,7 +134,7 @@ object WowChatConfig {
 
         ChannelConfig(
           ChatDirection.withName(channel.getString("direction")),
-          WowChannelConfig(GamePackets.ChatEvents.parse(channel.getString("wow.type")), wowChannel, channel.getString("wow.format")),
+          WowChannelConfig(ChatEvents.parse(channel.getString("wow.type")), wowChannel, getOpt[String](channel, "wow.format").getOrElse("")),
           DiscordChannelConfig(channel.getString("discord.channel"), channel.getString("discord.format"))
         )
     })
@@ -164,7 +168,7 @@ object WowChatConfig {
 
 object WowExpansion extends Enumeration {
   type WowExpansion = Value
-  val Vanilla, TBC, WotLK = Value
+  val Vanilla, TBC, WotLK, Cataclysm, MoP = Value
 
   def valueOf(version: String): WowExpansion = {
     if (version.startsWith("1.")) {
@@ -173,6 +177,10 @@ object WowExpansion extends Enumeration {
       WowExpansion.TBC
     } else if (version.startsWith("3.")) {
       WowExpansion.WotLK
+    } else if (version == "4.3.4") {
+      WowExpansion.Cataclysm
+    } else if (version == "5.4.8") {
+      WowExpansion.MoP
     } else {
       throw new IllegalArgumentException(s"Version $version not supported!")
     }
