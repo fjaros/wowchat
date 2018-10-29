@@ -37,7 +37,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     })
   }
 
-  private def getChatPacketFromType(tp: Byte): Int = {
+  protected def getChatPacketFromType(tp: Byte): Int = {
     tp match {
       case ChatEvents.CHAT_MSG_CHANNEL => CMSG_MESSAGECHAT_CHANNEL
       case ChatEvents.CHAT_MSG_EMOTE => CMSG_MESSAGECHAT_EMOTE
@@ -46,6 +46,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
       case ChatEvents.CHAT_MSG_SAY => CMSG_MESSAGECHAT_SAY
       case ChatEvents.CHAT_MSG_WHISPER => CMSG_MESSAGECHAT_WHISPER
       case ChatEvents.CHAT_MSG_YELL => CMSG_MESSAGECHAT_YELL
+      case _ => throw new UnsupportedOperationException(s"Type ${ChatEvents.valueOf(tp)} cannot be sent to WoW!")
     }
   }
 

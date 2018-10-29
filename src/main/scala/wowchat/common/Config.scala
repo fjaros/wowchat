@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.{typeOf, TypeTag}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig])
-case class DiscordConfig(token: String)
+case class DiscordConfig(token: String, enableDotCommands: Boolean)
 case class Wow(realmlist: RealmListConfig, account: String, password: String, character: String)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
@@ -48,7 +48,8 @@ object WowChatConfig extends GamePackets {
 
     WowChatConfig(
       DiscordConfig(
-        discordConf.getString("token")
+        discordConf.getString("token"),
+        getOpt[Boolean](discordConf, "enable_dot_commands").getOrElse(true)
       ),
       Wow(
         parseRealmlist(wowConf),
@@ -100,7 +101,8 @@ object WowChatConfig extends GamePackets {
       "online" -> (false, "`[%user] has come online.`"),
       "offline" -> (false, "`[%user] has gone offline.`"),
       "joined" -> (true, "`[%user] has joined the guild.`"),
-      "left" -> (true, "`[%user] has left the guild.`")
+      "left" -> (true, "`[%user] has left the guild.`"),
+      "motd" -> (true, "`Guild Message of the Day: %message`")
     )
 
     guildConf.fold({
@@ -109,7 +111,7 @@ object WowChatConfig extends GamePackets {
       })
     })(guildConf => {
       GuildConfig(
-        Seq("online", "offline", "joined", "left").map(key => {
+        defaults.keysIterator.map(key => {
           val conf = getConfigOpt(guildConf, key)
           val default = defaults(key)
           key -> conf.fold(GuildNotificationConfig(default._1, default._2))(conf => {
@@ -132,7 +134,7 @@ object WowChatConfig extends GamePackets {
 
         ChannelConfig(
           ChatDirection.withName(channel.getString("direction")),
-          WowChannelConfig(ChatEvents.parse(channel.getString("wow.type")), wowChannel, channel.getString("wow.format")),
+          WowChannelConfig(ChatEvents.parse(channel.getString("wow.type")), wowChannel, getOpt[String](channel, "wow.format").getOrElse("")),
           DiscordChannelConfig(channel.getString("discord.channel"), channel.getString("discord.format"))
         )
     })
@@ -175,9 +177,9 @@ object WowExpansion extends Enumeration {
       WowExpansion.TBC
     } else if (version.startsWith("3.")) {
       WowExpansion.WotLK
-    } else if (version.startsWith("4.")) {
+    } else if (version == "4.3.4") {
       WowExpansion.Cataclysm
-    } else if (version.startsWith("5.")) {
+    } else if (version == "5.4.8") {
       WowExpansion.MoP
     } else {
       throw new IllegalArgumentException(s"Version $version not supported!")

@@ -1,7 +1,9 @@
 2018-10-28 - v1.2.0
 + Support for Cataclysm (4.3.4 build 15595) and Mists of Pandaria (5.4.8 build 18414)
++ New configuration parameter enable_dot_commands to directly relay commands like .s in (default enabled)
 + Added time parameter to message formats.
 + Added support for relaying whispers.
++ Added support for showing change of guild motd events in guild chat.
 * Bot now reinitiates connection to auth server during reconnect, as some servers don't allow old session keys.
 * Fixed handling of ?who <name> command to more accurately search for specified names.
 * Fixed bot still showing Watching guild members when disconnected from WoW server.

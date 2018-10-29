@@ -20,7 +20,7 @@ class GamePacketDecoderCataclysm extends GamePacketDecoder with GamePacketsCatac
     val decrypted = crypt.decrypt(header)
     if ((decrypted.head & 0x80) == 0x80) {
       val nextByte = crypt.decrypt(Array(in.readByte)).head
-      val size = ((decrypted(0) & 0x7F) << 16) | (decrypted(1) << 8) | (decrypted(2) & 0xFF)
+      val size = ((decrypted(0) & 0x7F) << 16) | ((decrypted(1) & 0xFF) << 8) | (decrypted(2) & 0xFF)
       val id = (nextByte & 0xFF) << 8 | decrypted(3) & 0xFF
       (id, size)
     } else {

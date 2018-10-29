@@ -39,7 +39,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String]): Unit = {
     val discordChannels = Global.wowToDiscord((wowType, wowChannel.map(_.toLowerCase)))
-    val parsedLinks = messageResolver.resolveLinks(message)
+    val parsedLinks = messageResolver.stripColorCoding(messageResolver.resolveLinks(message))
 
     discordChannels.foreach {
       case (channel, channelConfig) =>
@@ -140,7 +140,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         .get(event.getMessage.getChannel.getName.toLowerCase)
         .foreach(_.foreach {
           case (_, channelConfig) =>
-            val finalMessage = if (message.startsWith(".")) {
+            val finalMessage = if (Global.config.discord.enableDotCommands && message.startsWith(".")) {
               message
             } else {
               channelConfig.format

@@ -1,6 +1,5 @@
 package wowchat.game
 
-import java.lang.management.ManagementFactory
 import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.time._
@@ -78,6 +77,20 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }, 30, 30, TimeUnit.SECONDS)
   }
 
+  def buildGuildiesOnline: String = {
+    val characterName = Global.config.wow.character
+
+    playerRoster
+      .valuesIterator
+      .filter(!_.name.equalsIgnoreCase(characterName))
+      .toSeq
+      .sortBy(_.name)
+      .map(m => {
+        s"${m.name} (${Classes.valueOf(m.charClass)})"
+      })
+      .mkString(getGuildiesOnlineMessage(false), ", ", "")
+  }
+
   def getGuildiesOnlineMessage(isStatus: Boolean): String = {
     val size = playerRoster.size - 1
     val guildies = s"guildie${if (size != 1) "s" else ""}"
@@ -140,32 +153,26 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   override def handleWho(arguments: Option[String]): Option[String] = {
-    val characterName = Global.config.wow.character
-
     if (arguments.isDefined) {
-      val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(64, 128)
-      byteBuf.writeIntLE(0)  // level min
-      byteBuf.writeIntLE(100) // level max
-      byteBuf.writeBytes(arguments.get.getBytes)
-      byteBuf.writeByte(0) // ?
-      byteBuf.writeByte(0) // ?
-      byteBuf.writeIntLE(0xFFFFFFFF) // race mask (all races)
-      byteBuf.writeIntLE(0xFFFFFFFF) // class mask (all classes)
-      byteBuf.writeIntLE(0) // zones count
-      byteBuf.writeIntLE(0) // strings count
+      val byteBuf = buildWhoMessage(arguments.get)
       ctx.get.writeAndFlush(Packet(CMSG_WHO, byteBuf))
       None
     } else {
-      Some(playerRoster
-        .valuesIterator
-        .filter(!_.name.equalsIgnoreCase(characterName))
-        .toSeq
-        .sortBy(_.name)
-        .map(m => {
-          s"${m.name} (${Classes.valueOf(m.charClass)})"
-        })
-        .mkString(getGuildiesOnlineMessage(false), ", ", ""))
+      Some(buildGuildiesOnline)
     }
+  }
+
+  protected def buildWhoMessage(name: String): ByteBuf = {
+    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(64, 64)
+    byteBuf.writeIntLE(0)  // level min
+    byteBuf.writeIntLE(100) // level max
+    byteBuf.writeBytes(name.getBytes)
+    byteBuf.writeByte(0) // ?
+    byteBuf.writeByte(0) // ?
+    byteBuf.writeIntLE(0xFFFFFFFF) // race mask (all races)
+    byteBuf.writeIntLE(0xFFFFFFFF) // class mask (all classes)
+    byteBuf.writeIntLE(0) // zones count
+    byteBuf.writeIntLE(0) // strings count
   }
 
   override def handleResets: Option[String] = {
@@ -376,19 +383,20 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     val event = msg.byteBuf.readByte
     // number of strings for other events, our cared-about events always have 1
     msg.byteBuf.skipBytes(1)
-    val name = msg.readString
+    val message = msg.readString
 
-    handleGuildEvent(event, name)
+    handleGuildEvent(event, message)
   }
 
-  protected def handleGuildEvent(event: Byte, name: String): Unit = {
+  protected def handleGuildEvent(event: Byte, message: String): Unit = {
     // ignore events from self
-    if (Global.config.wow.character.equalsIgnoreCase(name)) {
+    if (event != GuildEvents.GE_MOTD && Global.config.wow.character.equalsIgnoreCase(message)) {
       return
     }
 
     val guildNotificationConfig = Global.config.guildConfig.notificationConfigs(
       event match {
+        case GuildEvents.GE_MOTD => "motd"
         case GuildEvents.GE_JOINED => "joined"
         case GuildEvents.GE_LEFT | GuildEvents.GE_REMOVED => "left"
         case GuildEvents.GE_SIGNED_ON => "online"
@@ -398,12 +406,13 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     )
 
     if (guildNotificationConfig.enabled) {
-      val message = guildNotificationConfig
+      val formatted = guildNotificationConfig
         .format
         .replace("%time", Global.getTime)
-        .replace("%user", name)
+        .replace("%user", message)
+        .replace("%message", message)
 
-      Global.discord.sendGuildNotification(message)
+      Global.discord.sendGuildNotification(formatted)
     }
 
     updateGuildRoster

@@ -1,5 +1,6 @@
 package wowchat.commands
 
+import com.typesafe.scalalogging.StrictLogging
 import net.dv8tion.jda.core.entities.MessageChannel
 import wowchat.common.Global
 
@@ -8,7 +9,7 @@ import scala.util.Try
 case class WhoRequest(messageChannel: MessageChannel, playerName: String)
 case class WhoResponse(playerName: String, guildName: String, lvl: Int, cls: String, race: String, gender: Option[String], zone: String)
 
-object CommandHandler {
+object CommandHandler extends StrictLogging {
 
   private val NOT_ONLINE = "Bot is not yet online."
 

@@ -39,6 +39,14 @@ class MessageResolver(jda: JDA) {
     }
   }
 
+  def stripColorCoding(message: String): String = {
+    val hex = "\\|c[0-9a-fA-F]{8}"
+    val pass1 = s"$hex(.*?)\\|r".r
+    val pass2 = hex.r
+
+    pass2.replaceAllIn(pass1.replaceAllIn(message, _.group(1)), "")
+  }
+
   def resolveTags(discordChannel: TextChannel, message: String, onError: String => Unit): String = {
     // OR non-capturing regex didn't work for these for some reason
     val regex1 = "\"@(.+?)\"".r

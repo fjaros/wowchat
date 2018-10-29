@@ -7,8 +7,6 @@ import wowchat.discord.Discord
 import wowchat.game.GameConnector
 import wowchat.realm.{RealmConnectionCallback, RealmConnector}
 import com.typesafe.scalalogging.StrictLogging
-import net.dv8tion.jda.core.entities.Game
-import net.dv8tion.jda.core.entities.Game.GameType
 
 import scala.io.Source
 

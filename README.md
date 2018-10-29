@@ -1,7 +1,16 @@
 WoWChat -- README
 =================
 
-WoWChat is a Discord integration chat bot for old versions of World of Warcraft. Features:
+WoWChat is a Discord integration chat bot for old versions of World of Warcraft.
+
+Currently supported versions are:
+  * Vanilla
+  * The Burning Crusade
+  * Wrath of the Lich King
+  * Cataclysm (4.3.4 build 15595)
+  * Mists of Pandaria (5.4.8 build 18414)
+
+Features:
 * Clientless (Does not need the WoW Client to be open to run)
 * Seamless Chat integration of channels between WoW and Discord
   * Guild chat, Officer chat, Local chat, Emotes, Custom Channels.
@@ -11,13 +20,6 @@ WoWChat is a Discord integration chat bot for old versions of World of Warcraft.
   * Check who is online in your guild
   * Query other players in the world
 * Runs as a Java program, and therefore works on Windows, Mac, and Linux.
-
-Currently supported versions are:
-  * Vanilla
-  * The Burning Crusade
-  * Wrath of the Lich King
-  * Cataclysm (4.3.4 build 15595)
-  * Mists of Pandaria (5.4.8 build 18414)
 
 ## How it works
 The bot uses Discord's API to login to your Discord server. It then uses supplied information
@@ -76,7 +78,7 @@ Even though this bot does not do anything malicious, some servers may not like a
        * **format**: Same options as in **wow** section above.
 3. Invite your bot to Discord
    * Go back to https://discordapp.com/developers/applications/ and click your new Bot application.
-   * In browser enter: https://discordapp.com/oauth2/authorize?client_id=**CLIENT_ID**&scope=bot
+   * In browser enter: https://discordapp.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot
      * Replace **CLIENT_ID** with the value from Discord applications page.
    * Setup the bot with the correct Discord roles/permissions to enter your desired channels.
 

@@ -41,6 +41,7 @@ trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
   override val SMSG_TIME_SYNC_REQ = 0x1A8F
   override val CMSG_TIME_SYNC_RESP = 0x01DB
 
+  val SMSG_GUILD_MOTD = 0x0B68
   val SMSG_GUILD_INVITE_ACCEPT = 0x0B69
   val SMSG_GUILD_MEMBER_LOGGED = 0x0B70
   val SMSG_GUILD_LEAVE = 0x0BF8

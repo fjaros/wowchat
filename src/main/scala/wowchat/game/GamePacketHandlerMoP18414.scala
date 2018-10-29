@@ -43,6 +43,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
+      case SMSG_GUILD_MOTD => handle_SMSG_GUILD_MOTD(msg)
       case SMSG_GUILD_INVITE_ACCEPT => handle_SMSG_GUILD_INVITE_ACCEPT(msg)
       case SMSG_GUILD_MEMBER_LOGGED => handle_SMSG_GUILD_MEMBER_LOGGED(msg)
       case SMSG_GUILD_LEAVE => handle_SMSG_GUILD_LEAVE(msg)
@@ -74,18 +75,6 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     })
   }
 
-  private def getChatPacketFromType(tp: Byte): Int = {
-    tp match {
-      case ChatEvents.CHAT_MSG_CHANNEL => CMSG_MESSAGECHAT_CHANNEL
-      case ChatEvents.CHAT_MSG_EMOTE => CMSG_MESSAGECHAT_EMOTE
-      case ChatEvents.CHAT_MSG_GUILD => CMSG_MESSAGECHAT_GUILD
-      case ChatEvents.CHAT_MSG_OFFICER => CMSG_MESSAGECHAT_OFFICER
-      case ChatEvents.CHAT_MSG_SAY => CMSG_MESSAGECHAT_SAY
-      case ChatEvents.CHAT_MSG_WHISPER => CMSG_MESSAGECHAT_WHISPER
-      case ChatEvents.CHAT_MSG_YELL => CMSG_MESSAGECHAT_YELL
-    }
-  }
-
   // technically MoP sends sender name as part of chat message,
   // but i'll just stick to the old system to keep it consistent.
   override def sendNameQuery(guid: Long): Unit = {
@@ -93,16 +82,11 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       val out = PooledByteBufAllocator.DEFAULT.buffer(10, 10)
       val guidBytes = ByteUtils.longToBytesLE(guid)
 
-      writeBit(out, guidBytes(4))
+      writeBitSeq(out, guidBytes, 4)
       writeBit(out, 0)
-      writeBit(out, guidBytes(6))
-      writeBit(out, guidBytes(0))
-      writeBit(out, guidBytes(7))
-      writeBit(out, guidBytes(1))
+      writeBitSeq(out, guidBytes, 6, 0, 7, 1)
       writeBit(out, 0)
-      writeBit(out, guidBytes(5))
-      writeBit(out, guidBytes(2))
-      writeBit(out, guidBytes(3))
+      writeBitSeq(out, guidBytes, 5, 2, 3)
       flushBits(out)
 
       writeXorByteSeq(out, guidBytes, 7, 5, 1, 2, 6, 3, 0, 4)
@@ -168,40 +152,24 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     NameQueryMessage(ByteUtils.bytesToLongLE(guid), name, charClass)
   }
 
-  override def handleWho(arguments: Option[String]): Option[String] = {
-    val characterName = Global.config.wow.character
-
-    if (arguments.isDefined) {
-      val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(64, 128)
-      byteBuf.writeIntLE(0xFFFFFFFF) // class mask (all classes)
-      byteBuf.writeIntLE(0xFFFFFFFF) // race mask (all races)
-      byteBuf.writeIntLE(100) // level max
-      byteBuf.writeIntLE(0) // level min
-      writeBit(byteBuf, 1) // show enemies
-      writeBit(byteBuf, 1) // exact name
-      writeBit(byteBuf, 0) // request server info
-      writeBits(byteBuf, 0, 9) // guild realm name length
-      writeBit(byteBuf, 1) // show arena players
-      writeBits(byteBuf, arguments.get.length, 6) // name length
-      writeBits(byteBuf, 0, 4) // zones count
-      writeBits(byteBuf, 0, 9) // realm length name
-      writeBits(byteBuf, 0, 7) // guild name length
-      writeBits(byteBuf, 0, 3) // word count
-      flushBits(byteBuf)
-      byteBuf.writeBytes(arguments.get.getBytes)
-      ctx.get.writeAndFlush(Packet(CMSG_WHO, byteBuf))
-      None
-    } else {
-      Some(playerRoster
-        .valuesIterator
-        .filter(!_.name.equalsIgnoreCase(characterName))
-        .toSeq
-        .sortBy(_.name)
-        .map(m => {
-          s"${m.name} (${Classes.valueOf(m.charClass)})"
-        })
-        .mkString(getGuildiesOnlineMessage(false), ", ", ""))
-    }
+  override protected def buildWhoMessage(name: String): ByteBuf = {
+    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(64, 64)
+    byteBuf.writeIntLE(0xFFFFFFFF) // class mask (all classes)
+    byteBuf.writeIntLE(0xFFFFFFFF) // race mask (all races)
+    byteBuf.writeIntLE(100) // level max
+    byteBuf.writeIntLE(0) // level min
+    writeBit(byteBuf, 1) // show enemies
+    writeBit(byteBuf, 1) // exact name
+    writeBit(byteBuf, 0) // request server info
+    writeBits(byteBuf, 0, 9) // guild realm name length
+    writeBit(byteBuf, 1) // show arena players
+    writeBits(byteBuf, name.length, 6) // name length
+    writeBits(byteBuf, 0, 4) // zones count
+    writeBits(byteBuf, 0, 9) // realm length name
+    writeBits(byteBuf, 0, 7) // guild name length
+    writeBits(byteBuf, 0, 3) // word count
+    flushBits(byteBuf)
+    byteBuf.writeBytes(name.getBytes)
   }
 
   override protected def handle_SMSG_WHO(msg: Packet): Unit = {
@@ -675,6 +643,13 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
   override protected def initializeWardenHandler: WardenHandler = {
     new WardenHandlerMoP18414(sessionKey)
+  }
+
+  private def handle_SMSG_GUILD_MOTD(msg: Packet): Unit = {
+    val length = msg.readBits(10)
+    val motd = msg.byteBuf.readCharSequence(length, Charset.defaultCharset).toString
+
+    handleGuildEvent(GuildEvents.GE_MOTD.toByte, motd)
   }
 
   private def handle_SMSG_GUILD_INVITE_ACCEPT(msg: Packet): Unit = {
