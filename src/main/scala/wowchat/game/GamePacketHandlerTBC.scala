@@ -52,8 +52,8 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
       None
     }
 
-    // ignore if from an unhandled channel
-    if (!Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
+    // ignore if from an unhandled channel - unless it is a guild achievement message
+    if (tp != ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT && !Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
       return None
     }
 
@@ -61,6 +61,7 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
 
     val txtLen = msg.byteBuf.readIntLE
     val txt = msg.byteBuf.readCharSequence(txtLen - 1, Charset.defaultCharset).toString
+    msg.byteBuf.skipBytes(1) // null terminator
 
     Some(ChatMessage(guid, tp, txt, channelName))
   }

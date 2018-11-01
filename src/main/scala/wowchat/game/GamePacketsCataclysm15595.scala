@@ -10,6 +10,8 @@ trait GamePacketsCataclysm15595 extends GamePackets {
   override val SMSG_NAME_QUERY = 0x6E04
   override val CMSG_WHO = 0x6C15
   override val SMSG_WHO = 0x6907
+  override val CMSG_GUILD_QUERY = 0x4426
+  override val SMSG_GUILD_QUERY = 0x0E06
   override val CMSG_GUILD_ROSTER = 0x1226
   override val SMSG_GUILD_ROSTER = 0x3DA3
   override val SMSG_GUILD_EVENT = 0x0705

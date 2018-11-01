@@ -1,3 +1,8 @@
+2018-11-01 - v1.2.1
++ Support for achievement messages shown in guild chat (WotLK/Cataclysm/MoP).
+* Fixed error in log when sending the bot a private, group, or voice message on discord.
+* Fixed some bytebuf leak related messages.
+
 2018-10-28 - v1.2.0
 + Support for Cataclysm (4.3.4 build 15595) and Mists of Pandaria (5.4.8 build 18414)
 + New configuration parameter enable_dot_commands to directly relay commands like .s in (default enabled)

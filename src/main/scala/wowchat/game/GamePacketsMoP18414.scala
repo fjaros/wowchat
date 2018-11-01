@@ -19,6 +19,8 @@ trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
   override val CMSG_LOGOUT_REQUEST = 0x1349
   override val CMSG_NAME_QUERY = 0x0328
   override val SMSG_NAME_QUERY = 0x169B
+  override val CMSG_GUILD_QUERY = 0x1AB6
+  override val SMSG_GUILD_QUERY = 0x1B79
   override val CMSG_WHO = 0x18A3
   override val SMSG_WHO = 0x161B
   override val CMSG_GUILD_ROSTER = 0x1459

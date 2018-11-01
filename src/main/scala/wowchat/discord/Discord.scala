@@ -5,7 +5,7 @@ import wowchat.common._
 import com.typesafe.scalalogging.StrictLogging
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.core.JDA.Status
-import net.dv8tion.jda.core.entities.Game
+import net.dv8tion.jda.core.entities.{ChannelType, Game}
 import net.dv8tion.jda.core.entities.Game.GameType
 import net.dv8tion.jda.core.events.StatusChangeEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
@@ -70,6 +70,25 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
       })
   }
 
+  def sendAchievementNotification(name: String, achievementId: Int): Unit = {
+    val notificationConfig = Global.config.guildConfig.notificationConfigs("achievement")
+    if (!notificationConfig.enabled) {
+      return
+    }
+
+    Global.wowToDiscord.get((ChatEvents.CHAT_MSG_GUILD, None))
+      .foreach(_.foreach {
+        case (discordChannel, _) =>
+          val formatted = notificationConfig
+            .format
+            .replace("%time", Global.getTime)
+            .replace("%user", name)
+            .replace("%achievement", messageResolver.resolveAchievementId(achievementId))
+
+          discordChannel.sendMessage(formatted).queue()
+      })
+  }
+
   override def onStatusChange(event: StatusChangeEvent): Unit = {
     event.getNewStatus match {
       case Status.CONNECTED =>
@@ -126,6 +145,11 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   override def onMessageReceived(event: MessageReceivedEvent): Unit = {
     // ignore messages received from self
     if (event.getAuthor.getIdLong == jda.getSelfUser.getIdLong) {
+      return
+    }
+
+    // ignore messages from non-text channels
+    if (event.getChannelType != ChannelType.TEXT) {
       return
     }
 

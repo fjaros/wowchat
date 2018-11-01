@@ -48,7 +48,8 @@ Even though this bot does not do anything malicious, some servers may not like a
 2. Configure WoW Chat by opening `wowchat.conf` in a text editor.
    * You can also create your own file, using the supplied `wowchat.conf` as a template.
    * In section **discord**:
-     * Paste the above copied Bot token after "token="
+     * **token**: Paste the above copied Bot token.
+     * **enable_dot_commands**: If set to 1, it will not format outgoing messages starting with ".", enabling you to send things like ".s in" to the server directly. If set to 0, it will format these messages like regular messages.
    * In section **wow**:
      * **version**: put either 1.12.1, 2.4.3, or 3.3.5 based on the server's expansion.
      * **realmlist**: this is server's realmlist, same as in your realmlist.wtf file.
@@ -62,7 +63,7 @@ Even though this bot does not do anything malicious, some servers may not like a
      * **character**: Your character's name as would be shown in the character list.
    * In section **guild**:
      * This section sets up guild notifications on Discord.
-     * For each notification, **online**, **offline**, **joined**, **left**, specify:
+     * For each notification, **online**, **offline**, **joined**, **left**, **motd**, **achievement** specify:
        * **enabled**: **0** to not display in Discord, **1** to display in Discord
        * **format**: How to display the message.
    * In section **chat**:
@@ -92,5 +93,5 @@ OR to compile yourself:
 1. WoW Chat is written in Scala and compiles to a Java executable using [maven](https://maven.apache.org).
 2. It uses Java JDK 1.8 and Scala 2.12.6.
 3. Run `mvn clean package` which will produce a file in the target folder called `wowchat.zip`
-4. unzip `wowchat-1.2.0.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
+4. unzip `wowchat-1.2.1.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
    * If no config file is supplied, the bot will try to use `wowchat.conf`

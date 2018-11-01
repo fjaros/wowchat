@@ -63,6 +63,27 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     NameQueryMessage(guid, name, charClass)
   }
 
+  override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
+    val chatMessage = super.parseChatMessage(msg)
+    chatMessage.flatMap(chatMessage => {
+      msg.byteBuf.skipBytes(1) // chat tag
+      chatMessage.tp match {
+        case ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT =>
+          handleAchievementEvent(chatMessage.guid, msg.byteBuf.readIntLE)
+          None
+        case _ => Some(chatMessage)
+      }
+    })
+  }
+
+  protected def handleAchievementEvent(guid: Long, achievementId: Int): Unit = {
+    // This is a guild event so guid MUST be in roster already
+    // (unless some weird edge case -> achievement came before roster update)
+    playerRoster.get(guid).foreach(player => {
+      Global.discord.sendAchievementNotification(player.name, achievementId)
+    })
+  }
+
   // saving those single 0 bytes like whoa
   private def unpackGuid(byteBuf: ByteBuf): Long = {
     val set = byteBuf.readByte

@@ -102,7 +102,8 @@ object WowChatConfig extends GamePackets {
       "offline" -> (false, "`[%user] has gone offline.`"),
       "joined" -> (true, "`[%user] has joined the guild.`"),
       "left" -> (true, "`[%user] has left the guild.`"),
-      "motd" -> (true, "`Guild Message of the Day: %message`")
+      "motd" -> (true, "`Guild Message of the Day: %message`"),
+      "achievement" -> (true, "%user has earned the achievement %achievement!")
     )
 
     guildConf.fold({

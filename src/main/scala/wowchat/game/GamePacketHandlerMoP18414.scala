@@ -105,7 +105,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
     val hasNameData = msg.readBit == 0
     val charClass = if (hasNameData) {
-      msg.byteBuf.readBytes(8) // realm id, acc id?
+      msg.byteBuf.skipBytes(8) // realm id, acc id?
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(3) // race, level, gender
       charClass
@@ -270,7 +270,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
           cls,
           race,
           gender,
-          AreaTable.AREA.getOrElse(zone, "Unknown Zone")))
+          GameResources.AREA.getOrElse(zone, "Unknown Zone")))
         )
       })
     }
@@ -404,7 +404,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       msg.byteBuf.skipBytes(4) // z
 
       if (name.equalsIgnoreCase(Global.config.wow.character)) {
-        return Some(CharEnumMessage(ByteUtils.bytesToLongLE(guids(i)), race))
+        return Some(CharEnumMessage(ByteUtils.bytesToLongLE(guids(i)), race, ByteUtils.bytesToLongLE(guildGuids(i))))
       }
     })
 
@@ -431,7 +431,59 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     out.writeBytes(channel.getBytes)
   }
 
-  override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
+  override protected def queryGuildName: Unit = {
+    val playerGuidArr = ByteUtils.longToBytesLE(selfCharacterId.get)
+    val guildGuidArr = ByteUtils.longToBytesLE(guildGuid)
+
+    val out = PooledByteBufAllocator.DEFAULT.buffer(18, 18)
+    writeBitSeq(out, playerGuidArr, 7, 3, 4)
+    writeBitSeq(out, guildGuidArr, 3, 4)
+    writeBitSeq(out, playerGuidArr, 2, 6)
+    writeBitSeq(out, guildGuidArr, 2, 5)
+    writeBitSeq(out, playerGuidArr, 1, 5)
+    writeBitSeq(out, guildGuidArr, 7)
+    writeBitSeq(out, playerGuidArr, 0)
+    writeBitSeq(out, guildGuidArr, 1, 6, 0)
+
+    writeXorByteSeq(out, playerGuidArr, 7)
+    writeXorByteSeq(out, guildGuidArr, 2, 4, 7)
+    writeXorByteSeq(out, playerGuidArr, 6, 0)
+    writeXorByteSeq(out, guildGuidArr, 6, 0, 3)
+    writeXorByteSeq(out, playerGuidArr, 2)
+    writeXorByteSeq(out, guildGuidArr, 5)
+    writeXorByteSeq(out, playerGuidArr, 3)
+    writeXorByteSeq(out, guildGuidArr, 1)
+    writeXorByteSeq(out, playerGuidArr, 4, 1, 5)
+
+    ctx.get.writeAndFlush(Packet(CMSG_GUILD_QUERY, out))
+  }
+
+  override protected def handleGuildQuery(msg: Packet): String = {
+    val guildGuidArr = new Array[Byte](8)
+
+    guildGuidArr(5) = msg.readBit
+    msg.readBit
+    val ranksNum = msg.readBits(21)
+    msg.readBits(4) // guid repeated
+    val rankLengths = (0 until ranksNum).map(_ => msg.readBits(7))
+    msg.readBits(4) // guid repeated
+    val guildNameLength = msg.readBits(7)
+    msg.readBitSeq(guildGuidArr, 3, 7, 2, 1, 0, 4, 6)
+
+    msg.byteBuf.skipBytes(8) // emblem border + style
+    msg.readXorByteSeq(guildGuidArr, 2, 7)
+    msg.byteBuf.skipBytes(8) // emblem color + realmid
+
+    (0 until ranksNum).foreach(i => {
+      msg.byteBuf.skipBytes(8) // rank index + id
+      msg.byteBuf.skipBytes(rankLengths(i))
+    })
+
+    msg.byteBuf.readCharSequence(guildNameLength, Charset.defaultCharset).toString
+    // no need to parse other stuff
+  }
+
+  override def parseChatMessage(msg: Packet): Option[ChatMessage] = {
     val hasSenderName = msg.readBit == 0
     msg.readBit // hide in chat log
 
@@ -516,7 +568,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     }
 
     if (hasPrefix) {
-      msg.byteBuf.readBytes(addonPrefixLength)
+      msg.byteBuf.skipBytes(addonPrefixLength)
     }
 
     msg.readXorByteSeq(senderGuid, 4, 7, 1, 5, 0, 6, 2, 3)
@@ -528,13 +580,15 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
     val tp = msg.byteBuf.readByte
 
-    // ignore if from an unhandled channel
-    if (!Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
+    // ignore if from an unhandled channel - unless it is a guild achievement message
+    if (tp != ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT && !Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
       return None
     }
 
-    if (hasAchievement) {
-      msg.byteBuf.skipBytes(4)
+    val achievementId = if (hasAchievement) {
+      Some(msg.byteBuf.readIntLE)
+    } else {
+      None
     }
 
     msg.readXorByteSeq(groupGuid, 1, 3, 4, 6, 0, 2, 5, 7)
@@ -563,7 +617,12 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       ""
     }
 
-    Some(ChatMessage(ByteUtils.bytesToLongLE(senderGuid), tp, txt, channelName))
+    if (hasAchievement) {
+      handleAchievementEvent(ByteUtils.bytesToLongLE(senderGuid), achievementId.get)
+      None
+    } else {
+      Some(ChatMessage(ByteUtils.bytesToLongLE(senderGuid), tp, txt, channelName))
+    }
   }
 
   override def updateGuildRoster: Unit = {

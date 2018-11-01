@@ -3,6 +3,7 @@ package wowchat.discord
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.entities.TextChannel
 import wowchat.common.{WowChatConfig, WowExpansion}
+import wowchat.game.GameResources
 
 import scala.collection.JavaConverters._
 import scala.util.control.Breaks.{break, breakable}
@@ -37,6 +38,11 @@ class MessageResolver(jda: JDA) {
           s"[${m.group(2)}] ($linkSite?$classicDbKey=${m.group(1)}) "
         })
     }
+  }
+
+  def resolveAchievementId(achievementId: Int): String = {
+    val name = GameResources.ACHIEVEMENT.getOrElse(achievementId, achievementId)
+    s"[$name] ($linkSite?achievement=$achievementId) "
   }
 
   def stripColorCoding(message: String): String = {

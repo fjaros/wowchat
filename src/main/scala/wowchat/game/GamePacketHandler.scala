@@ -2,8 +2,6 @@ package wowchat.game
 
 import java.nio.charset.Charset
 import java.security.MessageDigest
-import java.time._
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.{Executors, TimeUnit}
 
 import wowchat.common._
@@ -21,7 +19,7 @@ case class Player(name: String, charClass: Byte)
 case class ChatMessage(guid: Long, tp: Byte, message: String, channel: Option[String] = None)
 case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
-case class CharEnumMessage(guid: Long, race: Byte)
+case class CharEnumMessage(guid: Long, race: Byte, guildGuid: Long)
 
 class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends ChannelInboundHandlerAdapter with GameCommandHandler with GamePackets with StrictLogging {
@@ -41,6 +39,8 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   protected var selfCharacterId: Option[Long] = None
   protected var languageId: Byte = _
   protected var inWorld: Boolean = false
+  protected var guildGuid: Long = _
+  protected var guildName: String = ""
 
   var motd: String = ""
   var ginfo: String = ""
@@ -106,11 +106,17 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
-  def updateGuildiesOnline: Unit = {
+  protected def updateGuildiesOnline: Unit = {
     Global.discord.changeGuildStatus(getGuildiesOnlineMessage(true))
   }
 
-  def updateGuildRoster: Unit = {
+  protected def queryGuildName: Unit = {
+    val out = PooledByteBufAllocator.DEFAULT.buffer(4, 4)
+    out.writeIntLE(guildGuid.toInt)
+    ctx.get.writeAndFlush(Packet(CMSG_GUILD_QUERY, out))
+  }
+
+  protected def updateGuildRoster: Unit = {
     ctx.get.writeAndFlush(Packet(CMSG_GUILD_ROSTER))
   }
 
@@ -182,7 +188,9 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
     msg match {
-      case msg: Packet => channelParse(msg)
+      case msg: Packet =>
+        channelParse(msg)
+        msg.byteBuf.release
       case msg => logger.error(s"Packet is instance of ${msg.getClass}")
     }
   }
@@ -194,6 +202,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       case SMSG_NAME_QUERY => handle_SMSG_NAME_QUERY(msg)
       case SMSG_CHAR_ENUM => handle_SMSG_CHAR_ENUM(msg)
       case SMSG_LOGIN_VERIFY_WORLD => handle_SMSG_LOGIN_VERIFY_WORLD(msg)
+      case SMSG_GUILD_QUERY => handle_SMSG_GUILD_QUERY(msg)
       case SMSG_GUILD_EVENT => handle_SMSG_GUILD_EVENT(msg)
       case SMSG_GUILD_ROSTER => handle_SMSG_GUILD_ROSTER(msg)
       case SMSG_CHATMESSAGE => handle_SMSG_CHATMESSAGE(msg)
@@ -205,7 +214,6 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
       case unhandled =>
     }
-    msg.byteBuf.release
   }
 
   private def handle_SMSG_AUTH_CHALLENGE(msg: Packet): Unit = {
@@ -288,6 +296,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })(character => {
       selfCharacterId = Some(character.guid)
       languageId = Races.getLanguage(character.race)
+      guildGuid = character.guildGuid
 
       val out = PooledByteBufAllocator.DEFAULT.buffer(16, 16) // increase to 16 for MoP
       writePlayerLogin(out)
@@ -303,9 +312,6 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       val guid = msg.byteBuf.readLongLE
       val name = msg.readString
       val race = msg.byteBuf.readByte // will determine what language to use in chat
-      if (name.equalsIgnoreCase(Global.config.wow.character)) {
-        return Some(CharEnumMessage(guid, race))
-      }
 
       msg.byteBuf.skipBytes(1) // class
       msg.byteBuf.skipBytes(1) // gender
@@ -318,8 +324,18 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       msg.byteBuf.skipBytes(4) // zone
       msg.byteBuf.skipBytes(4) // map - could be useful in the future to determine what city specific channels to join
 
-      msg.byteBuf.skipBytes(24) // other char info
-      msg.byteBuf.skipBytes(109) // equipment info
+      msg.byteBuf.skipBytes(12) // x + y + z
+
+      val guildGuid = msg.byteBuf.readIntLE
+      if (name.equalsIgnoreCase(Global.config.wow.character)) {
+        return Some(CharEnumMessage(guid, race, guildGuid))
+      }
+
+      msg.byteBuf.skipBytes(4) // character flags
+      msg.byteBuf.skipBytes(1) // first login
+      msg.byteBuf.skipBytes(12) // pet info
+      msg.byteBuf.skipBytes(19 * 5) // equipment info
+      msg.byteBuf.skipBytes(5) // first bag display info
     })
     None
   }
@@ -339,7 +355,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     Global.discord.changeRealmStatus(realmName)
     gameEventCallback.connected
     runPingExecutor
-    updateGuildRoster
+    if (guildGuid != 0) {
+      queryGuildName
+      updateGuildRoster
+    }
 
     // join channels
     Global.config.channels
@@ -356,6 +375,15 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     out.writeBytes(channel.getBytes)
     out.writeByte(0)
     out.writeByte(0)
+  }
+
+  private def handle_SMSG_GUILD_QUERY(msg: Packet): Unit = {
+    guildName = handleGuildQuery(msg)
+  }
+
+  protected def handleGuildQuery(msg: Packet): String = {
+    msg.byteBuf.skipBytes(4)
+    msg.readString
   }
 
   private def handle_SMSG_GUILD_EVENT(msg: Packet): Unit = {
@@ -536,7 +564,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
           cls,
           race,
           gender,
-          AreaTable.AREA.getOrElse(zone, "Unknown Zone")))
+          GameResources.AREA.getOrElse(zone, "Unknown Zone")))
         )
       })
     }

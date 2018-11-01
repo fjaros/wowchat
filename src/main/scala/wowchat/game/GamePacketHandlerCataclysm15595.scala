@@ -174,7 +174,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
       guids(i)(1) = msg.readXorByte(guids(i)(1))
 
       if (name.equalsIgnoreCase(Global.config.wow.character)) {
-        return Some(CharEnumMessage(ByteUtils.bytesToLongLE(guids(i)), race))
+        return Some(CharEnumMessage(ByteUtils.bytesToLongLE(guids(i)), race, ByteUtils.bytesToLongLE(guildGuids(i))))
       }
 
       msg.byteBuf.skipBytes(4) // zone
@@ -214,6 +214,19 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     flushBits(out)
 
     out.writeBytes(channel.getBytes)
+  }
+
+  override protected def queryGuildName: Unit = {
+    val out = PooledByteBufAllocator.DEFAULT.buffer(16, 16)
+    out.writeLongLE(guildGuid)
+    out.writeLongLE(selfCharacterId.get)
+    ctx.get.writeAndFlush(Packet(CMSG_GUILD_QUERY, out))
+  }
+
+  override protected def handleGuildQuery(msg: Packet): String = {
+    msg.byteBuf.skipBytes(8) // guid
+    msg.readString
+    // no need to parse other stuff
   }
 
   override def updateGuildRoster: Unit = {

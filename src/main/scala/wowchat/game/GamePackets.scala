@@ -13,6 +13,8 @@ trait GamePackets {
   val CMSG_LOGOUT_REQUEST = 0x4B
   val CMSG_NAME_QUERY = 0x50
   val SMSG_NAME_QUERY = 0x51
+  val CMSG_GUILD_QUERY = 0x54
+  val SMSG_GUILD_QUERY = 0x55
   val CMSG_WHO = 0x62
   val SMSG_WHO = 0x63
   val CMSG_GUILD_ROSTER = 0x89
@@ -53,6 +55,9 @@ trait GamePackets {
     lazy val CHAT_MSG_CHANNEL_LIST = if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 0x11.toByte else 0x14.toByte
     lazy val CHAT_MSG_CHANNEL_NOTICE = if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 0x12.toByte else 0x15.toByte
     lazy val CHAT_MSG_CHANNEL_NOTICE_USER = if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 0x13.toByte else 0x16.toByte
+
+    lazy val CHAT_MSG_ACHIEVEMENT = if (WowChatConfig.getExpansion == WowExpansion.MoP) 0x2E.toByte else 0x30.toByte
+    lazy val CHAT_MSG_GUILD_ACHIEVEMENT = if (WowChatConfig.getExpansion == WowExpansion.MoP) 0x2F.toByte else 0x31.toByte
 
     def parse(tp: String): Byte = {
       (tp.toLowerCase match {
