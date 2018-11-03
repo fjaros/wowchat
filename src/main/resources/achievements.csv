@@ -128,7 +128,7 @@
 239,25000 Honorable Kills
 245,That Takes Class
 246,Know Thy Enemy
-247,Make Love
+247,Make Love, Not Warcraft
 248,Sunday's Finest
 249,Dressed for the Occasion
 252,With a Little Helper from My Friends
@@ -151,7 +151,7 @@
 292,Sinister Calling
 293,Disturbing the Peace
 295,Direbrewfest
-303,Have Keg
+303,Have Keg, Will Travel
 306,Master Angler of Azeroth
 318,Total deaths from opposite faction
 319,Duels won
@@ -217,10 +217,10 @@
 419,Vengeful Gladiator
 420,Brutal Gladiator
 424,Why? Because It's Red
-425,Atiesh
+425,Atiesh, Greatstaff of the Guardian
 426,Warglaives of Azzinoth
-428,Thunderfury
-429,Sulfuras
+428,Thunderfury, Blessed Blade of the Windseeker
+429,Sulfuras, Hand of Ragnaros
 430,Amani War Bear
 431,Hand of A'dal
 432,Champion of the Naaru
@@ -455,7 +455,7 @@
 712,Warsong Outrider
 713,Silverwing Sentinel
 714,The Conqueror
-725,Thori'dal
+725,Thori'dal, the Stars' Fury
 726,Mr. Pinchy's Magical Crawdad Box
 727,Call in the Cavalry
 728,Explore Durotar
@@ -537,7 +537,7 @@
 868,Explore Isle of Quel'Danas
 869,50000 Honorable Kills
 870,100000 Honorable Kills
-871,Avast Ye
+871,Avast Ye, Admiral!
 872,Frenzied Defender
 873,Frostwolf Perfection
 875,Vengefully Dedicated
@@ -563,7 +563,7 @@
 896,A Quest a Day Keeps the Ogres at Bay
 897,You're So Offensive
 898,On Wings of Nether
-899,Oh My
+899,Oh My, Kurenai
 900,The Czar of Sporeggar
 901,Mag'har of Draenor
 902,Chief Exalted Officer
@@ -742,7 +742,7 @@
 1161,High Five: 2200
 1162,Hotter Streak
 1164,Everything Counts
-1165,My Sack is Gigantique
+1165,My Sack is "Gigantique"
 1166,To the Looter Go the Spoils
 1167,Master of Alterac Valley
 1169,Master of Arathi Basin
@@ -793,7 +793,7 @@
 1243,Fish Don't Leave Footprints
 1244,Well Read
 1248,Plethora of Pets
-1250,Shop Smart
+1250,Shop Smart, Shop Pet...Smart
 1251,Not In My House
 1252,Supreme Defender
 1254,Friend or Fowl?
@@ -1018,7 +1018,7 @@
 1700,Perma-Peddle
 1701,Be Mine!
 1702,Sweet Tooth
-1703,My Love is Like a Red
+1703,My Love is Like a Red, Red Rose
 1704,I Pitied The Fool
 1705,Clockwork Rocket Bot
 1706,Crashin' Thrashin' Racer
@@ -1074,9 +1074,9 @@
 1786,School of Hard Knocks
 1788,Bad Example
 1789,Daily Chores
-1790,Hail To The King
+1790,Hail To The King, Baby
 1791,Home Alone
-1792,Aw
+1792,Aw, Isn't It Cute?
 1793,For the Children
 1795,Lunch Lady
 1796,Short Order Cook
@@ -1183,7 +1183,7 @@
 2141,Stable Keeper
 2142,Filling Up The Barn
 2143,Leading the Cavalry
-2144,What a Long
+2144,What a Long, Strange Trip It's Been
 2146,The Hundred Club (10 player)
 2147,The Hundred Club (25 player)
 2148,Denyin' the Scion (10 player)
@@ -1337,8 +1337,8 @@
 2918,Orbital Bombardment (25 player)
 2919,A Quick Shave (10 player)
 2921,A Quick Shave (25 player)
-2923,Iron Dwarf
-2924,Iron Dwarf
+2923,Iron Dwarf, Medium Rare (10 player)
+2924,Iron Dwarf, Medium Rare (25 player)
 2925,Shattered (10 player)
 2926,Shattered (25 player)
 2927,Hot Pocket (10 player)
@@ -1353,12 +1353,12 @@
 2936,Nerf Gravity Bombs (25 player)
 2937,Must Deconstruct Faster (10 player)
 2938,Must Deconstruct Faster (25 player)
-2939,I Choose You
-2940,I Choose You
-2941,I Choose You
-2942,I Choose You
-2943,I Choose You
-2944,I Choose You
+2939,I Choose You, Runemaster Molgeim (10 player)
+2940,I Choose You, Stormcaller Brundir (10 player)
+2941,I Choose You, Steelbreaker (10 player)
+2942,I Choose You, Runemaster Molgeim (25 player)
+2943,I Choose You, Stormcaller Brundir (25 player)
+2944,I Choose You, Steelbreaker (25 player)
 2945,But I'm On Your Side (10 player)
 2946,But I'm On Your Side (25 player)
 2947,Can't Do That While Stunned (10 player)
@@ -1434,7 +1434,7 @@
 3137,Emalon the Storm Watcher (25 player)
 3138,Not-So-Friendly Fire (10 player)
 3141,Two Lights in the Darkness (10 player)
-3142,Val'anyr
+3142,Val'anyr, Hammer of Ancient Kings
 3157,Three Lights in the Darkness (10 player)
 3158,One Light in the Darkness (10 player)
 3159,Alone in the Darkness (10 player)
@@ -1444,16 +1444,16 @@
 3164,Alone in the Darkness (25 player)
 3176,Lose Your Illusion (10 player)
 3177,Knock on Wood (10 player)
-3178,Knock
-3179,Knock
+3178,Knock, Knock on Wood (10 player)
+3179,Knock, Knock, Knock on Wood (10 player)
 3180,Firefighter (10 player)
 3181,I Love the Smell of Saronite in the Morning (10 player)
 3182,I Could Say That This Cache Was Rare (10 player)
 3183,Lose Your Illusion (25 player)
 3184,I Could Say That This Cache Was Rare (25 player)
 3185,Knock on Wood (25 player)
-3186,Knock
-3187,Knock
+3186,Knock, Knock on Wood (25 player)
+3187,Knock, Knock, Knock on Wood (25 player)
 3188,I Love the Smell of Saronite in the Morning (25 player)
 3189,Firefighter (25 player)
 3216,Smelting Recipes learned
@@ -1483,7 +1483,7 @@
 3576,Now We're Cookin'
 3577,Now We're Cookin'
 3578,The Turkinator
-3579,FOOD FIGHT!
+3579,"FOOD FIGHT!"
 3580,Pilgrim's Peril
 3581,Pilgrim's Peril
 3582,Terokkar Turkey Time
@@ -1537,13 +1537,13 @@
 3916,Call of the Crusade (25 player)
 3917,Call of the Crusade (10 player)
 3918,Call of the Grand Crusade (10 player)
-3936,Not One
-3937,Not One
+3936,Not One, But Two Jormungars (10 player)
+3937,Not One, But Two Jormungars (25 player)
 3957,Master of Isle of Conquest
 3996,Three Sixty Pain Spike (10 player)
 3997,Three Sixty Pain Spike (25 player)
-4016,Earth
-4017,Earth
+4016,Earth, Wind & Fire (10 player)
+4017,Earth, Wind & Fire (25 player)
 4018,Victories over Hunter Champion (Trial of the Champion)
 4019,Victories over Hunter Champion (Heroic Trial of the Champion)
 4022,Victories over Argent Confessor Paletress (Trial of the Champion)
@@ -1633,11 +1633,11 @@
 4536,I'm on a Boat (10 player)
 4537,I've Gone and Made a Mess (10 player)
 4538,Dances with Oozes (10 player)
-4539,Once Bitten
+4539,Once Bitten, Twice Shy (10 player)
 4556,Lich King random Heroic dungeons completed
 4576,Realm First! Fall of the Lich King
 4577,Flu Shot Shortage (10 player)
-4578,Nausea
+4578,Nausea, Heartburn, Indigestion... (10 player)
 4579,Portal Jockey (10 player)
 4580,All You Can Eat (10 player)
 4581,Neck-Deep in Vile (10 player)
@@ -1665,9 +1665,9 @@
 4613,I've Gone and Made a Mess (25 player)
 4614,Dances with Oozes (25 player)
 4615,Flu Shot Shortage (25 player)
-4616,Nausea
+4616,Nausea, Heartburn, Indigestion... (25 player)
 4617,The Orb Whisperer (25 player)
-4618,Once Bitten
+4618,Once Bitten, Twice Shy (25 player)
 4619,Portal Jockey (25 player)
 4620,All You Can Eat (25 player)
 4621,Been Waiting a Long Time for This (25 player)
@@ -1892,7 +1892,7 @@
 4989,A Class Act
 4995,Explore the Cape of Stranglethorn
 4996,Explore Southern Barrens
-4997,Sulfuras
+4997,Sulfuras, Hand of Ragnaros - Guild Edition
 4998,Realm First! Level 85 Shaman
 4999,Realm First! Level 85
 5000,Realm First! Level 85 Druid
@@ -1920,7 +1920,7 @@
 5022,The Twilight Destroyer - Guild Edition
 5023,The Frozen Throne - Guild Edition
 5024,Better Leveling Through Chemistry
-5025,Dust
+5025,Dust, Dust, and More Dust!
 5026,Dinner Party
 5027,Bushels and Bushels
 5028,Skinnin' For A Livin'
@@ -2066,10 +2066,10 @@
 5178,Worgen Slayer
 5179,Alliance Slayer
 5180,Breaking The Sound Barrier
-5184,Thunderfury
+5184,Thunderfury, Blessed Blade of the Windseeker - Guild Edition
 5185,Warglaives of Azzinoth - Guild Edition
-5186,Thori'dal
-5187,Val'anyr
+5186,Thori'dal, the Stars' Fury - Guild Edition
+5187,Val'anyr, Hammer of Ancient Kings - Guild Edition
 5188,Shadowmourne - Guild Edition
 5191,Tragedy in Three Acts
 5192,The Harder they Fall
@@ -2090,8 +2090,8 @@
 5216,Peak Speed
 5219,I'm in the White Lodge
 5220,I'm in the Black Lodge
-5221,Fire
-5222,Fire
+5221,Fire, Walk With Me
+5222,Fire, Walk With Me
 5223,Master of Twin Peaks
 5226,Cloud Nine
 5227,Cloud Nine
@@ -2166,8 +2166,8 @@
 5313,I Can't Hear You Over the Sound of How Awesome I Am
 5315,Digger
 5317,Help the Bombardier! I'm the Bombardier!
-5318,20
-5319,20
+5318,20,000 Leagues Under the Sea
+5319,20,000 Leagues Under the Sea
 5320,King of the Mountain
 5321,King of the Mountain
 5322,In Service of the Alliance
@@ -2270,7 +2270,7 @@
 5441,Guild Battlemasters
 5442,Full Caravan
 5443,E'ko Madness
-5444,Ready
+5444,Ready, Set, Goat!
 5445,Fungalophobia
 5446,The Glop Family Line
 5447,My Very Own Broodmother
@@ -2292,7 +2292,7 @@
 5464,Heroic: Sinestra Guild Run
 5465,Mix Master
 5466,Time to Open a Restaurant
-5467,Set the Oven to Cataclysmic
+5467,Set the Oven to "Cataclysmic"
 5468,Like Shooting Fish in a Barrel
 5469,Diggerer
 5470,Diggerest
@@ -2326,10 +2326,10 @@
 5533,Veteran of the Shifting Sands
 5535,1000 Valor Points
 5536,5000 Valor Points
-5537,25
-5538,50
-5539,50
-5540,25
+5537,25,000 Valor Points
+5538,50,000 Valor Points
+5539,50,000 Conquest Points
+5540,25,000 Conquest Points
 5541,5000 Conquest Points
 5542,1000 Conquest Points
 5546,Glutton for Icy Punishment
@@ -2411,7 +2411,7 @@
 5760,Ring Out!
 5761,Hex Mix
 5762,Ohganot So Fast!
-5765,Here
+5765,Here, Kitty Kitty...
 5767,Scourer of the Eternal Sands
 5768,Heroic: Zul'Gurub
 5769,Heroic: Zul'Aman
@@ -2455,8 +2455,8 @@
 5836,Tricks and Treats of Northrend
 5837,Tricks and Treats of the Cataclysm
 5838,Tricks and Treats of the Cataclysm
-5839,Dragonwrath
-5840,Dragonwrath
+5839,Dragonwrath, Tarecgosa's Rest
+5840,Dragonwrath, Tarecgosa's Rest - Guild Edition
 5841,Let's Do Lunch: Ironforge
 5842,Let's Do Lunch: Darnassus
 5843,Let's Do Lunch: Thunder Bluff
@@ -2522,7 +2522,7 @@
 6012,Flame Keeper of Cataclysm
 6013,Extinguishing the Cataclysm
 6014,Extinguishing the Cataclysm
-6019,Come One
+6019,Come One, Come All!
 6020,Step Right Up
 6021,Blastenheimer Bullseye
 6022,Quick Shot
@@ -2653,7 +2653,7 @@
 6477,Respect
 6478,Glintrok N' Roll
 6479,Bomberman
-6480,Settle Down
+6480,Settle Down, Bro
 6485,Return to Sender
 6517,Extinction Event
 6518,I Heard You Like Amber...
@@ -2667,7 +2667,7 @@
 6536,Mighty Roamin' Krasaranger
 6537,Slum It in the Summit
 6538,Slum It in the Summit
-6539,One Steppe Forward
+6539,One Steppe Forward, Two Steppes Back
 6540,Dread Haste Makes Dread Waste
 6541,Loremaster of Pandaria
 6543,The August Celestials
@@ -2755,7 +2755,7 @@
 6669,Heart of Fear Guild Run
 6670,Terrace of Endless Spring Guild Run
 6671,Seeds of Doubt
-6674,Anything You Can Do
+6674,Anything You Can Do, I Can Do Better...
 6675,Heroic: Will of the Emperor Guild Run
 6676,Heroic: Sha of Fear Guild Run
 6677,Heroic: Grand Empress Shek'zeer Guild Run
@@ -2964,7 +2964,7 @@
 6921,Challenge Conquerors - Guild Edition
 6922,Timing is Everything
 6923,Brewmoon Festival
-6924,100
+6924,100,000 Valor Points
 6925,Pandaria Dungeon Hero
 6926,Tranquil Master
 6927,Glory of the Pandaria Hero
@@ -3020,7 +3020,7 @@
 7000,Sha of Fear kills (LFR Terrace of Endless Spring)
 7039,The Long Riders
 7049,Mine Cart Courier
-7056,Sorry
+7056,Sorry, Were You Looking for This?
 7057,End of the Line
 7062,Mine Mine Mine!
 7099,Five for Five
@@ -3042,7 +3042,7 @@
 7245,Pandaria raid bosses defeated
 7246,Pandaria different raid bosses defeated
 7247,Pandaria raid boss defeated the most
-7248,Monkey See
+7248,Monkey See, Monkey Kill
 7249,Unga Ingoo
 7250,Resuscitated by monks
 7251,Raised by death knights
@@ -3212,7 +3212,7 @@
 7501,That's a Lot of Pet Food
 7502,Savior of Stoneplow
 7509,Scenaturday
-7518,Wanderers
+7518,Wanderers, Dreamers, and You
 7520,The Loremaster
 7521,Time to Open a Pet Store
 7522,Crypt of Forgotten Kings
@@ -3264,7 +3264,7 @@
 7927,Will of the Emperor kills (25-player Heroic Mogu'shan Vaults)
 7928,Operation: Shieldwall Campaign
 7929,Dominance Offensive Campaign
-7932,I'm In Your Base
+7932,I'm In Your Base, Killing Your Dudes
 7933,And... It's Good!
 7934,Raiding with Leashes
 7936,Pandaren Spirit Tamer
@@ -3318,10 +3318,10 @@
 8009,Dagger in the Dark
 8010,Lion's Landing
 8011,Number Five Is Alive
-8012,Waste Not
+8012,Waste Not, Want Not
 8013,Domination Point
 8014,Number Five Is Alive
-8015,Waste Not
+8015,Waste Not, Want Not
 8016,Assault on Zan'vess
 8017,For the Swarm
 8020,You Are Not Your $#*@! Legplates
@@ -3381,7 +3381,7 @@
 8105,The Crumble Bundle
 8106,In the Hall of the Thunder King
 8107,Ready for RAAAAIIIIDDD?!?ing
-8108,When in Ihgaluk
+8108,When in Ihgaluk, Do as the Skumblade Do
 8109,The Mogu Below-gu
 8110,These Mogu Have Gotta Go-gu
 8111,This Isn't Even My Final Form
@@ -3505,7 +3505,7 @@
 8291,Gastropod meals provided
 8293,Raiding with Leashes II: Attunement Edition
 8294,The Secrets of Ragefire
-8295,The Few
+8295,The Few, the Proud, the Gob Squad
 8297,Merciless Pet Brawler
 8298,Vengeful Pet Brawler
 8300,Brutal Pet Brawler
@@ -3777,9 +3777,9 @@
 8724,Pilgrimage
 8725,Eyes On The Ground
 8726,Extreme Treasure Hunter
-8727,Where There's Pirates
+8727,Where There's Pirates, There's Booty
 8728,Going To Need A Bigger Bag
-8729,Treasure
+8729,Treasure, Treasure Everywhere
 8730,Rolo's Riddle
 8743,Zarhym Altogether
 8784,Timeless Legends
