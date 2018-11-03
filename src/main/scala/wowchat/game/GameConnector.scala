@@ -88,6 +88,10 @@ class GameConnector(host: String,
   }
 
   def disconnect: Unit = {
+    if (Global.group.isShuttingDown || Global.group.isShutdown || Global.group.isTerminated) {
+      return
+    }
+
     channel.foreach(channel => {
       handler.get.sendLogout.foreach(_.await)
       channel.close

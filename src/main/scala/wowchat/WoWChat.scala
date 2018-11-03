@@ -7,6 +7,7 @@ import wowchat.discord.Discord
 import wowchat.game.GameConnector
 import wowchat.realm.{RealmConnectionCallback, RealmConnector}
 import com.typesafe.scalalogging.StrictLogging
+import io.netty.channel.nio.NioEventLoopGroup
 
 import scala.io.Source
 
@@ -31,6 +32,8 @@ object WoWChat extends StrictLogging {
       private val reconnectDelay = new ReconnectDelay
 
       override def connect: Unit = {
+        Global.group = new NioEventLoopGroup
+
         val realmConnector = new RealmConnector(new RealmConnectionCallback {
           override def success(host: String, port: Int, realmName: String, realmId: Int, sessionKey: Array[Byte]): Unit = {
             gameConnect(host, port, realmName, realmId, sessionKey)
@@ -53,6 +56,7 @@ object WoWChat extends StrictLogging {
       override def disconnected: Unit = doReconnect
 
       def doReconnect: Unit = {
+        Global.group.shutdownGracefully()
         Global.discord.changeRealmStatus("Connecting...")
         val delay = reconnectDelay.getNext
         logger.info(s"Disconnected from server! Reconnecting in $delay seconds...")

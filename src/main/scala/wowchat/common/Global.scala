@@ -3,16 +3,16 @@ package wowchat.common
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+import io.netty.channel.EventLoopGroup
+import net.dv8tion.jda.core.entities.TextChannel
 import wowchat.discord.Discord
 import wowchat.game.GameCommandHandler
-import io.netty.channel.nio.NioEventLoopGroup
-import net.dv8tion.jda.core.entities.TextChannel
 
 import scala.collection.mutable
 
 object Global {
 
-  val group = new NioEventLoopGroup
+  var group: EventLoopGroup = _
   var config: WowChatConfig = _
 
   var discord: Discord = _
