@@ -66,9 +66,9 @@ class MessageResolver(jda: JDA) {
       val user = member.getUser
       s"${user.getName}#${user.getDiscriminator}" -> user.getId
     })
-    val roleNames = jda.getRoles.asScala.map(role => {
-      role.getName -> role.getId
-    })
+    val roleNames = jda.getRoles.asScala
+      .filterNot(_.getName == "@everyone")
+      .map(role => role.getName -> role.getId)
 
     // each group
     Seq(regex1, regex2).foldLeft(message) {

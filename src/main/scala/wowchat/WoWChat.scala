@@ -13,9 +13,10 @@ import scala.io.Source
 
 object WoWChat extends StrictLogging {
 
-  private val RELEASE = "v1.2.1"
+  private val RELEASE = "v1.2.2"
 
   def main(args: Array[String]): Unit = {
+    logger.info(s"Running WoWChat - $RELEASE")
     val confFile = if (args.nonEmpty) {
       args(0)
     } else {
@@ -67,6 +68,7 @@ object WoWChat extends StrictLogging {
       }
     }
 
+    logger.info("Connecting to Discord...")
     Global.discord = new Discord(new CommonConnectionCallback {
       override def connected: Unit = gameConnectionController.connect
 

@@ -1,3 +1,10 @@
+2018-11-03 - v1.2.2
+* Changed emoji parsing to now display the ASCII version of the emoji, rather than just removing it from the message.
+* Now need to type @everyone in wow to actually tag everyone, instead of just a fraction thereof like @@ or @e.
+* Fixed achievements with commas or quotes not displaying correctly.
+* Fixed some failed reconnection cases.
+* Clearer logging during logon sequence.
+
 2018-11-01 - v1.2.1
 + Support for achievement messages shown in guild chat (WotLK/Cataclysm/MoP).
 * Fixed error in log when sending the bot a private, group, or voice message on discord.

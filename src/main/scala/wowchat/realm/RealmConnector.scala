@@ -16,7 +16,7 @@ class RealmConnector(realmConnectionCallback: RealmConnectionCallback) extends S
   private var connected: Boolean = false
 
   def connect: Unit = {
-    logger.info(s"Logging into realm server ${Global.config.wow.realmlist.host}:${Global.config.wow.realmlist.port}")
+    logger.info(s"Connecting to realm server ${Global.config.wow.realmlist.host}:${Global.config.wow.realmlist.port}")
 
     val bootstrap = new Bootstrap
     bootstrap.group(Global.group)

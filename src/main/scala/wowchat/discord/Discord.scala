@@ -181,6 +181,6 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   }
 
   def sanitizeMessage(message: String): String = {
-    EmojiParser.removeAllEmojis(message)
+    EmojiParser.parseToAliases(message, EmojiParser.FitzpatrickAction.REMOVE)
   }
 }

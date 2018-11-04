@@ -31,7 +31,7 @@ class GameConnector(host: String,
       return
     }
 
-    logger.info(s"Logging into game server $realmName ($host:$port)")
+    logger.info(s"Connecting to game server $realmName ($host:$port)")
 
     val bootstrap = new Bootstrap
     bootstrap.group(Global.group)

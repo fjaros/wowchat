@@ -16,6 +16,9 @@ Features:
   * Guild chat, Officer chat, Local chat, Emotes, Custom Channels.
   * In-game links (items, spells, ...) are displayed as links to classicdb or twinstar, depending on the expansion
   * Configurable message format
+* Smart Tagging
+  * Tag players on Discord from WoW using @and_part_or_all_of_their_name.
+  * You can also tag @here and @everyone and "@Even Roles With Spaces" (include quotes around them).
 * Custom commands
   * Check who is online in your guild
   * Query other players in the world
@@ -92,6 +95,6 @@ Even though this bot does not do anything malicious, some servers may not like a
 OR to compile yourself:
 1. WoW Chat is written in Scala and compiles to a Java executable using [maven](https://maven.apache.org).
 2. It uses Java JDK 1.8 and Scala 2.12.6.
-3. Run `mvn clean package` which will produce a file in the target folder called `wowchat.zip`
-4. unzip `wowchat-1.2.1.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
+3. Run `mvn clean package` which will produce a file in the target folder called `wowchat-1.2.2.zip`
+4. unzip `wowchat-1.2.2.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
    * If no config file is supplied, the bot will try to use `wowchat.conf`

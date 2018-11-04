@@ -23,6 +23,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
   }
 
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
+    logger.info(s"Connected! Sending account login information...")
     this.ctx = Some(ctx)
     val version = WowChatConfig.getVersion.split("\\.").map(_.toByte)
     val accountConfig = Global.config.wow.account.toUpperCase
@@ -139,6 +140,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     val accountFlag = msg.byteBuf.readIntLE
 
     // ask for realm list
+    logger.info(s"Successfully logged into realm server. Looking for realm ${Global.config.wow.realmlist.name}")
     val ret = PooledByteBufAllocator.DEFAULT.buffer(4, 4)
     ret.writeIntLE(0)
     ctx.get.writeAndFlush(Packet(RealmPackets.CMD_REALM_LIST, ret))

@@ -182,6 +182,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
+    logger.info("Connected! Authenticating...")
     this.ctx = Some(ctx)
     Global.game = Some(this)
   }
