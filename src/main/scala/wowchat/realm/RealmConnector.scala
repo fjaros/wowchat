@@ -1,6 +1,7 @@
 package wowchat.realm
 
 import java.net.InetSocketAddress
+import java.util.concurrent.TimeUnit
 
 import wowchat.common._
 import com.typesafe.scalalogging.StrictLogging
@@ -9,6 +10,9 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.channel.{Channel, ChannelInitializer, ChannelOption}
 import io.netty.handler.timeout.IdleStateHandler
+import io.netty.util.concurrent.{Future, GenericFutureListener}
+
+import scala.util.Try
 
 class RealmConnector(realmConnectionCallback: RealmConnectionCallback) extends StrictLogging {
 
@@ -44,6 +48,13 @@ class RealmConnector(realmConnectionCallback: RealmConnectionCallback) extends S
         }
       })
 
-    channel = Some(bootstrap.connect.channel)
+    channel = Some(bootstrap.connect.addListener((future: Future[_ >: Void]) => {
+      Try {
+        future.get(10, TimeUnit.SECONDS)
+      }.fold(throwable => {
+        logger.error("Failed to connect to realm server! " + throwable.getMessage)
+        realmConnectionCallback.disconnected
+      }, _ => Unit)
+    }).channel)
   }
 }

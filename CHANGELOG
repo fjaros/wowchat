@@ -1,3 +1,6 @@
+2018-11-05 - v1.2.3
+* Added back handlers for game server connection timeouts.
+
 2018-11-03 - v1.2.2
 * Changed emoji parsing to now display the ASCII version of the emoji, rather than just removing it from the message.
 * Now need to type @everyone in wow to actually tag everyone, instead of just a fraction thereof like @@ or @e.

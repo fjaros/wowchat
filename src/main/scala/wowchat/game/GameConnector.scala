@@ -1,6 +1,7 @@
 package wowchat.game
 
 import java.net.InetSocketAddress
+import java.util.concurrent.TimeUnit
 
 import wowchat.common._
 import com.typesafe.scalalogging.StrictLogging
@@ -9,6 +10,9 @@ import io.netty.channel.{Channel, ChannelInitializer, ChannelOption}
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.timeout.IdleStateHandler
+import io.netty.util.concurrent.Future
+
+import scala.util.Try
 
 class GameConnector(host: String,
                     port: Int,
@@ -84,7 +88,14 @@ class GameConnector(host: String,
         }
       })
 
-    channel = Some(bootstrap.connect.channel)
+    channel = Some(bootstrap.connect.addListener((future: Future[_ >: Void]) => {
+      Try {
+        future.get(10, TimeUnit.SECONDS)
+      }.fold(throwable => {
+        logger.error("Failed to connect to game server! " + throwable.getMessage)
+        gameEventCallback.disconnected
+      }, _ => Unit)
+    }).channel)
   }
 
   def disconnect: Unit = {
