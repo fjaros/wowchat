@@ -20,7 +20,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
 
   override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
     ctx.foreach(ctx => {
-      val out = PooledByteBufAllocator.DEFAULT.buffer(100, 4096)
+      val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
       out.writeIntLE(languageId)
       target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
         logger.info(s"Discord->WoW($target): $message")

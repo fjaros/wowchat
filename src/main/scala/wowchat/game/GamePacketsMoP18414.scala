@@ -25,7 +25,6 @@ trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
   override val SMSG_WHO = 0x161B
   override val CMSG_GUILD_ROSTER = 0x1459
   override val SMSG_GUILD_ROSTER = 0x0BE0
-  override val SMSG_GUILD_EVENT = 0x0000 // needs to be implemented in separate packets. obsolete in mop
   override val SMSG_CHATMESSAGE = 0x1A9A
   override val CMSG_JOIN_CHANNEL = 0x148E
   override val SMSG_CHANNEL_NOTIFY = 0x0F06
