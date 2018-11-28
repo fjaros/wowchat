@@ -92,7 +92,7 @@ class GameConnector(host: String,
       Try {
         future.get(10, TimeUnit.SECONDS)
       }.fold(throwable => {
-        logger.error("Failed to connect to game server! " + throwable.getMessage)
+        logger.error(s"Failed to connect to game server! ${throwable.getMessage}")
         gameEventCallback.disconnected
       }, _ => Unit)
     }).channel)

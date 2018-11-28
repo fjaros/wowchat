@@ -94,6 +94,10 @@ class MessageResolver(jda: JDA) {
                                 onSuccess: String => Unit,
                                 onError: String => Unit, isRole: Boolean = false): Boolean = {
     val lTag = tag.toLowerCase
+    if (lTag == "here") {
+      return false
+    }
+
     val matchesInitial = names
       .filter {
         case (name, id) =>
@@ -102,7 +106,7 @@ class MessageResolver(jda: JDA) {
 
     val matches = if (matchesInitial.size > 1 && !lTag.contains(" ")) {
       matchesInitial.filterNot {
-        case (name, id) => name.contains(" ")
+        case (name, _) => name.contains(" ")
       }
     } else {
       matchesInitial

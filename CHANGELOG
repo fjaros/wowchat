@@ -1,3 +1,11 @@
+2018-11-28 - v1.2.4
+* Fixed initiating 2 reconnect timers if realm server is down.
+* Fixed tagging @here to correctly tag @here instead of resolving a name containg "here" first.
+* Fixed unhandled error (ERROR i.n.u.c.D.rejectedExecution - Failed to submit a listener notification task. Event loop shut down?)
+  when sending message from Discord to WoW if WoW is not connected.
+* Fixed Discord status not getting set if Discord connection reconnects.
+* Added heap dump parameter to start scripts.
+
 2018-11-05 - v1.2.3
 * Added back handlers for game server connection timeouts.
 

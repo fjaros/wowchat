@@ -54,7 +54,9 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
   override def channelInactive(ctx: ChannelHandlerContext): Unit = {
     pingExecutor.shutdown()
+    this.ctx = None
     gameEventCallback.disconnected
+    Global.game = None
     super.channelInactive(ctx)
   }
 
@@ -131,19 +133,26 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
-    ctx.foreach(ctx => {
-      val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
-      out.writeIntLE(tp)
-      out.writeIntLE(languageId)
-      target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
-        logger.info(s"Discord->WoW($target): $message")
-        out.writeCharSequence(target, Charset.forName("UTF-8"))
-        out.writeByte(0)
-      })
-      out.writeCharSequence(message, Charset.forName("UTF-8"))
-      out.writeByte(0)
-      ctx.writeAndFlush(Packet(CMSG_CHATMESSAGE, out))
+    target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
+      logger.info(s"Discord->WoW($target): $message")
     })
+
+    ctx.fold(logger.error("Cannot send message! Not connected to WoW!"))(ctx => {
+      ctx.writeAndFlush(buildChatMessage(tp, message, target))
+    })
+  }
+
+  protected def buildChatMessage(tp: Byte, message: String, target: Option[String]): Packet = {
+    val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
+    out.writeIntLE(tp)
+    out.writeIntLE(languageId)
+    target.foreach(target => {
+      out.writeCharSequence(target, Charset.forName("UTF-8"))
+      out.writeByte(0)
+    })
+    out.writeCharSequence(message, Charset.forName("UTF-8"))
+    out.writeByte(0)
+    Packet(CMSG_CHATMESSAGE, out)
   }
 
   override def sendNotification(message: String): Unit = {

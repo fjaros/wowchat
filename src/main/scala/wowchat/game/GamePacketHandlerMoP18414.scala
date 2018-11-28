@@ -51,28 +51,25 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     }
   }
 
-  override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
-    ctx.foreach(ctx => {
-      val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
-      out.writeIntLE(languageId)
-      target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
-        logger.info(s"Discord->WoW($target): $message")
-        if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
-          writeBits(out, target.length, 9)
-        }
-      })
-      writeBits(out, message.length, 8)
-      if (tp == ChatEvents.CHAT_MSG_WHISPER) {
-        writeBits(out, target.get.length, 9)
+  override def buildChatMessage(tp: Byte, message: String, target: Option[String]): Packet = {
+    val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
+    out.writeIntLE(languageId)
+    target.foreach(target => {
+      if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
+        writeBits(out, target.length, 9)
       }
-      flushBits(out)
-      // note for whispers (if the bot ever supports them, the order is opposite, person first then msg
-      out.writeBytes(message.getBytes)
-      if (target.isDefined) {
-        out.writeBytes(target.get.getBytes)
-      }
-      ctx.writeAndFlush(Packet(getChatPacketFromType(tp), out))
     })
+    writeBits(out, message.length, 8)
+    if (tp == ChatEvents.CHAT_MSG_WHISPER) {
+      writeBits(out, target.get.length, 9)
+    }
+    flushBits(out)
+    // note for whispers (if the bot ever supports them, the order is opposite, person first then msg
+    out.writeBytes(message.getBytes)
+    if (target.isDefined) {
+      out.writeBytes(target.get.getBytes)
+    }
+    Packet(getChatPacketFromType(tp), out)
   }
 
   // technically MoP sends sender name as part of chat message,

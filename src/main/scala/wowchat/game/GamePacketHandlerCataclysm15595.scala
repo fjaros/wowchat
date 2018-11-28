@@ -18,23 +18,20 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     }
   }
 
-  override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
-    ctx.foreach(ctx => {
-      val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
-      out.writeIntLE(languageId)
-      target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
-        logger.info(s"Discord->WoW($target): $message")
-        writeBits(out, target.length, 10)
-      })
-      writeBits(out, message.length, 9)
-      flushBits(out)
-      // note for whispers (if the bot ever supports them, the order is opposite, person first then msg
-      out.writeBytes(message.getBytes)
-      if (target.isDefined) {
-        out.writeBytes(target.get.getBytes)
-      }
-      ctx.writeAndFlush(Packet(getChatPacketFromType(tp), out))
+  override def buildChatMessage(tp: Byte, message: String, target: Option[String]): Packet = {
+    val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
+    out.writeIntLE(languageId)
+    target.foreach(target => {
+      writeBits(out, target.length, 10)
     })
+    writeBits(out, message.length, 9)
+    flushBits(out)
+    // note for whispers (if the bot ever supports them, the order is opposite, person first then msg)
+    out.writeBytes(message.getBytes)
+    if (target.isDefined) {
+      out.writeBytes(target.get.getBytes)
+    }
+    Packet(getChatPacketFromType(tp), out)
   }
 
   protected def getChatPacketFromType(tp: Byte): Int = {

@@ -25,8 +25,11 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
   private val messageResolver = MessageResolver(jda)
 
+  private var lastStatus: Option[Game] = None
+
   def changeStatus(gameType: GameType, message: String): Unit = {
-    jda.getPresence.setGame(Game.of(gameType, message))
+    lastStatus = Some(Game.of(gameType, message))
+    jda.getPresence.setGame(lastStatus.get)
   }
 
   def changeGuildStatus(message: String): Unit = {
@@ -95,6 +98,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         // we only care about this once. after we build the channel maps,
         // there is no reason to worry about the discord driver automatically reconnecting and changing status
         if (Global.discordToWow.nonEmpty || Global.wowToDiscord.nonEmpty) {
+          lastStatus.foreach(game => changeStatus(game.getType, game.getName))
           discordConnectionCallback.reconnected
           return
         }

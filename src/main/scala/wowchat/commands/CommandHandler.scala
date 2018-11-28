@@ -11,7 +11,7 @@ case class WhoResponse(playerName: String, guildName: String, lvl: Int, cls: Str
 
 object CommandHandler extends StrictLogging {
 
-  private val NOT_ONLINE = "Bot is not yet online."
+  private val NOT_ONLINE = "Bot is not online."
 
   // make some of these configurable
   private val trigger = "?"

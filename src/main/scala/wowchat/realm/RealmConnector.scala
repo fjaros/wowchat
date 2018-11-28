@@ -10,7 +10,7 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.channel.{Channel, ChannelInitializer, ChannelOption}
 import io.netty.handler.timeout.IdleStateHandler
-import io.netty.util.concurrent.{Future, GenericFutureListener}
+import io.netty.util.concurrent.Future
 
 import scala.util.Try
 
@@ -52,7 +52,7 @@ class RealmConnector(realmConnectionCallback: RealmConnectionCallback) extends S
       Try {
         future.get(10, TimeUnit.SECONDS)
       }.fold(throwable => {
-        logger.error("Failed to connect to realm server! " + throwable.getMessage)
+        logger.error(s"Failed to connect to realm server! ${throwable.getMessage}")
         realmConnectionCallback.disconnected
       }, _ => Unit)
     }).channel)
