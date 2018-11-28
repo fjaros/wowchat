@@ -177,7 +177,12 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
                 .replace("%message", message)
             }
 
-            Global.game.foreach(handler => {
+            channelConfig.channel.fold(
+              logger.info(s"Discord->WoW(${ChatEvents.valueOf(channelConfig.tp)}): $message")
+            )(target => {
+              logger.info(s"Discord->WoW($target): $message")
+            })
+            Global.game.fold(logger.error("Cannot send message! Not connected to WoW!"))(handler => {
               handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)
             })
         })

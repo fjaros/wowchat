@@ -133,10 +133,6 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
-    target.fold(logger.info(s"Discord->WoW(${ChatEvents.valueOf(tp)}): $message"))(target => {
-      logger.info(s"Discord->WoW($target): $message")
-    })
-
     ctx.fold(logger.error("Cannot send message! Not connected to WoW!"))(ctx => {
       ctx.writeAndFlush(buildChatMessage(tp, message, target))
     })
