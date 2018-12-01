@@ -42,7 +42,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String]): Unit = {
     val discordChannels = Global.wowToDiscord((wowType, wowChannel.map(_.toLowerCase)))
-    val parsedLinks = messageResolver.stripColorCoding(messageResolver.resolveLinks(message))
+    val parsedLinks = messageResolver.resolveEmojis(messageResolver.stripColorCoding(messageResolver.resolveLinks(message)))
 
     discordChannels.foreach {
       case (channel, channelConfig) =>

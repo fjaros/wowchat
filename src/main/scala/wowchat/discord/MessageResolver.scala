@@ -124,6 +124,23 @@ class MessageResolver(jda: JDA) {
 
     matches.nonEmpty
   }
+
+  def resolveEmojis(message: String): String = {
+    val regex = ":(.+?):".r
+
+    // could do some caching here later
+    val emojiMap = jda.getEmotes.asScala.map(emote => {
+      emote.getName.toLowerCase -> emote.getId
+    }).toMap
+
+    regex.replaceAllIn(message, m => {
+      val emojiName = m.group(1).toLowerCase
+
+      emojiMap.get(emojiName).fold(m.group(0))(id => {
+        s"<:$emojiName:$id>"
+      })
+    })
+  }
 }
 
 // ADD MORE HERE AS NEEDED
