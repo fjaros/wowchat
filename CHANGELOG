@@ -1,3 +1,7 @@
+2018-12-05 - v1.2.4a
+* Fixed inability to connect to servers which "overflow" their port in realm listing.
+* Force usage of UTF-8 for the reading of all chat messages.
+
 2018-11-28 - v1.2.4
 * Fixed initiating 2 reconnect timers if realm server is down.
 * Fixed tagging @here to correctly tag @here instead of resolving a name containg "here" first.

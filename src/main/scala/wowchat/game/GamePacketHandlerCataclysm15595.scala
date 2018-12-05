@@ -155,7 +155,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
       msg.byteBuf.skipBytes(9)
       guids(i)(7) = msg.readXorByte(guids(i)(7))
       msg.byteBuf.skipBytes(1)
-      val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.defaultCharset).toString
+      val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.forName("UTF-8")).toString
       msg.byteBuf.skipBytes(1)
       guids(i)(0) = msg.readXorByte(guids(i)(0))
       guids(i)(2) = msg.readXorByte(guids(i)(2))
@@ -282,7 +282,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
       msg.byteBuf.skipBytes(4) // last logoff time
       msg.byteBuf.skipBytes(oNoteLengths(i)) // officer note
       guids(i)(6) = msg.readXorByte(guids(i)(6))
-      val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.defaultCharset).toString
+      val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
 
       if ((flags & 0x01) == 0x01) {
         Some(ByteUtils.bytesToLongLE(guids(i)) -> Player(name, charClass))
@@ -294,7 +294,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
 
   override protected def parseNotification(msg: Packet): String = {
     val length = msg.readBits(13)
-    msg.byteBuf.readCharSequence(length, Charset.defaultCharset).toString
+    msg.byteBuf.readCharSequence(length, Charset.forName("UTF-8")).toString
   }
 
   private def handle_WOW_CONNECTION(msg: Packet): Unit = {

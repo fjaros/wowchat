@@ -521,7 +521,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
 
     val txtLen = msg.byteBuf.readIntLE
-    val txt = msg.byteBuf.readCharSequence(txtLen - 1, Charset.defaultCharset).toString
+    val txt = msg.byteBuf.readCharSequence(txtLen - 1, Charset.forName("UTF-8")).toString
 
     Some(ChatMessage(guid, tp, txt, channelName))
   }

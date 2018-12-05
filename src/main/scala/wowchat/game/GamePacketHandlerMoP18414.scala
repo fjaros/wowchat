@@ -143,7 +143,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
     guid3(6) = msg.readXorByte(guid3(6))
     guid3(0) = msg.readXorByte(guid3(0))
-    val name = msg.byteBuf.readCharSequence(nameLength, Charset.defaultCharset).toString
+    val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
 
     // can't be bothered to parse the rest of this crap
     NameQueryMessage(ByteUtils.bytesToLongLE(guid), name, charClass)
@@ -227,7 +227,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
         playerGuid(i)(7) = msg.readXorByte(playerGuid(i)(7))
         msg.byteBuf.skipBytes(4) // realm id
         playerGuid(i)(4) = msg.readXorByte(playerGuid(i)(4))
-        val playerName = msg.byteBuf.readCharSequence(playerNameLengths(i), Charset.defaultCharset).toString
+        val playerName = msg.byteBuf.readCharSequence(playerNameLengths(i), Charset.forName("UTF-8")).toString
         guildGuid(i)(1) = msg.readXorByte(guildGuid(i)(1))
         playerGuid(i)(0) = msg.readXorByte(playerGuid(i)(0))
         guildGuid(i)(2) = msg.readXorByte(guildGuid(i)(2))
@@ -236,7 +236,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
         playerGuid(i)(3) = msg.readXorByte(playerGuid(i)(3))
         guildGuid(i)(6) = msg.readXorByte(guildGuid(i)(6))
         msg.byteBuf.skipBytes(4) // account id?
-        val guildName = msg.byteBuf.readCharSequence(guildNameLengths(i), Charset.defaultCharset).toString
+        val guildName = msg.byteBuf.readCharSequence(guildNameLengths(i), Charset.forName("UTF-8")).toString
         guildGuid(i)(3) = msg.readXorByte(guildGuid(i)(3))
         accountId(i)(4) = msg.readXorByte(accountId(i)(4))
         val cls = Classes.valueOf(msg.byteBuf.readByte)
@@ -373,7 +373,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       guildGuids(i)(2) = msg.readXorByte(guildGuids(i)(2))
       guildGuids(i)(0) = msg.readXorByte(guildGuids(i)(0))
       guildGuids(i)(6) = msg.readXorByte(guildGuids(i)(6))
-      val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.defaultCharset).toString
+      val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.forName("UTF-8")).toString
       guildGuids(i)(3) = msg.readXorByte(guildGuids(i)(3))
       msg.byteBuf.skipBytes(10) // x + unkn + face + class
       guildGuids(i)(5) = msg.readXorByte(guildGuids(i)(5))
@@ -476,7 +476,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       msg.byteBuf.skipBytes(rankLengths(i))
     })
 
-    msg.byteBuf.readCharSequence(guildNameLength, Charset.defaultCharset).toString
+    msg.byteBuf.readCharSequence(guildNameLength, Charset.forName("UTF-8")).toString
     // no need to parse other stuff
   }
 
@@ -559,7 +559,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     msg.readXorByteSeq(guildGuid, 4, 5, 7, 3, 2, 6, 0, 1)
 
     val channelName = if (hasChannelName) {
-      Some(msg.byteBuf.readCharSequence(channelNameLength, Charset.defaultCharset).toString)
+      Some(msg.byteBuf.readCharSequence(channelNameLength, Charset.forName("UTF-8")).toString)
     } else {
       None
     }
@@ -609,7 +609,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     }
 
     val txt = if (hasMessage) {
-      msg.byteBuf.readCharSequence(messageLength, Charset.defaultCharset).toString
+      msg.byteBuf.readCharSequence(messageLength, Charset.forName("UTF-8")).toString
     } else {
       ""
     }
@@ -660,7 +660,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     (0 until count).flatMap(i => {
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // total reputation
-      val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.defaultCharset).toString
+      val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
       guids(i)(0) = msg.readXorByte(guids(i)(0))
       msg.byteBuf.skipBytes(24) // professions
       msg.byteBuf.skipBytes(1) // level
@@ -694,7 +694,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
   override protected def parseNotification(msg: Packet): String = {
     val length = msg.readBits(12)
-    msg.byteBuf.readCharSequence(length, Charset.defaultCharset).toString
+    msg.byteBuf.readCharSequence(length, Charset.forName("UTF-8")).toString
   }
 
   override protected def initializeWardenHandler: WardenHandler = {
@@ -703,7 +703,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
   private def handle_SMSG_GUILD_MOTD(msg: Packet): Unit = {
     val length = msg.readBits(10)
-    val motd = msg.byteBuf.readCharSequence(length, Charset.defaultCharset).toString
+    val motd = msg.byteBuf.readCharSequence(length, Charset.forName("UTF-8")).toString
 
     handleGuildEvent(GuildEvents.GE_MOTD.toByte, motd)
   }
@@ -717,7 +717,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     msg.readXorByteSeq(guid, 2, 4, 1, 6, 5)
     msg.byteBuf.skipBytes(4) // unkn
     msg.readXorByteSeq(guid, 3, 0)
-    val name = msg.byteBuf.readCharSequence(nameLength, Charset.defaultCharset).toString
+    val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
     msg.readXorByteSeq(guid, 7)
 
     handleGuildEvent(GuildEvents.GE_JOINED.toByte, name)
@@ -735,7 +735,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     msg.readXorByteSeq(guid, 3, 2, 0)
     msg.byteBuf.skipBytes(4) // unkn
     msg.readXorByteSeq(guid, 6)
-    val name = msg.byteBuf.readCharSequence(nameLength, Charset.defaultCharset).toString
+    val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
     msg.readXorByteSeq(guid, 4, 5, 7, 1)
 
     val event = (if (isOnline) {
@@ -779,7 +779,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       msg.byteBuf.skipBytes(4) // unkn
     }
 
-    val name = msg.byteBuf.readCharSequence(nameLength, Charset.defaultCharset).toString
+    val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
     msg.readXorByteSeq(guid, 1)
     msg.byteBuf.skipBytes(4) // unkn
     msg.readXorByteSeq(guid, 0, 4, 2, 3, 6, 5, 7)

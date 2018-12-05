@@ -164,7 +164,8 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       logger.error("Too many realms returned. Something is very wrong! This should never happen.")
     } else {
       val splt = realms.head.address.split(":")
-      realmConnectionCallback.success(splt(0), splt(1).toInt, realms.head.name, realms.head.realmId, sessionKey)
+      val port = splt(1).toInt & 0xFFFF // some servers "overflow" the port on purpose to dissuade rudimentary bots
+      realmConnectionCallback.success(splt(0), port, realms.head.name, realms.head.realmId, sessionKey)
     }
     expectedDisconnect = true
     ctx.get.close
