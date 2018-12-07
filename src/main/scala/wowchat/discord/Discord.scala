@@ -120,8 +120,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
                 if (channelConfig.chatDirection == ChatDirection.both ||
                   channelConfig.chatDirection == ChatDirection.discord_to_wow) {
                   Global.discordToWow.addBinding(
-                    name.toLowerCase,
-                    (channel, channelConfig.wow)
+                    name.toLowerCase, channelConfig.wow
                   )
                 }
 
@@ -158,16 +157,17 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     }
 
     val channel = event.getChannel
+    val channelName = event.getChannel.getName.toLowerCase
     val effectiveName = event.getMember.getEffectiveName
     val message = sanitizeMessage(event.getMessage.getContentDisplay)
+    val enableCommandsChannels = Global.config.discord.enableCommandsChannels
     logger.debug(s"RECV DISCORD MESSAGE: [${channel.getName}] [$effectiveName]: $message")
 
-    if (!CommandHandler(channel, message)) {
+    if ((enableCommandsChannels.nonEmpty && !enableCommandsChannels.contains(channelName)) || !CommandHandler(channel, message)) {
       // send to all configured wow channels
       Global.discordToWow
-        .get(event.getMessage.getChannel.getName.toLowerCase)
-        .foreach(_.foreach {
-          case (_, channelConfig) =>
+        .get(channelName)
+        .foreach(_.foreach(channelConfig => {
             val finalMessage = if (Global.config.discord.enableDotCommands && message.startsWith(".")) {
               message
             } else {
@@ -185,7 +185,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             Global.game.fold(logger.error("Cannot send message! Not connected to WoW!"))(handler => {
               handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)
             })
-        })
+        }))
     }
   }
 

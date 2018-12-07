@@ -1,6 +1,7 @@
 package wowchat.common
 
 import java.io.File
+import java.util
 
 import wowchat.common.ChatDirection.ChatDirection
 import wowchat.common.WowExpansion.WowExpansion
@@ -8,10 +9,10 @@ import com.typesafe.config.{Config, ConfigFactory}
 import wowchat.game.GamePackets
 
 import scala.collection.JavaConverters._
-import scala.reflect.runtime.universe.{typeOf, TypeTag}
+import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig])
-case class DiscordConfig(token: String, enableDotCommands: Boolean)
+case class DiscordConfig(token: String, enableDotCommands: Boolean, enableCommandsChannels: Set[String])
 case class Wow(realmlist: RealmListConfig, account: String, password: String, character: String)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
@@ -49,7 +50,9 @@ object WowChatConfig extends GamePackets {
     WowChatConfig(
       DiscordConfig(
         discordConf.getString("token"),
-        getOpt[Boolean](discordConf, "enable_dot_commands").getOrElse(true)
+        getOpt[Boolean](discordConf, "enable_dot_commands").getOrElse(true),
+        getOpt[util.List[String]](discordConf, "enable_commands_channels")
+          .getOrElse(new util.ArrayList[String]()).asScala.map(_.toLowerCase).toSet
       ),
       Wow(
         parseRealmlist(wowConf),
@@ -152,15 +155,16 @@ object WowChatConfig extends GamePackets {
   private def getOpt[T : TypeTag](cfg: Config, path: String): Option[T] = {
     if (cfg.hasPath(path)) {
       // evil smiley face :)
-      if (typeOf[T] =:= typeOf[Boolean]) {
-        val str = cfg.getString(path).toLowerCase
-        Some((str match {
-          case "true" | "1" | "y" | "yes" => true
-          case _ => false
-        }).asInstanceOf[T])
-      } else {
-        Some(cfg.getAnyRef(path).asInstanceOf[T])
-      }
+      Some(
+        (if (typeOf[T] =:= typeOf[Boolean]) {
+          cfg.getString(path).toLowerCase match {
+            case "true" | "1" | "y" | "yes" => true
+            case _ => false
+          }
+        } else {
+          cfg.getAnyRef(path)
+        }).asInstanceOf[T]
+      )
     } else {
       None
     }

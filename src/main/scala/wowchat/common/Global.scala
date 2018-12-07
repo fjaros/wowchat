@@ -18,8 +18,8 @@ object Global {
   var discord: Discord = _
   var game: Option[GameCommandHandler] = None
 
-  val discordToWow = new mutable.HashMap[String, mutable.Set[(TextChannel, WowChannelConfig)]]
-    with mutable.MultiMap[String, (TextChannel, WowChannelConfig)]
+  val discordToWow = new mutable.HashMap[String, mutable.Set[WowChannelConfig]]
+    with mutable.MultiMap[String, WowChannelConfig]
   val wowToDiscord = new mutable.HashMap[(Byte, Option[String]), mutable.Set[(TextChannel, DiscordChannelConfig)]]
     with mutable.MultiMap[(Byte, Option[String]), (TextChannel, DiscordChannelConfig)]
 

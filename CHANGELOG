@@ -1,6 +1,8 @@
-2018-12-05 - v1.2.4a
+2018-12-07 - v1.2.5
 * Fixed inability to connect to servers which "overflow" their port in realm listing.
-* Force usage of UTF-8 for the reading of all chat messages.
+* Force usage of UTF-8 for the reading of all chat messages. Fixes issues with display non-latin fonts.
+* Fixed bot sending multiple messages to WoW per one message in Discord if invited to multiple Discord servers.
++ Added enable_commands_channels config setting. If specified, only enables ?who in the configured channels.
 
 2018-11-28 - v1.2.4
 * Fixed initiating 2 reconnect timers if realm server is down.
