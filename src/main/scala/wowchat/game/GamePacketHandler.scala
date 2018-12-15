@@ -148,7 +148,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
     out.writeCharSequence(message, Charset.forName("UTF-8"))
     out.writeByte(0)
-    Packet(CMSG_CHATMESSAGE, out)
+    Packet(CMSG_MESSAGECHAT, out)
   }
 
   override def sendNotification(message: String): Unit = {
@@ -211,7 +211,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       case SMSG_GUILD_QUERY => handle_SMSG_GUILD_QUERY(msg)
       case SMSG_GUILD_EVENT => handle_SMSG_GUILD_EVENT(msg)
       case SMSG_GUILD_ROSTER => handle_SMSG_GUILD_ROSTER(msg)
-      case SMSG_CHATMESSAGE => handle_SMSG_CHATMESSAGE(msg)
+      case SMSG_MESSAGECHAT => handle_SMSG_MESSAGECHAT(msg)
       case SMSG_CHANNEL_NOTIFY => handle_SMSG_CHANNEL_NOTIFY(msg)
       case SMSG_NOTIFICATION => handle_SMSG_NOTIFICATION(msg)
       case SMSG_WHO => handle_SMSG_WHO(msg)
@@ -465,7 +465,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }).toMap
   }
 
-  private def handle_SMSG_CHATMESSAGE(msg: Packet): Unit = {
+  protected def handle_SMSG_MESSAGECHAT(msg: Packet): Unit = {
     logger.debug(s"RECV CHAT: ${ByteUtils.toHexString(msg.byteBuf, true, true)}")
 
     parseChatMessage(msg).foreach(chatMessage => {

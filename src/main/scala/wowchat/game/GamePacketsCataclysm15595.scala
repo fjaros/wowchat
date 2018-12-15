@@ -1,6 +1,6 @@
 package wowchat.game
 
-trait GamePacketsCataclysm15595 extends GamePackets {
+trait GamePacketsCataclysm15595 extends GamePacketsWotLK {
 
   override val CMSG_CHAR_ENUM = 0x0502
   override val SMSG_CHAR_ENUM = 0x10B0
@@ -15,7 +15,8 @@ trait GamePacketsCataclysm15595 extends GamePackets {
   override val CMSG_GUILD_ROSTER = 0x1226
   override val SMSG_GUILD_ROSTER = 0x3DA3
   override val SMSG_GUILD_EVENT = 0x0705
-  override val SMSG_CHATMESSAGE = 0x2026
+  override val SMSG_MESSAGECHAT = 0x2026
+  override val SMSG_GM_MESSAGECHAT = 0x13B4
   override val CMSG_JOIN_CHANNEL = 0x0156
   override val SMSG_CHANNEL_NOTIFY = 0x0825
 

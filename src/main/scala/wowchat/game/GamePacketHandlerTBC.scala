@@ -7,7 +7,7 @@ import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import wowchat.common.{CommonConnectionCallback, Global, Packet}
 
 class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandler(realmId, realmName, sessionKey, gameEventCallback) {
+  extends GamePacketHandler(realmId, realmName, sessionKey, gameEventCallback) with GamePacketsTBC {
 
   override protected val addonInfo: Array[Byte] = Array(
     0xD0, 0x01, 0x00, 0x00, 0x78, 0x9C, 0x75, 0xCF, 0x3B, 0x0E, 0xC2, 0x30, 0x0C, 0x80, 0xE1, 0x72,
@@ -24,6 +24,7 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
 
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
+      case SMSG_GM_MESSAGECHAT => handle_SMSG_MESSAGECHAT(msg)
       case SMSG_TIME_SYNC_REQ => handle_SMSG_TIME_SYNC_REQ(msg)
       case _ => super.channelParse(msg)
     }
@@ -52,8 +53,8 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
       None
     }
 
-    // ignore if from an unhandled channel - unless it is a guild achievement message
-    if (tp != ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT && !Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
+    // ignore if from an unhandled channel
+    if (!Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
       return None
     }
 

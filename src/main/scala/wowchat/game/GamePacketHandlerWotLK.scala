@@ -1,5 +1,6 @@
 package wowchat.game
 
+import java.nio.charset.Charset
 import java.security.MessageDigest
 
 import wowchat.common._
@@ -8,7 +9,7 @@ import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import scala.util.Random
 
 class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
-  extends GamePacketHandlerTBC(realmId, realmName, sessionKey, gameEventCallback) {
+  extends GamePacketHandlerTBC(realmId, realmName, sessionKey, gameEventCallback) with GamePacketsWotLK {
 
   override protected val addonInfo: Array[Byte] = Array(
     0x9E, 0x02, 0x00, 0x00, 0x78, 0x9C, 0x75, 0xD2, 0xC1, 0x6A, 0xC3, 0x30, 0x0C, 0xC6, 0x71, 0xEF,
@@ -81,16 +82,51 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
   }
 
   override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
-    val chatMessage = super.parseChatMessage(msg)
-    chatMessage.flatMap(chatMessage => {
-      msg.byteBuf.skipBytes(1) // chat tag
-      chatMessage.tp match {
-        case ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT =>
-          handleAchievementEvent(chatMessage.guid, msg.byteBuf.readIntLE)
-          None
-        case _ => Some(chatMessage)
-      }
-    })
+    val tp = msg.byteBuf.readByte
+
+    val lang = msg.byteBuf.readIntLE
+    // ignore addon messages
+    if (lang == -1) {
+      return None
+    }
+
+    // ignore messages from itself
+    val guid = msg.byteBuf.readLongLE
+    if (guid == selfCharacterId.get) {
+      return None
+    }
+
+    msg.byteBuf.skipBytes(4)
+
+    if (msg.id == SMSG_GM_MESSAGECHAT) {
+      msg.byteBuf.skipBytes(4)
+      msg.skipString
+    }
+
+    val channelName = if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
+      Some(msg.readString)
+    } else {
+      None
+    }
+
+    // ignore if from an unhandled channel - unless it is a guild achievement message
+    if (tp != ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT && !Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
+      return None
+    }
+
+    msg.byteBuf.skipBytes(8) // skip guid again
+
+    val txtLen = msg.byteBuf.readIntLE
+    val txt = msg.byteBuf.readCharSequence(txtLen - 1, Charset.forName("UTF-8")).toString
+    msg.byteBuf.skipBytes(1) // null terminator
+    msg.byteBuf.skipBytes(1) // chat tag
+
+    if (tp == ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT) {
+      handleAchievementEvent(guid, msg.byteBuf.readIntLE)
+      None
+    } else {
+      Some(ChatMessage(guid, tp, txt, channelName))
+    }
   }
 
   protected def handleAchievementEvent(guid: Long, achievementId: Int): Unit = {
