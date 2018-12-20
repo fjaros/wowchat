@@ -26,6 +26,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   private val messageResolver = MessageResolver(jda)
 
   private var lastStatus: Option[Game] = None
+  private var firstConnect = true
 
   def changeStatus(gameType: GameType, message: String): Unit = {
     lastStatus = Some(Game.of(gameType, message))
@@ -95,13 +96,12 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   override def onStatusChange(event: StatusChangeEvent): Unit = {
     event.getNewStatus match {
       case Status.CONNECTED =>
-        // we only care about this once. after we build the channel maps,
-        // there is no reason to worry about the discord driver automatically reconnecting and changing status
-        if (Global.discordToWow.nonEmpty || Global.wowToDiscord.nonEmpty) {
-          lastStatus.foreach(game => changeStatus(game.getType, game.getName))
-          discordConnectionCallback.reconnected
-          return
-        }
+        lastStatus.foreach(game => changeStatus(game.getType, game.getName))
+        // this is a race condition if already connected to wow, reconnect to discord, and bot tries to send
+        // wow->discord message. alternatively it was throwing already garbage collected exceptions if trying
+        // to use the previous connection's channel references. I guess need to refill these maps on discord reconnection
+        Global.discordToWow.clear
+        Global.wowToDiscord.clear
 
         // getNext seq of needed channels from config
         val configChannels = Global.config.channels.map(channelConfig => {
@@ -135,7 +135,12 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
           })
 
         if (Global.discordToWow.nonEmpty || Global.wowToDiscord.nonEmpty) {
-          discordConnectionCallback.connected
+          if (firstConnect) {
+            discordConnectionCallback.connected
+            firstConnect = false
+          } else {
+            discordConnectionCallback.reconnected
+          }
         } else {
           logger.error("No discord channels configured!")
         }

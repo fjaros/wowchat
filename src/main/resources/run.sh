@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -XX:+HeapDumpOnOutOfMemoryError -Dlogback.configurationFile=logback.xml -jar wowchat.jar wowchat.conf
+java -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -Dlogback.configurationFile=logback.xml -jar wowchat.jar wowchat.conf

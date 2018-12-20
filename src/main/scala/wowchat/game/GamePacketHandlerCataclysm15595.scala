@@ -171,7 +171,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
       guids(i)(1) = msg.readXorByte(guids(i)(1))
 
       if (name.equalsIgnoreCase(Global.config.wow.character)) {
-        return Some(CharEnumMessage(ByteUtils.bytesToLongLE(guids(i)), race, ByteUtils.bytesToLongLE(guildGuids(i))))
+        return Some(CharEnumMessage(name, ByteUtils.bytesToLongLE(guids(i)), race, ByteUtils.bytesToLongLE(guildGuids(i))))
       }
 
       msg.byteBuf.skipBytes(4) // zone

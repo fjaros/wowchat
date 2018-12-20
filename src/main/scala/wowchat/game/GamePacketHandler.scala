@@ -19,7 +19,7 @@ case class Player(name: String, charClass: Byte)
 case class ChatMessage(guid: Long, tp: Byte, message: String, channel: Option[String] = None)
 case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
-case class CharEnumMessage(guid: Long, race: Byte, guildGuid: Long)
+case class CharEnumMessage(name: String, guid: Long, race: Byte, guildGuid: Long)
 
 class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends ChannelInboundHandlerAdapter with GameCommandHandler with GamePackets with StrictLogging {
@@ -300,6 +300,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     parseCharEnum(msg).fold({
       logger.error(s"Character ${Global.config.wow.character} not found!")
     })(character => {
+      logger.info(s"Logging in with character ${character.name}")
       selfCharacterId = Some(character.guid)
       languageId = Races.getLanguage(character.race)
       guildGuid = character.guildGuid
@@ -334,7 +335,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
       val guildGuid = msg.byteBuf.readIntLE
       if (name.equalsIgnoreCase(Global.config.wow.character)) {
-        return Some(CharEnumMessage(guid, race, guildGuid))
+        return Some(CharEnumMessage(name, guid, race, guildGuid))
       }
 
       msg.byteBuf.skipBytes(4) // character flags
