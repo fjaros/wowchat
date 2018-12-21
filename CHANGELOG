@@ -1,3 +1,9 @@
+2018-12-20 - v1.2.6
+* Added support for more trade links in chat like professions for WotLK/Cata/MoP.
+* Added support for GM sending messages to chats on TBC/WotLK/Cata.
+* Fixed failing to relay messages from WoW to Discord on a Discord reconnect.
+* Fixed displaying non-latin fonts in Windows command line.
+
 2018-12-07 - v1.2.5
 * Fixed inability to connect to servers which "overflow" their port in realm listing.
 * Force usage of UTF-8 for the reading of all chat messages. Fixes issues with display non-latin fonts.
