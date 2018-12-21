@@ -161,7 +161,8 @@ class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
     "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
     "spell" -> "\\|.+?\\|(?:Hspell|Henchant|Htalent)?:(\\d+).*?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
     "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "achievement" -> "\\|.+?\\|Hachievement:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r
+    "achievement" -> "\\|.+?\\|Hachievement:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
+    "spell" -> "\\|Htrade:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\s?".r
   )
 
   override protected val linkSite = "http://wotlk-twinhead.twinstar.cz"
@@ -173,6 +174,14 @@ class MessageResolverCataclysm(jda: JDA) extends MessageResolverWotLK(jda) {
 }
 
 class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
+
+  override protected val linkRegexes = Seq(
+    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
+    "spell" -> "\\|.+?\\|(?:Hspell|Henchant|Htalent)?:(\\d+).*?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
+    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
+    "achievement" -> "\\|.+?\\|Hachievement:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
+    "spell" -> "\\|Htrade:.+?:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\s?".r
+  )
 
   override protected val linkSite = "http://mop-shoot.tauri.hu"
 }
