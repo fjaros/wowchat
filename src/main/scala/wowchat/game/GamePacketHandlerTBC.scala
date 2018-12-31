@@ -30,6 +30,42 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     }
   }
 
+  override protected def parseCharEnum(msg: Packet): Option[CharEnumMessage] = {
+    val charactersNum = msg.byteBuf.readByte
+
+    // only care about guid and name here
+    (0 until charactersNum).foreach(i => {
+      val guid = msg.byteBuf.readLongLE
+      val name = msg.readString
+      val race = msg.byteBuf.readByte // will determine what language to use in chat
+
+      msg.byteBuf.skipBytes(1) // class
+      msg.byteBuf.skipBytes(1) // gender
+      msg.byteBuf.skipBytes(1) // skin
+      msg.byteBuf.skipBytes(1) // face
+      msg.byteBuf.skipBytes(1) // hair style
+      msg.byteBuf.skipBytes(1) // hair color
+      msg.byteBuf.skipBytes(1) // facial hair
+      msg.byteBuf.skipBytes(1) // level
+      msg.byteBuf.skipBytes(4) // zone
+      msg.byteBuf.skipBytes(4) // map - could be useful in the future to determine what city specific channels to join
+
+      msg.byteBuf.skipBytes(12) // x + y + z
+
+      val guildGuid = msg.byteBuf.readIntLE
+      if (name.equalsIgnoreCase(Global.config.wow.character)) {
+        return Some(CharEnumMessage(name, guid, race, guildGuid))
+      }
+
+      msg.byteBuf.skipBytes(4) // character flags
+      msg.byteBuf.skipBytes(1) // first login
+      msg.byteBuf.skipBytes(12) // pet info
+      msg.byteBuf.skipBytes(19 * 9) // equipment info TBC has 9 slot equipment info
+      msg.byteBuf.skipBytes(9) // first bag display info TBC has 9 slot equipment info
+    })
+    None
+  }
+
   override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
     val tp = msg.byteBuf.readByte
 
