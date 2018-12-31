@@ -403,6 +403,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   protected def handleGuildEvent(event: Byte, message: String): Unit = {
+    // ignore empty messages
+    if (message.trim.isEmpty) {
+      return
+    }
+
     // ignore events from self
     if (event != GuildEvents.GE_MOTD && Global.config.wow.character.equalsIgnoreCase(message)) {
       return

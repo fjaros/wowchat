@@ -79,7 +79,8 @@ Even though this bot does not do anything malicious, some servers may not like a
          * If you put **type=Channel**, you also must provide a **channel=name of channel** value.
        * In format put how you want to display the message, supported replacable values are **%time**, **%user**, **%message**, and **%channel** if above type is **Channel**.
      * **discord** section:
-       * **channel**: The discord channel where to display the message.
+       * **channel**: The discord channel **name** OR **ID** where to display the message. **It is advised to use channel ID here instead of name, so the bot does not stop working when the channel name is changed.**
+         * To see channels' IDs, you must enable Developer mode in Discord under User Settings -> Appearance -> Advanced.
        * **format**: Same options as in **wow** section above.
 3. Invite your bot to Discord
    * Go back to https://discordapp.com/developers/applications/ and click your new Bot application.
@@ -96,6 +97,6 @@ Even though this bot does not do anything malicious, some servers may not like a
 OR to compile yourself:
 1. WoW Chat is written in Scala and compiles to a Java executable using [maven](https://maven.apache.org).
 2. It uses Java JDK 1.8 and Scala 2.12.7.
-3. Run `mvn clean package` which will produce a file in the target folder called `wowchat-1.2.6.zip`
-4. unzip `wowchat-1.2.6.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
+3. Run `mvn clean package` which will produce a file in the target folder called `wowchat-1.2.7.zip`
+4. unzip `wowchat-1.2.7.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
    * If no config file is supplied, the bot will try to use `wowchat.conf`

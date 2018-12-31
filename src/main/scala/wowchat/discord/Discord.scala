@@ -107,14 +107,22 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         val configChannels = Global.config.channels.map(channelConfig => {
           channelConfig.discord.channel.toLowerCase -> channelConfig
         })
+        val configChannelsNames = configChannels.map(_._1)
 
         val eligibleDiscordChannels = event.getEntity.getTextChannels.asScala
-          .filter(channel => configChannels.map(_._1).contains(channel.getName.toLowerCase))
+          .filter(channel =>
+            configChannelsNames.contains(channel.getName.toLowerCase) ||
+            configChannelsNames.contains(channel.getId)
+          )
 
         // build directional maps
         eligibleDiscordChannels.foreach(channel => {
           configChannels
-            .filter(_._1.equalsIgnoreCase(channel.getName))
+            .filter {
+              case (name, channelConfig) =>
+                name.equalsIgnoreCase(channel.getName) ||
+                name == channel.getId
+            }
             .foreach {
               case (name, channelConfig) =>
                 if (channelConfig.chatDirection == ChatDirection.both ||
@@ -162,6 +170,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     }
 
     val channel = event.getChannel
+    val channelId = channel.getId
     val channelName = event.getChannel.getName.toLowerCase
     val effectiveName = event.getMember.getEffectiveName
     val message = sanitizeMessage(event.getMessage.getContentDisplay)
@@ -172,6 +181,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
       // send to all configured wow channels
       Global.discordToWow
         .get(channelName)
+        .fold(Global.discordToWow.get(channelId))(Some(_))
         .foreach(_.foreach(channelConfig => {
             val finalMessage = if (Global.config.discord.enableDotCommands && message.startsWith(".")) {
               message
@@ -182,11 +192,9 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
                 .replace("%message", message)
             }
 
-            channelConfig.channel.fold(
-              logger.info(s"Discord->WoW(${ChatEvents.valueOf(channelConfig.tp)}): $message")
-            )(target => {
-              logger.info(s"Discord->WoW($target): $message")
-            })
+            logger.info(s"Discord->WoW(${
+              channelConfig.channel.getOrElse(ChatEvents.valueOf(channelConfig.tp))
+            }): $message")
             Global.game.fold(logger.error("Cannot send message! Not connected to WoW!"))(handler => {
               handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)
             })
