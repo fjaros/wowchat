@@ -480,7 +480,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     // no need to parse other stuff
   }
 
-  override def parseChatMessage(msg: Packet): Option[ChatMessage] = {
+  override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
     val hasSenderName = msg.readBit == 0
     msg.readBit // hide in chat log
 
@@ -622,7 +622,19 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     }
   }
 
-  override def updateGuildRoster: Unit = {
+  override protected def parseServerMotd(msg: Packet): Seq[ChatMessage] = {
+    val lineCount = msg.readBits(4)
+    val messageLengths = (0 until lineCount).map(i => {
+      msg.readBits(7)
+    })
+
+    messageLengths.map(messageLength => {
+      val message = msg.byteBuf.readCharSequence(messageLength, Charset.forName("UTF-8")).toString
+      ChatMessage(0, ChatEvents.CHAT_MSG_SYSTEM, message, None)
+    })
+  }
+
+  override protected def updateGuildRoster: Unit = {
     // it apparently sends 2 masked guids,
     // but in fact MaNGOS does not do anything with them so we can just send 0s
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(18, 18)

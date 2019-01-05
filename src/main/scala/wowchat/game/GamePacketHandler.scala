@@ -473,21 +473,22 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
   protected def handle_SMSG_MESSAGECHAT(msg: Packet): Unit = {
     logger.debug(s"RECV CHAT: ${ByteUtils.toHexString(msg.byteBuf, true, true)}")
+    parseChatMessage(msg).foreach(sendChatMessage)
+  }
 
-    parseChatMessage(msg).foreach(chatMessage => {
-      if (chatMessage.guid == 0) {
-        Global.discord.sendMessageFromWow(None, chatMessage.message, chatMessage.tp, None)
-      } else {
-        playerRoster.get(chatMessage.guid).fold({
-          queuedChatMessages.get(chatMessage.guid).fold({
-            queuedChatMessages += chatMessage.guid -> ListBuffer(chatMessage)
-            sendNameQuery(chatMessage.guid)
-          })(_ += chatMessage)
-        })(name => {
-          Global.discord.sendMessageFromWow(Some(name.name), chatMessage.message, chatMessage.tp, chatMessage.channel)
-        })
-      }
-    })
+  protected def sendChatMessage(chatMessage: ChatMessage): Unit = {
+    if (chatMessage.guid == 0) {
+      Global.discord.sendMessageFromWow(None, chatMessage.message, chatMessage.tp, None)
+    } else {
+      playerRoster.get(chatMessage.guid).fold({
+        queuedChatMessages.get(chatMessage.guid).fold({
+          queuedChatMessages += chatMessage.guid -> ListBuffer(chatMessage)
+          sendNameQuery(chatMessage.guid)
+        })(_ += chatMessage)
+      })(name => {
+        Global.discord.sendMessageFromWow(Some(name.name), chatMessage.message, chatMessage.tp, chatMessage.channel)
+      })
+    }
   }
 
   protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {

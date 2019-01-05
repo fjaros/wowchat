@@ -25,6 +25,7 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case SMSG_GM_MESSAGECHAT => handle_SMSG_MESSAGECHAT(msg)
+      case SMSG_MOTD => handle_SMSG_MOTD(msg)
       case SMSG_TIME_SYNC_REQ => handle_SMSG_TIME_SYNC_REQ(msg)
       case _ => super.channelParse(msg)
     }
@@ -101,6 +102,18 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     msg.byteBuf.skipBytes(1) // null terminator
 
     Some(ChatMessage(guid, tp, txt, channelName))
+  }
+
+  private def handle_SMSG_MOTD(msg: Packet): Unit = {
+    parseServerMotd(msg).foreach(sendChatMessage)
+  }
+
+  protected def parseServerMotd(msg: Packet): Seq[ChatMessage] = {
+    val lineCount = msg.byteBuf.readIntLE
+    (0 until lineCount).map(i => {
+      val message = msg.readString
+      ChatMessage(0, ChatEvents.CHAT_MSG_SYSTEM, message, None)
+    })
   }
 
   override protected def parseGuildRoster(msg: Packet): Map[Long, Player] = {

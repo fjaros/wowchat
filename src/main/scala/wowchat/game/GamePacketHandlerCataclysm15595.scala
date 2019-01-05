@@ -226,7 +226,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     // no need to parse other stuff
   }
 
-  override def updateGuildRoster: Unit = {
+  override protected def updateGuildRoster: Unit = {
     // it apparently sends 2 masked guids,
     // but in fact MaNGOS does not do anything with them so we can just send 0s
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(18, 18)

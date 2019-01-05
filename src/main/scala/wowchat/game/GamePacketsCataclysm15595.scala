@@ -47,5 +47,7 @@ trait GamePacketsCataclysm15595 extends GamePacketsWotLK {
   val CMSG_MESSAGECHAT_WHISPER = 0x0D56
   val CMSG_MESSAGECHAT_YELL = 0x3544
 
+  override val SMSG_MOTD = 0x0A35
+
   final val COMPRESSED_DATA_MASK = 0x8000
 }
