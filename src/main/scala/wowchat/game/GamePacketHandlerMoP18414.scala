@@ -51,23 +51,23 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     }
   }
 
-  override def buildChatMessage(tp: Byte, message: String, target: Option[String]): Packet = {
+  override def buildChatMessage(tp: Byte, utf8MessageBytes: Array[Byte], utf8TargetBytes: Option[Array[Byte]]): Packet = {
     val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
     out.writeIntLE(languageId)
-    target.foreach(target => {
+    utf8TargetBytes.foreach(utf8TargetBytes => {
       if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
-        writeBits(out, target.length, 9)
+        writeBits(out, utf8TargetBytes.length, 9)
       }
     })
-    writeBits(out, message.length, 8)
+    writeBits(out, utf8MessageBytes.length, 8)
     if (tp == ChatEvents.CHAT_MSG_WHISPER) {
-      writeBits(out, target.get.length, 9)
+      writeBits(out, utf8TargetBytes.get.length, 9)
     }
     flushBits(out)
     // note for whispers (if the bot ever supports them, the order is opposite, person first then msg
-    out.writeBytes(message.getBytes)
-    if (target.isDefined) {
-      out.writeBytes(target.get.getBytes)
+    out.writeBytes(utf8MessageBytes)
+    if (utf8TargetBytes.isDefined) {
+      out.writeBytes(utf8TargetBytes.get)
     }
     Packet(getChatPacketFromType(tp), out)
   }
@@ -166,7 +166,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     writeBits(byteBuf, 0, 7) // guild name length
     writeBits(byteBuf, 0, 3) // word count
     flushBits(byteBuf)
-    byteBuf.writeBytes(name.getBytes)
+    byteBuf.writeBytes(name.getBytes("UTF-8"))
   }
 
   override protected def handle_SMSG_WHO(msg: Packet): Unit = {
@@ -417,15 +417,15 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     writeXorByteSeq(out, bytes, 5, 1, 0, 6, 2, 4, 7, 3)
   }
 
-  override protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
+  override protected def writeJoinChannel(out: ByteBuf, utf8ChannelBytes: Array[Byte]): Unit = {
     out.writeIntLE(0) // channel id
     writeBit(out, 0) // unkn
-    writeBits(out, channel.length, 7)
+    writeBits(out, utf8ChannelBytes.length, 7)
     writeBits(out, 0, 7)
     writeBit(out, 0) // unkn
     flushBits(out)
 
-    out.writeBytes(channel.getBytes)
+    out.writeBytes(utf8ChannelBytes)
   }
 
   override protected def queryGuildName: Unit = {

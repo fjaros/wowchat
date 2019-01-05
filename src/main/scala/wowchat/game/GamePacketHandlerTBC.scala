@@ -147,11 +147,11 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     }).toMap
   }
 
-  override protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
+  override protected def writeJoinChannel(out: ByteBuf, utf8ChannelBytes: Array[Byte]): Unit = {
     out.writeIntLE(0)
     out.writeByte(0)
     out.writeByte(1)
-    super.writeJoinChannel(out, channel)
+    super.writeJoinChannel(out, utf8ChannelBytes)
   }
 
   private def handle_SMSG_TIME_SYNC_REQ(msg: Packet): Unit = {

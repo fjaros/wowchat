@@ -134,19 +134,19 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
   override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
     ctx.fold(logger.error("Cannot send message! Not connected to WoW!"))(ctx => {
-      ctx.writeAndFlush(buildChatMessage(tp, message, target))
+      ctx.writeAndFlush(buildChatMessage(tp, message.getBytes("UTF-8"), target.map(_.getBytes("UTF-8"))))
     })
   }
 
-  protected def buildChatMessage(tp: Byte, message: String, target: Option[String]): Packet = {
+  protected def buildChatMessage(tp: Byte, utf8MessageBytes: Array[Byte], utf8TargetBytes: Option[Array[Byte]]): Packet = {
     val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
     out.writeIntLE(tp)
     out.writeIntLE(languageId)
-    target.foreach(target => {
-      out.writeCharSequence(target, Charset.forName("UTF-8"))
+    utf8TargetBytes.foreach(utf8TargetBytes => {
+      out.writeBytes(utf8TargetBytes)
       out.writeByte(0)
     })
-    out.writeCharSequence(message, Charset.forName("UTF-8"))
+    out.writeBytes(utf8MessageBytes)
     out.writeByte(0)
     Packet(CMSG_MESSAGECHAT, out)
   }
@@ -177,7 +177,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(64, 64)
     byteBuf.writeIntLE(0)  // level min
     byteBuf.writeIntLE(100) // level max
-    byteBuf.writeBytes(name.getBytes)
+    byteBuf.writeBytes(name.getBytes("UTF-8"))
     byteBuf.writeByte(0) // ?
     byteBuf.writeByte(0) // ?
     byteBuf.writeIntLE(0xFFFFFFFF) // race mask (all races)
@@ -373,13 +373,13 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       .foreach(channel => {
         logger.info(s"Joining channel $channel")
         val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(50, 200)
-        writeJoinChannel(byteBuf, channel)
+        writeJoinChannel(byteBuf, channel.getBytes("UTF-8"))
         ctx.get.writeAndFlush(Packet(CMSG_JOIN_CHANNEL, byteBuf))
       })
   }
 
-  protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
-    out.writeBytes(channel.getBytes)
+  protected def writeJoinChannel(out: ByteBuf, utf8ChannelBytes: Array[Byte]): Unit = {
+    out.writeBytes(utf8ChannelBytes)
     out.writeByte(0)
     out.writeByte(0)
   }
@@ -535,9 +535,29 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
   private def handle_SMSG_CHANNEL_NOTIFY(msg: Packet): Unit = {
     val id = msg.byteBuf.readByte
+    val channelName = msg.readString
 
-    if (id == 0x02) {
-      logger.info(s"Joined channel: ${msg.readString}")
+    id match {
+      case ChatNotify.CHAT_YOU_JOINED_NOTICE =>
+        logger.info(s"Joined Channel: [$channelName]")
+      case ChatNotify.CHAT_WRONG_PASSWORD_NOTICE =>
+        logger.error(s"Wrong password for $channelName.")
+      case ChatNotify.CHAT_MUTED_NOTICE =>
+        logger.error(s"[$channelName] You do not have permission to speak.")
+      case ChatNotify.CHAT_BANNED_NOTICE =>
+        logger.error(s"[$channelName] You are banned from that channel.")
+      case ChatNotify.CHAT_WRONG_FACTION_NOTICE =>
+        logger.error(s"Wrong alliance for $channelName.")
+      case ChatNotify.CHAT_INVALID_NAME_NOTICE =>
+        logger.error("Invalid channel name")
+      case ChatNotify.CHAT_THROTTLED_NOTICE =>
+        logger.error(s"[$channelName] The number of messages that can be sent to this channel is limited, please wait to send another message.")
+      case ChatNotify.CHAT_NOT_IN_AREA_NOTICE =>
+        logger.error(s"[$channelName] You are not in the correct area for this channel.")
+      case ChatNotify.CHAT_NOT_IN_LFG_NOTICE =>
+        logger.error(s"[$channelName] You must be queued in looking for group before joining this channel.")
+      case _ =>
+        // ignore all other chat notifications
     }
   }
 

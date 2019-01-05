@@ -18,18 +18,18 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     }
   }
 
-  override def buildChatMessage(tp: Byte, message: String, target: Option[String]): Packet = {
+  override def buildChatMessage(tp: Byte, utf8MessageBytes: Array[Byte], utf8TargetBytes: Option[Array[Byte]]): Packet = {
     val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
     out.writeIntLE(languageId)
-    target.foreach(target => {
-      writeBits(out, target.length, 10)
+    utf8TargetBytes.foreach(utf8TargetBytes => {
+      writeBits(out, utf8TargetBytes.length, 10)
     })
-    writeBits(out, message.length, 9)
+    writeBits(out, utf8MessageBytes.length, 9)
     flushBits(out)
     // note for whispers (if the bot ever supports them, the order is opposite, person first then msg)
-    out.writeBytes(message.getBytes)
-    if (target.isDefined) {
-      out.writeBytes(target.get.getBytes)
+    out.writeBytes(utf8MessageBytes)
+    if (utf8TargetBytes.isDefined) {
+      out.writeBytes(utf8TargetBytes.get)
     }
     Packet(getChatPacketFromType(tp), out)
   }
@@ -202,15 +202,15 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     writeXorByte(out, bytes(4))
   }
 
-  override protected def writeJoinChannel(out: ByteBuf, channel: String): Unit = {
+  override protected def writeJoinChannel(out: ByteBuf, utf8ChannelBytes: Array[Byte]): Unit = {
     out.writeIntLE(0) // channel id
     writeBit(out, 0) // has voice
     writeBit(out, 0) // zone update
-    writeBits(out, channel.length, 8)
+    writeBits(out, utf8ChannelBytes.length, 8)
     writeBits(out, 0, 8)
     flushBits(out)
 
-    out.writeBytes(channel.getBytes)
+    out.writeBytes(utf8ChannelBytes)
   }
 
   override protected def queryGuildName: Unit = {

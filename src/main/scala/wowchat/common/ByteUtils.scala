@@ -63,7 +63,7 @@ object ByteUtils {
   }
 
   def stringToInt(str: String): Int = {
-    bytesToLong(str.getBytes).toInt
+    bytesToLong(str.getBytes("UTF-8")).toInt
   }
 
   def bytesToLong(bytes: Array[Byte]): Long = {
