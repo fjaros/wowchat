@@ -312,6 +312,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   protected def parseCharEnum(msg: Packet): Option[CharEnumMessage] = {
+    val characterBytes = Global.config.wow.character.toLowerCase.getBytes("UTF-8")
     val charactersNum = msg.byteBuf.readByte
 
     // only care about guid and name here
@@ -334,7 +335,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       msg.byteBuf.skipBytes(12) // x + y + z
 
       val guildGuid = msg.byteBuf.readIntLE
-      if (name.equalsIgnoreCase(Global.config.wow.character)) {
+      if (name.toLowerCase.getBytes("UTF-8").sameElements(characterBytes)) {
         return Some(CharEnumMessage(name, guid, race, guildGuid))
       }
 
