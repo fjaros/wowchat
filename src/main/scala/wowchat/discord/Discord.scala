@@ -42,29 +42,30 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   }
 
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String]): Unit = {
-    val discordChannels = Global.wowToDiscord((wowType, wowChannel.map(_.toLowerCase)))
-    val parsedLinks = messageResolver.resolveEmojis(messageResolver.stripColorCoding(messageResolver.resolveLinks(message)))
+    Global.wowToDiscord.get((wowType, wowChannel.map(_.toLowerCase))).foreach(discordChannels => {
+      val parsedLinks = messageResolver.resolveEmojis(messageResolver.stripColorCoding(messageResolver.resolveLinks(message)))
 
-    discordChannels.foreach {
-      case (channel, channelConfig) =>
+      discordChannels.foreach {
+        case (channel, channelConfig) =>
 
-        val parsedResolvedTags = from.map(from => {
-          messageResolver.resolveTags(channel, parsedLinks, error => {
-            Global.game.foreach(_.sendMessageToWow(ChatEvents.CHAT_MSG_WHISPER, error, Some(from)))
+          val parsedResolvedTags = from.map(from => {
+            messageResolver.resolveTags(channel, parsedLinks, error => {
+              Global.game.foreach(_.sendMessageToWow(ChatEvents.CHAT_MSG_WHISPER, error, Some(from)))
+            })
           })
-        })
-          .getOrElse(parsedLinks)
+            .getOrElse(parsedLinks)
 
-        val formatted = channelConfig
-          .format
-          .replace("%time", Global.getTime)
-          .replace("%user", from.getOrElse(""))
-          .replace("%message", parsedResolvedTags)
-          .replace("%target", wowChannel.getOrElse(""))
+          val formatted = channelConfig
+            .format
+            .replace("%time", Global.getTime)
+            .replace("%user", from.getOrElse(""))
+            .replace("%message", parsedResolvedTags)
+            .replace("%target", wowChannel.getOrElse(""))
 
-        logger.info(s"WoW->Discord(${channel.getName}): $formatted")
-        channel.sendMessage(formatted).queue()
-    }
+          logger.info(s"WoW->Discord(${channel.getName}) $formatted")
+          channel.sendMessage(formatted).queue()
+      }
+    })
   }
 
   def sendGuildNotification(message: String): Unit = {
@@ -194,7 +195,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
             logger.info(s"Discord->WoW(${
               channelConfig.channel.getOrElse(ChatEvents.valueOf(channelConfig.tp))
-            }): $message")
+            }) [$effectiveName]: $message")
             Global.game.fold(logger.error("Cannot send message! Not connected to WoW!"))(handler => {
               handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)
             })
