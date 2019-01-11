@@ -220,10 +220,9 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     ctx.get.writeAndFlush(Packet(CMSG_GUILD_QUERY, out))
   }
 
-  override protected def handleGuildQuery(msg: Packet): String = {
-    msg.byteBuf.skipBytes(8) // guid
-    msg.readString
-    // no need to parse other stuff
+  override protected def handleGuildQuery(msg: Packet): GuildInfo = {
+    msg.byteBuf.skipBytes(4) // first part of guid, the vanilla handler can handle the rest
+    super.handleGuildQuery(msg)
   }
 
   override protected def updateGuildRoster: Unit = {

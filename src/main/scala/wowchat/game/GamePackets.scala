@@ -90,6 +90,8 @@ trait GamePackets {
 
   object GuildEvents {
     // quite a nice hack because MoP doesn't use these events directly. has separate packet for each.
+    val GE_PROMOTED = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x01 else 0x00
+    val GE_DEMOTED = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x02 else 0x01
     val GE_MOTD = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x03 else 0x02
     val GE_JOINED = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x04 else 0x03
     val GE_LEFT = if (WowChatConfig.getExpansion == WowExpansion.Cataclysm) 0x05 else 0x04

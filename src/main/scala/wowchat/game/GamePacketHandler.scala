@@ -20,6 +20,7 @@ case class ChatMessage(guid: Long, tp: Byte, message: String, channel: Option[St
 case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
 case class CharEnumMessage(name: String, guid: Long, race: Byte, guildGuid: Long)
+case class GuildInfo(name: String, ranks: Map[Int, String])
 
 class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends ChannelInboundHandlerAdapter with GameCommandHandler with GamePackets with StrictLogging {
@@ -40,7 +41,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   protected var languageId: Byte = _
   protected var inWorld: Boolean = false
   protected var guildGuid: Long = _
-  protected var guildName: String = ""
+  protected var guildInfo: GuildInfo = _
 
   var motd: String = ""
   var ginfo: String = ""
@@ -386,39 +387,50 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   private def handle_SMSG_GUILD_QUERY(msg: Packet): Unit = {
-    guildName = handleGuildQuery(msg)
+    guildInfo = handleGuildQuery(msg)
   }
 
-  protected def handleGuildQuery(msg: Packet): String = {
+  protected def handleGuildQuery(msg: Packet): GuildInfo = {
     msg.byteBuf.skipBytes(4)
-    msg.readString
+    val name = msg.readString
+
+    val ranks = (0 until 10)
+      .map(_ -> msg.readString)
+      .filter {
+        case (_, name) => name.nonEmpty
+      }
+      .toMap
+
+    GuildInfo(name, ranks)
   }
 
   private def handle_SMSG_GUILD_EVENT(msg: Packet): Unit = {
     val event = msg.byteBuf.readByte
-    // number of strings for other events, our cared-about events always have 1
-    msg.byteBuf.skipBytes(1)
-    val message = msg.readString
+    val numStrings = msg.byteBuf.readByte
+    val messages = (0 until numStrings).map(i => msg.readString)
 
-    handleGuildEvent(event, message)
+    handleGuildEvent(event, messages)
   }
 
-  protected def handleGuildEvent(event: Byte, message: String): Unit = {
+  protected def handleGuildEvent(event: Byte, messages: Seq[String]): Unit = {
     // ignore empty messages
-    if (message.trim.isEmpty) {
+    if (messages.forall(_.trim.isEmpty)) {
       return
     }
 
     // ignore events from self
-    if (event != GuildEvents.GE_MOTD && Global.config.wow.character.equalsIgnoreCase(message)) {
+    if (event != GuildEvents.GE_MOTD && Global.config.wow.character.equalsIgnoreCase(messages.head)) {
       return
     }
 
     val guildNotificationConfig = Global.config.guildConfig.notificationConfigs(
       event match {
+        case GuildEvents.GE_PROMOTED => "promoted"
+        case GuildEvents.GE_DEMOTED => "demoted"
         case GuildEvents.GE_MOTD => "motd"
         case GuildEvents.GE_JOINED => "joined"
-        case GuildEvents.GE_LEFT | GuildEvents.GE_REMOVED => "left"
+        case GuildEvents.GE_LEFT => "left"
+        case GuildEvents.GE_REMOVED => "removed"
         case GuildEvents.GE_SIGNED_ON => "online"
         case GuildEvents.GE_SIGNED_OFF => "offline"
         case _ => return
@@ -426,11 +438,26 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     )
 
     if (guildNotificationConfig.enabled) {
-      val formatted = guildNotificationConfig
-        .format
-        .replace("%time", Global.getTime)
-        .replace("%user", message)
-        .replace("%message", message)
+      val formatted = event match {
+        case GuildEvents.GE_PROMOTED | GuildEvents.GE_DEMOTED =>
+          guildNotificationConfig.format
+            .replace("%time", Global.getTime)
+            .replace("%user", messages.head)
+            .replace("%message", messages.head)
+            .replace("%target", messages(1))
+            .replace("%rank", messages(2))
+        case GuildEvents.GE_REMOVED =>
+          guildNotificationConfig.format
+            .replace("%time", Global.getTime)
+            .replace("%user", messages(1))
+            .replace("%message", messages(1))
+            .replace("%target", messages.head)
+        case _ =>
+          guildNotificationConfig.format
+            .replace("%time", Global.getTime)
+            .replace("%user", messages.head)
+            .replace("%message", messages.head)
+      }
 
       Global.discord.sendGuildNotification(formatted)
     }

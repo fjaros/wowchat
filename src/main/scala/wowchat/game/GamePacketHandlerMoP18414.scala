@@ -44,6 +44,8 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case SMSG_GUILD_MOTD => handle_SMSG_GUILD_MOTD(msg)
+      case SMSG_GUILD_RANKS => logger.error("GUILD RANKS WOHOO")
+      case SMSG_GUILD_RANKS_UPDATE => handle_SMSG_GUILD_RANKS_UPDATE(msg)
       case SMSG_GUILD_INVITE_ACCEPT => handle_SMSG_GUILD_INVITE_ACCEPT(msg)
       case SMSG_GUILD_MEMBER_LOGGED => handle_SMSG_GUILD_MEMBER_LOGGED(msg)
       case SMSG_GUILD_LEAVE => handle_SMSG_GUILD_LEAVE(msg)
@@ -455,7 +457,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     ctx.get.writeAndFlush(Packet(CMSG_GUILD_QUERY, out))
   }
 
-  override protected def handleGuildQuery(msg: Packet): String = {
+  override protected def handleGuildQuery(msg: Packet): GuildInfo = {
     val guildGuidArr = new Array[Byte](8)
 
     guildGuidArr(5) = msg.readBit
@@ -471,13 +473,17 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     msg.readXorByteSeq(guildGuidArr, 2, 7)
     msg.byteBuf.skipBytes(8) // emblem color + realmid
 
-    (0 until ranksNum).foreach(i => {
-      msg.byteBuf.skipBytes(8) // rank index + id
-      msg.byteBuf.skipBytes(rankLengths(i))
-    })
+    val ranks = (0 until ranksNum)
+      .map(i => {
+        msg.byteBuf.skipBytes(4) // rank index
+        val id = msg.byteBuf.readIntLE
+        val name = msg.readString
+        id -> name
+      })
+      .toMap
 
-    msg.byteBuf.readCharSequence(guildNameLength, Charset.forName("UTF-8")).toString
-    // no need to parse other stuff
+    val name = msg.byteBuf.readCharSequence(guildNameLength, Charset.forName("UTF-8")).toString
+    GuildInfo(name, ranks)
   }
 
   override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
@@ -717,7 +723,60 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     val length = msg.readBits(10)
     val motd = msg.byteBuf.readCharSequence(length, Charset.forName("UTF-8")).toString
 
-    handleGuildEvent(GuildEvents.GE_MOTD.toByte, motd)
+    handleGuildEvent(GuildEvents.GE_MOTD.toByte, motd :: Nil)
+  }
+
+  private def handle_SMSG_GUILD_RANKS_UPDATE(msg: Packet): Unit = {
+    val guid = new Array[Byte](8)
+    val targetGuid = new Array[Byte](8)
+    msg.readBitSeq(targetGuid, 5, 6)
+    msg.readBitSeq(guid, 0, 1)
+    msg.readBitSeq(targetGuid, 3)
+    msg.readBitSeq(guid, 4)
+    msg.readBitSeq(targetGuid, 2)
+    msg.readBitSeq(guid, 6, 3, 7)
+    msg.readBitSeq(targetGuid, 4, 0, 1)
+    msg.readBitSeq(guid, 2)
+    msg.readBitSeq(targetGuid, 7)
+    val rankOrder = msg.readBit
+    msg.readBitSeq(guid, 5)
+
+    msg.readXorByteSeq(targetGuid, 2)
+    msg.readXorByteSeq(guid, 1)
+    msg.readXorByteSeq(targetGuid, 6, 1, 5)
+    msg.readXorByteSeq(guid, 0)
+    val rank = msg.byteBuf.readIntLE
+    msg.readXorByteSeq(guid, 3, 7)
+    msg.readXorByteSeq(targetGuid, 7)
+    msg.readXorByteSeq(guid, 2)
+    msg.readXorByteSeq(targetGuid, 3, 4)
+    msg.readXorByteSeq(guid, 6, 5)
+    msg.readXorByteSeq(targetGuid, 0)
+    msg.readXorByteSeq(guid, 4)
+
+    val guidLong = ByteUtils.bytesToLongLE(guid)
+    val targetGuidLong = ByteUtils.bytesToLongLE(targetGuid)
+
+    val name = playerRoster.get(guidLong).map(_.name)
+    if (name.isEmpty) {
+      logger.error(s"GUID $guidLong for SMSG_GUILD_RANKS_UPDATE not found in player roster!")
+      return
+    }
+
+    val targetName = playerRoster.get(targetGuidLong).map(_.name)
+    if (targetName.isEmpty) {
+      logger.error(s"Target GUID $targetGuidLong for SMSG_GUILD_RANKS_UPDATE not found in player roster!")
+      return
+    }
+
+    val guildRank = guildInfo.ranks.get(rank)
+    if (guildRank.isEmpty) {
+      logger.error(s"Rank ID $rank for SMSG_GUILD_RANKS_UPDATE not found!")
+      return
+    }
+
+    val event = (if (rankOrder == 1) GuildEvents.GE_PROMOTED else GuildEvents.GE_DEMOTED).toByte
+    handleGuildEvent(event, name.get :: targetName.get :: guildRank.get :: Nil)
   }
 
   private def handle_SMSG_GUILD_INVITE_ACCEPT(msg: Packet): Unit = {
@@ -732,7 +791,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
     msg.readXorByteSeq(guid, 7)
 
-    handleGuildEvent(GuildEvents.GE_JOINED.toByte, name)
+    handleGuildEvent(GuildEvents.GE_JOINED.toByte, name :: Nil)
   }
 
   private def handle_SMSG_GUILD_MEMBER_LOGGED(msg: Packet): Unit = {
@@ -756,7 +815,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       GuildEvents.GE_SIGNED_OFF
     }).toByte
 
-    handleGuildEvent(event, name)
+    handleGuildEvent(event, name :: Nil)
   }
 
   private def handle_SMSG_GUILD_LEAVE(msg: Packet): Unit = {
@@ -785,10 +844,13 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     guid(4) = msg.readBit
     guid(7) = msg.readBit
 
-    if (kicked) {
+    val kickerName = if (kicked) {
       msg.readXorByteSeq(kickerGuid, 1, 3, 5, 2, 0, 4, 6, 7)
-      msg.byteBuf.skipBytes(kickerNameLength)
+      val kickerName = msg.byteBuf.readCharSequence(kickerNameLength, Charset.forName("UTF-8")).toString
       msg.byteBuf.skipBytes(4) // unkn
+      kickerName
+    } else {
+      ""
     }
 
     val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
@@ -796,12 +858,10 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     msg.byteBuf.skipBytes(4) // unkn
     msg.readXorByteSeq(guid, 0, 4, 2, 3, 6, 5, 7)
 
-    val event = (if (kicked) {
-      GuildEvents.GE_REMOVED
+    if (kicked) {
+      handleGuildEvent(GuildEvents.GE_REMOVED.toByte, name :: kickerName :: Nil)
     } else {
-      GuildEvents.GE_LEFT
-    }).toByte
-
-    handleGuildEvent(event, name)
+      handleGuildEvent(GuildEvents.GE_LEFT.toByte, name :: Nil)
+    }
   }
 }

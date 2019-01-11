@@ -101,10 +101,13 @@ object WowChatConfig extends GamePackets {
   private def parseGuildConfig(guildConf: Option[Config]): GuildConfig = {
     // make reasonable defaults for old config
     val defaults = Map(
+      "promoted" -> (true, "`[%user] has promoted [%target] to [%rank].`"),
+      "demoted" -> (true, "`[%user] has demoted [%target] to [%rank].`"),
       "online" -> (false, "`[%user] has come online.`"),
       "offline" -> (false, "`[%user] has gone offline.`"),
       "joined" -> (true, "`[%user] has joined the guild.`"),
       "left" -> (true, "`[%user] has left the guild.`"),
+      "removed" -> (true, "`[%target] has been kicked out of the guild by [%user].`"),
       "motd" -> (true, "`Guild Message of the Day: %message`"),
       "achievement" -> (true, "%user has earned the achievement %achievement!")
     )
