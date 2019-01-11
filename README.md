@@ -55,7 +55,7 @@ Even though this bot does not do anything malicious, some servers may not like a
      * **enable_dot_commands**: If set to 1, it will not format outgoing messages starting with ".", enabling you to send things like ".s in" to the server directly. If set to 0, it will format these messages like regular messages.
      * **enable_commands_channels**: A list of channels for which to allow commands. If not specified or empty, the bot will allow commands from all channels.
    * In section **wow**:
-     * **version**: put either 1.12.1, 2.4.3, or 3.3.5 based on the server's expansion.
+     * **version**: put either 1.12.1, 2.4.3, 3.3.5, 4.3.4, or 5.4.8 based on the server's expansion.
      * **realmlist**: this is server's realmlist, same as in your realmlist.wtf file.
      Example values are logon.lightshope.org or wow.gamer-district.org
      * **realm**: This is the realm name the Bot will connect to.
@@ -97,6 +97,6 @@ Even though this bot does not do anything malicious, some servers may not like a
 OR to compile yourself:
 1. WoW Chat is written in Scala and compiles to a Java executable using [maven](https://maven.apache.org).
 2. It uses Java JDK 1.8 and Scala 2.12.7.
-3. Run `mvn clean package` which will produce a file in the target folder called `wowchat-1.2.7.zip`
-4. unzip `wowchat-1.2.7.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
+3. Run `mvn clean package` which will produce a file in the target folder called `wowchat-1.2.8.zip`
+4. unzip `wowchat-1.2.8.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
    * If no config file is supplied, the bot will try to use `wowchat.conf`

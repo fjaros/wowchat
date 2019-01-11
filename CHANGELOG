@@ -1,13 +1,19 @@
+2019-01-11 - v1.2.8
++ Added support for guild promoted, demoted, and player removed events.
+* Fixed bot throwing an error if it received a message for a non-configured Discord channel.
+* Fixed bug in logging in with characters using non-ASCII characters.
+* Fixed bug in joining channels with non-ASCII characters on Cata/MoP.
+
 2018-12-31 - v1.2.7
-* Add support for looking up Discord channels by ID rather than just name. To see a channel's ID, you must enable
++ Added support for looking up Discord channels by ID rather than just name. To see a channel's ID, you must enable
   Developer Mode in Discord under User Settings -> Appearance -> Advanced. Right-clicking the channel will then reveal the ID.
   This is advantageous to use over name, so you need not change bot configuration when a channel name is changed.
 * Do not send guild motd notification if motd is empty.
 * Fixed logging in on accounts with multiple characters on TBC/WotLK.
 
 2018-12-20 - v1.2.6
-* Added support for more trade links in chat like professions for WotLK/Cata/MoP.
-* Added support for GM sending messages to chats on TBC/WotLK/Cata.
++ Added support for more trade links in chat like professions for WotLK/Cata/MoP.
++ Added support for GM sending messages to chats on TBC/WotLK/Cata.
 * Fixed failing to relay messages from WoW to Discord on a Discord reconnect.
 * Fixed displaying non-latin fonts in Windows command line.
 
