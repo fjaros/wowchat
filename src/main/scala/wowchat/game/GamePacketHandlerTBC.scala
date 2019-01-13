@@ -116,7 +116,7 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     })
   }
 
-  override protected def parseGuildRoster(msg: Packet): Map[Long, Player] = {
+  override protected def parseGuildRoster(msg: Packet): Map[Long, GuildMember] = {
     val count = msg.byteBuf.readIntLE
     val motd = msg.readString
     val ginfo = msg.readString
@@ -129,10 +129,10 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
       val isOnline = msg.byteBuf.readBoolean
       val name = msg.readString
       msg.byteBuf.skipBytes(4) // guild rank
-      msg.byteBuf.skipBytes(1) // level
+      val level = msg.byteBuf.readByte
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(1) // tbc unkn
-      msg.byteBuf.skipBytes(4) // zone id
+      val zoneId = msg.byteBuf.readIntLE
       if (!isOnline) {
         // last logoff time
         msg.byteBuf.skipBytes(4)
@@ -140,7 +140,7 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
       msg.skipString
       msg.skipString
       if (isOnline) {
-        Some(guid -> Player(name, charClass))
+        Some(guid -> GuildMember(name, charClass, level, zoneId))
       } else {
         None
       }

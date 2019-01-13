@@ -121,30 +121,22 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     }
 
     msg.resetBitReader
-    guid2(2) = msg.readBit
-    guid2(7) = msg.readBit
-    guid3(7) = msg.readBit
-    guid3(2) = msg.readBit
-    guid3(0) = msg.readBit
+    msg.readBitSeq(guid2, 2, 7)
+    msg.readBitSeq(guid3, 7, 2, 0)
     msg.readBit // unkn
-    guid2(4) = msg.readBit
-    guid3(5) = msg.readBit
-    guid2(1) = msg.readBit
-    guid2(3) = msg.readBit
-    guid2(0) = msg.readBit
+    msg.readBitSeq(guid2, 4)
+    msg.readBitSeq(guid3, 5)
+    msg.readBitSeq(guid2, 1, 3, 0)
 
     msg.readBits(7 * 5) // declined names
 
-    guid3(6) = msg.readBit
-    guid3(3) = msg.readBit
-    guid2(5) = msg.readBit
-    guid3(1) = msg.readBit
-    guid3(4) = msg.readBit
+    msg.readBitSeq(guid3, 6, 3)
+    msg.readBitSeq(guid2, 5)
+    msg.readBitSeq(guid3, 1, 4)
     val nameLength = msg.readBits(6)
-    guid2(6) = msg.readBit
+    msg.readBitSeq(guid2, 6)
+    msg.readBitSeq(guid3, 6, 0)
 
-    guid3(6) = msg.readXorByte(guid3(6))
-    guid3(0) = msg.readXorByte(guid3(0))
     val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
 
     // can't be bothered to parse the rest of this crap
@@ -189,34 +181,31 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
         playerGuid(i) = new Array[Byte](8)
         guildGuid(i) = new Array[Byte](8)
 
-        accountId(i)(2) = msg.readBit
-        playerGuid(i)(2) = msg.readBit
-        accountId(i)(7) = msg.readBit
-        guildGuid(i)(5) = msg.readBit
+        msg.readBitSeq(accountId(i), 2)
+        msg.readBitSeq(playerGuid(i), 2)
+        msg.readBitSeq(accountId(i), 7)
+        msg.readBitSeq(guildGuid(i), 5)
         guildNameLengths(i) = msg.readBits(7)
-        accountId(i)(1) = msg.readBit
-        accountId(i)(5) = msg.readBit
-        guildGuid(i)(7) = msg.readBit
-        playerGuid(i)(5) = msg.readBit
+        msg.readBitSeq(accountId(i), 1, 5)
+        msg.readBitSeq(guildGuid(i), 7)
+        msg.readBitSeq(playerGuid(i), 5)
         msg.readBit // unkn
-        guildGuid(i)(1) = msg.readBit
-        playerGuid(i)(6) = msg.readBit
-        guildGuid(i)(2) = msg.readBit
-        playerGuid(i)(4) = msg.readBit
-        guildGuid(i)(0) = msg.readBit
-        guildGuid(i)(3) = msg.readBit
-        accountId(i)(6) = msg.readBit
+        msg.readBitSeq(guildGuid(i), 1)
+        msg.readBitSeq(playerGuid(i), 6)
+        msg.readBitSeq(guildGuid(i), 2)
+        msg.readBitSeq(playerGuid(i), 4)
+        msg.readBitSeq(guildGuid(i), 0, 3)
+        msg.readBitSeq(accountId(i), 6)
         msg.readBit // unkn
-        playerGuid(i)(1) = msg.readBit
-        guildGuid(i)(4) = msg.readBit
-        accountId(i)(0) = msg.readBit
+        msg.readBitSeq(playerGuid(i), 1)
+        msg.readBitSeq(guildGuid(i), 4)
+        msg.readBitSeq(accountId(i), 0)
         msg.readBits(7 * 5) // declined names
-        playerGuid(i)(3) = msg.readBit
-        guildGuid(i)(6) = msg.readBit
-        playerGuid(i)(0) = msg.readBit
-        accountId(i)(4) = msg.readBit
-        accountId(i)(3) = msg.readBit
-        playerGuid(i)(7) = msg.readBit
+        msg.readBitSeq(playerGuid(i), 3)
+        msg.readBitSeq(guildGuid(i), 6)
+        msg.readBitSeq(playerGuid(i), 0)
+        msg.readBitSeq(accountId(i), 4, 3)
+        msg.readBitSeq(playerGuid(i), 7)
         playerNameLengths(i) = msg.readBits(6)
       })
 
@@ -224,41 +213,35 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       (fetchCount until displayCount).foreach(i => msg.readBits(74))
 
       (0 until fetchCount).foreach(i => {
-        playerGuid(i)(1) = msg.readXorByte(playerGuid(i)(1))
+        msg.readXorByteSeq(playerGuid(i), 1)
         msg.byteBuf.skipBytes(4) // realm id
-        playerGuid(i)(7) = msg.readXorByte(playerGuid(i)(7))
+        msg.readXorByteSeq(playerGuid(i), 7)
         msg.byteBuf.skipBytes(4) // realm id
-        playerGuid(i)(4) = msg.readXorByte(playerGuid(i)(4))
+        msg.readXorByteSeq(playerGuid(i), 4)
         val playerName = msg.byteBuf.readCharSequence(playerNameLengths(i), Charset.forName("UTF-8")).toString
-        guildGuid(i)(1) = msg.readXorByte(guildGuid(i)(1))
-        playerGuid(i)(0) = msg.readXorByte(playerGuid(i)(0))
-        guildGuid(i)(2) = msg.readXorByte(guildGuid(i)(2))
-        guildGuid(i)(0) = msg.readXorByte(guildGuid(i)(0))
-        guildGuid(i)(4) = msg.readXorByte(guildGuid(i)(4))
-        playerGuid(i)(3) = msg.readXorByte(playerGuid(i)(3))
-        guildGuid(i)(6) = msg.readXorByte(guildGuid(i)(6))
+        msg.readXorByteSeq(guildGuid(i), 1)
+        msg.readXorByteSeq(playerGuid(i), 0)
+        msg.readXorByteSeq(guildGuid(i), 2, 0, 4)
+        msg.readXorByteSeq(playerGuid(i), 3)
+        msg.readXorByteSeq(guildGuid(i), 6)
         msg.byteBuf.skipBytes(4) // account id?
         val guildName = msg.byteBuf.readCharSequence(guildNameLengths(i), Charset.forName("UTF-8")).toString
-        guildGuid(i)(3) = msg.readXorByte(guildGuid(i)(3))
-        accountId(i)(4) = msg.readXorByte(accountId(i)(4))
+        msg.readXorByteSeq(guildGuid(i), 3)
+        msg.readXorByteSeq(accountId(i), 4)
         val cls = Classes.valueOf(msg.byteBuf.readByte)
-        accountId(i)(7) = msg.readXorByte(accountId(i)(7))
-        playerGuid(i)(6) = msg.readXorByte(playerGuid(i)(6))
-        playerGuid(i)(2) = msg.readXorByte(playerGuid(i)(2))
+        msg.readXorByteSeq(accountId(i), 7)
+        msg.readXorByteSeq(playerGuid(i), 6, 2)
 
         // assume no declined names
 
-        accountId(i)(2) = msg.readXorByte(accountId(i)(2))
-        accountId(i)(3) = msg.readXorByte(accountId(i)(3))
+        msg.readXorByteSeq(accountId(i), 2, 3)
         val race = Races.valueOf(msg.byteBuf.readByte)
-        guildGuid(i)(7) = msg.readXorByte(guildGuid(i)(7))
-        accountId(i)(1) = msg.readXorByte(accountId(i)(1))
-        accountId(i)(5) = msg.readXorByte(accountId(i)(5))
-        accountId(i)(6) = msg.readXorByte(accountId(i)(6))
-        playerGuid(i)(5) = msg.readXorByte(playerGuid(i)(5))
-        accountId(i)(0) = msg.readXorByte(accountId(i)(0))
+        msg.readXorByteSeq(guildGuid(i), 7)
+        msg.readXorByteSeq(accountId(i), 1, 5, 6)
+        msg.readXorByteSeq(playerGuid(i), 5)
+        msg.readXorByteSeq(accountId(i), 0)
         val gender = Some(Genders.valueOf(msg.byteBuf.readByte))
-        guildGuid(i)(5) = msg.readXorByte(guildGuid(i)(5))
+        msg.readXorByteSeq(guildGuid(i), 5)
         val lvl = msg.byteBuf.readByte
         val zone = msg.byteBuf.readIntLE
 
@@ -346,60 +329,51 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     (0 until charactersNum).foreach(i => {
       guids(i) = new Array[Byte](8)
       guildGuids(i) = new Array[Byte](8)
-      guildGuids(i)(4) = msg.readBit
-      guids(i)(0) = msg.readBit
-      guildGuids(i)(3) = msg.readBit
-      guids(i)(3) = msg.readBit
-      guids(i)(7) = msg.readBit
+      msg.readBitSeq(guildGuids(i), 4)
+      msg.readBitSeq(guids(i), 0)
+      msg.readBitSeq(guildGuids(i), 3)
+      msg.readBitSeq(guids(i), 3, 7)
       msg.readBits(2)
-      guids(i)(6) = msg.readBit
-      guildGuids(i)(6) = msg.readBit
+      msg.readBitSeq(guids(i), 6)
+      msg.readBitSeq(guildGuids(i), 6)
       nameLenghts(i) = msg.readBits(6)
-      guids(i)(1) = msg.readBit
-      guildGuids(i)(1) = msg.readBit
-      guildGuids(i)(0) = msg.readBit
-      guids(i)(4) = msg.readBit
-      guildGuids(i)(7) = msg.readBit
-      guids(i)(2) = msg.readBit
-      guids(i)(5) = msg.readBit
-      guildGuids(i)(2) = msg.readBit
-      guildGuids(i)(5) = msg.readBit
+      msg.readBitSeq(guids(i), 1)
+      msg.readBitSeq(guildGuids(i), 1, 0)
+      msg.readBitSeq(guids(i), 4)
+      msg.readBitSeq(guildGuids(i), 7)
+      msg.readBitSeq(guids(i), 2, 5)
+      msg.readBitSeq(guildGuids(i), 2, 5)
     })
 
     msg.readBit // packet success flag?
 
     (0 until charactersNum).foreach(i => {
       msg.byteBuf.skipBytes(4) // unkn
-      guids(i)(1) = msg.readXorByte(guids(i)(1))
+      msg.readXorByteSeq(guids(i), 1)
       msg.byteBuf.skipBytes(2) // slot + hairstyle
-      guildGuids(i)(2) = msg.readXorByte(guildGuids(i)(2))
-      guildGuids(i)(0) = msg.readXorByte(guildGuids(i)(0))
-      guildGuids(i)(6) = msg.readXorByte(guildGuids(i)(6))
+      msg.readXorByteSeq(guildGuids(i), 2, 0, 6)
       val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.forName("UTF-8")).toString
-      guildGuids(i)(3) = msg.readXorByte(guildGuids(i)(3))
+      msg.readXorByteSeq(guildGuids(i), 3)
       msg.byteBuf.skipBytes(10) // x + unkn + face + class
-      guildGuids(i)(5) = msg.readXorByte(guildGuids(i)(5))
+      msg.readXorByteSeq(guildGuids(i), 5)
       msg.byteBuf.skipBytes(207) // inventory
       msg.byteBuf.skipBytes(4) // customization flag
-      guids(i)(3) = msg.readXorByte(guids(i)(3))
-      guids(i)(5) = msg.readXorByte(guids(i)(5))
+      msg.readXorByteSeq(guids(i), 3, 5)
       msg.byteBuf.skipBytes(4) // pet family
-      guildGuids(i)(4) = msg.readXorByte(guildGuids(i)(4))
+      msg.readXorByteSeq(guildGuids(i), 4)
       msg.byteBuf.readIntLE // map
       val race = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(1) // skin
-      guildGuids(i)(1) = msg.readXorByte(guildGuids(i)(1))
+      msg.readXorByteSeq(guildGuids(i), 1)
       msg.byteBuf.skipBytes(1) // level
-      guids(i)(0) = msg.readXorByte(guids(i)(0))
-      guids(i)(2) = msg.readXorByte(guids(i)(2))
+      msg.readXorByteSeq(guids(i), 0, 2)
       msg.byteBuf.skipBytes(3) // hair color + gender + facial hair
       msg.byteBuf.skipBytes(4) // pet level
-      guids(i)(4) = msg.readXorByte(guids(i)(4))
-      guids(i)(7) = msg.readXorByte(guids(i)(7))
+      msg.readXorByteSeq(guids(i), 4, 7)
       msg.byteBuf.skipBytes(12) // y + pet display id + unkn
-      guids(i)(6) = msg.readXorByte(guids(i)(6))
+      msg.readXorByteSeq(guids(i), 6)
       msg.byteBuf.skipBytes(8) // char flags + zone id
-      guildGuids(i)(7) = msg.readXorByte(guildGuids(i)(7))
+      msg.readXorByteSeq(guildGuids(i), 7)
       msg.byteBuf.skipBytes(4) // z
 
       if (name.equalsIgnoreCase(Global.config.wow.character)) {
@@ -460,7 +434,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
   override protected def handleGuildQuery(msg: Packet): GuildInfo = {
     val guildGuidArr = new Array[Byte](8)
 
-    guildGuidArr(5) = msg.readBit
+    msg.readBitSeq(guildGuidArr, 5)
     msg.readBit
     val ranksNum = msg.readBits(21)
     msg.readBits(4) // guid repeated
@@ -640,15 +614,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     })
   }
 
-  override protected def updateGuildRoster: Unit = {
-    // it apparently sends 2 masked guids,
-    // but in fact MaNGOS does not do anything with them so we can just send 0s
-    val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(18, 18)
-    byteBuf.writeBytes(new Array[Byte](18))
-    ctx.get.writeAndFlush(Packet(CMSG_GUILD_ROSTER, byteBuf))
-  }
-
-  override protected def parseGuildRoster(msg: Packet): Map[Long, Player] = {
+  override protected def parseGuildRoster(msg: Packet): Map[Long, GuildMember] = {
     val count = msg.readBits(17)
     val motdLength = msg.readBits(10)
     val guids = new Array[Array[Byte]](count)
@@ -659,18 +625,13 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     (0 until count).foreach(i => {
       guids(i) = new Array[Byte](8)
       oNoteLengths(i) = msg.readBits(8)
-      guids(i)(5) = msg.readBit
+      msg.readBitSeq(guids(i), 5)
       msg.readBit // scroll of resurrect
       pNoteLengths(i) = msg.readBits(8)
-      guids(i)(7) = msg.readBit
-      guids(i)(0) = msg.readBit
-      guids(i)(6) = msg.readBit
+      msg.readBitSeq(guids(i), 7, 0, 6)
       nameLengths(i) = msg.readBits(6)
       msg.readBit // has authenticator
-      guids(i)(3) = msg.readBit
-      guids(i)(4) = msg.readBit
-      guids(i)(1) = msg.readBit
-      guids(i)(2) = msg.readBit
+      msg.readBitSeq(guids(i), 3, 4, 1, 2)
     })
 
     val gInfoLength = msg.readBits(11)
@@ -679,31 +640,28 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // total reputation
       val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
-      guids(i)(0) = msg.readXorByte(guids(i)(0))
+      msg.readXorByteSeq(guids(i), 0)
       msg.byteBuf.skipBytes(24) // professions
-      msg.byteBuf.skipBytes(1) // level
+      val level = msg.byteBuf.readByte
       val flags = msg.byteBuf.readByte
-      msg.byteBuf.skipBytes(4) // zone id
+      val zoneId = msg.byteBuf.readIntLE
       msg.byteBuf.skipBytes(4) // rep cap
-      guids(i)(3) = msg.readXorByte(guids(i)(3))
+      msg.readXorByteSeq(guids(i), 3)
       msg.byteBuf.skipBytes(8) // total activity
       msg.byteBuf.skipBytes(oNoteLengths(i)) // officer note
       msg.byteBuf.skipBytes(4) // logout time
       msg.byteBuf.skipBytes(1) // gender? always 0?
       msg.byteBuf.skipBytes(4) // rank
       msg.byteBuf.skipBytes(4) // realm id
-      guids(i)(5) = msg.readXorByte(guids(i)(5))
-      guids(i)(7) = msg.readXorByte(guids(i)(7))
+      msg.readXorByteSeq(guids(i), 5, 7)
       msg.byteBuf.skipBytes(pNoteLengths(i)) // public note
-      guids(i)(4) = msg.readXorByte(guids(i)(4))
+      msg.readXorByteSeq(guids(i), 4)
       msg.byteBuf.skipBytes(8) // weekly activity
       msg.byteBuf.skipBytes(4) // achievement points
-      guids(i)(6) = msg.readXorByte(guids(i)(6))
-      guids(i)(1) = msg.readXorByte(guids(i)(1))
-      guids(i)(2) = msg.readXorByte(guids(i)(2))
+      msg.readXorByteSeq(guids(i), 6, 1, 2)
 
       if ((flags & 0x01) == 0x01) {
-        Some(ByteUtils.bytesToLongLE(guids(i)) -> Player(name, charClass))
+        Some(ByteUtils.bytesToLongLE(guids(i)) -> GuildMember(name, charClass, level, zoneId))
       } else {
         None
       }
@@ -757,15 +715,15 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     val guidLong = ByteUtils.bytesToLongLE(guid)
     val targetGuidLong = ByteUtils.bytesToLongLE(targetGuid)
 
-    val name = playerRoster.get(guidLong).map(_.name)
+    val name = guildRoster.get(guidLong).map(_.name)
     if (name.isEmpty) {
-      logger.error(s"GUID $guidLong for SMSG_GUILD_RANKS_UPDATE not found in player roster!")
+      logger.error(s"GUID $guidLong for SMSG_GUILD_RANKS_UPDATE not found in guild roster!")
       return
     }
 
-    val targetName = playerRoster.get(targetGuidLong).map(_.name)
+    val targetName = guildRoster.get(targetGuidLong).map(_.name)
     if (targetName.isEmpty) {
-      logger.error(s"Target GUID $targetGuidLong for SMSG_GUILD_RANKS_UPDATE not found in player roster!")
+      logger.error(s"Target GUID $targetGuidLong for SMSG_GUILD_RANKS_UPDATE not found in guild roster!")
       return
     }
 
@@ -821,10 +779,9 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
   private def handle_SMSG_GUILD_LEAVE(msg: Packet): Unit = {
     val guid = new Array[Byte](8)
 
-    guid(2) = msg.readBit
+    msg.readBitSeq(guid, 2)
     val nameLength = msg.readBits(6)
-    guid(6) = msg.readBit
-    guid(5) = msg.readBit
+    msg.readBitSeq(guid, 6, 5)
     val kicked = msg.readBit == 1
 
     val (kickerNameLength, kickerGuid) = if (kicked) {
@@ -838,11 +795,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       (0, null)
     }
 
-    guid(1) = msg.readBit
-    guid(0) = msg.readBit
-    guid(3) = msg.readBit
-    guid(4) = msg.readBit
-    guid(7) = msg.readBit
+    msg.readBitSeq(guid, 1, 0, 3, 4, 7)
 
     val kickerName = if (kicked) {
       msg.readXorByteSeq(kickerGuid, 1, 3, 5, 2, 0, 4, 6, 7)

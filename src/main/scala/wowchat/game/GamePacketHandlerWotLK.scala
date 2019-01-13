@@ -169,7 +169,7 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
   protected def handleAchievementEvent(guid: Long, achievementId: Int): Unit = {
     // This is a guild event so guid MUST be in roster already
     // (unless some weird edge case -> achievement came before roster update)
-    playerRoster.get(guid).foreach(player => {
+    guildRoster.get(guid).foreach(player => {
       Global.discord.sendAchievementNotification(player.name, achievementId)
     })
   }

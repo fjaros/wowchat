@@ -2,7 +2,7 @@ package wowchat.game
 
 import java.nio.charset.Charset
 import java.security.MessageDigest
-import java.util.concurrent.{Executors, TimeUnit}
+import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 
 import wowchat.common._
 import wowchat.game.warden.WardenHandler
@@ -16,6 +16,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 case class Player(name: String, charClass: Byte)
+case class GuildMember(name: String, charClass: Byte, level: Byte, zoneId: Int)
 case class ChatMessage(guid: Long, tp: Byte, message: String, channel: Option[String] = None)
 case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
@@ -47,24 +48,25 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   var ginfo: String = ""
 
   protected var ctx: Option[ChannelHandlerContext] = None
-  protected val playerRoster = mutable.Map.empty[Long, Player]
+  protected val playerRoster = LRUMap.empty[Long, Player]
+  protected val guildRoster = mutable.Map.empty[Long, GuildMember]
+  protected var lastRequestedGuildRoster: Long = _
+  private val executorService = Executors.newSingleThreadScheduledExecutor
 
   // cannot use multimap here because need deterministic order
   private val queuedChatMessages = new mutable.HashMap[Long, mutable.ListBuffer[ChatMessage]]
   private var wardenHandler: Option[WardenHandler] = None
 
   override def channelInactive(ctx: ChannelHandlerContext): Unit = {
-    pingExecutor.shutdown()
+    executorService.shutdown()
     this.ctx = None
     gameEventCallback.disconnected
     Global.game = None
     super.channelInactive(ctx)
   }
 
-  private val pingExecutor = Executors.newSingleThreadScheduledExecutor
-
   private def runPingExecutor: Unit = {
-    pingExecutor.scheduleAtFixedRate(new Runnable {
+    executorService.scheduleWithFixedDelay(new Runnable {
       var pingId = 0
 
       override def run(): Unit = {
@@ -80,22 +82,31 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }, 30, 30, TimeUnit.SECONDS)
   }
 
+  private def runGuildRosterExecutor: Unit = {
+    executorService.scheduleWithFixedDelay(() => {
+      // Enforce updating guild roster only once per minute
+      if (System.currentTimeMillis - lastRequestedGuildRoster >= 60000) {
+        updateGuildRoster
+      }
+    }, 61, 61, TimeUnit.SECONDS)
+  }
+
   def buildGuildiesOnline: String = {
     val characterName = Global.config.wow.character
 
-    playerRoster
+    guildRoster
       .valuesIterator
       .filter(!_.name.equalsIgnoreCase(characterName))
       .toSeq
       .sortBy(_.name)
       .map(m => {
-        s"${m.name} (${Classes.valueOf(m.charClass)})"
+        s"${m.name} (${m.level} ${Classes.valueOf(m.charClass)} in ${GameResources.AREA.getOrElse(m.zoneId, "Unknown Zone")})"
       })
       .mkString(getGuildiesOnlineMessage(false), ", ", "")
   }
 
   def getGuildiesOnlineMessage(isStatus: Boolean): String = {
-    val size = playerRoster.size - 1
+    val size = guildRoster.size - 1
     val guildies = s"guildie${if (size != 1) "s" else ""}"
 
     if (isStatus) {
@@ -119,8 +130,13 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     ctx.get.writeAndFlush(Packet(CMSG_GUILD_QUERY, out))
   }
 
-  protected def updateGuildRoster: Unit = {
-    ctx.get.writeAndFlush(Packet(CMSG_GUILD_ROSTER))
+  private def updateGuildRoster: Unit = {
+    lastRequestedGuildRoster = System.currentTimeMillis
+    ctx.get.writeAndFlush(buildGuildRosterPacket)
+  }
+
+  protected def buildGuildRosterPacket: Packet = {
+    Packet(CMSG_GUILD_ROSTER)
   }
 
   def sendLogout: Option[ChannelFuture] = {
@@ -282,7 +298,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
         messages.foreach(message => {
           Global.discord.sendMessageFromWow(Some(nameQueryMessage.name), message.message, message.tp, message.channel)
         })
-        playerRoster += nameQueryMessage.guid -> Player(nameQueryMessage.name, nameQueryMessage.charClass.toByte)
+        playerRoster += nameQueryMessage.guid -> Player(nameQueryMessage.name, nameQueryMessage.charClass)
     })
   }
 
@@ -364,6 +380,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     Global.discord.changeRealmStatus(realmName)
     gameEventCallback.connected
     runPingExecutor
+    runGuildRosterExecutor
     if (guildGuid != 0) {
       queryGuildName
       updateGuildRoster
@@ -466,12 +483,12 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   private def handle_SMSG_GUILD_ROSTER(msg: Packet): Unit = {
-    playerRoster.clear
-    playerRoster ++= parseGuildRoster(msg)
+    guildRoster.clear
+    guildRoster ++= parseGuildRoster(msg)
     updateGuildiesOnline
   }
 
-  protected def parseGuildRoster(msg: Packet): Map[Long, Player] = {
+  protected def parseGuildRoster(msg: Packet): Map[Long, GuildMember] = {
     val count = msg.byteBuf.readIntLE
     val motd = msg.readString
     val ginfo = msg.readString
@@ -482,9 +499,9 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       val isOnline = msg.byteBuf.readBoolean
       val name = msg.readString
       msg.byteBuf.skipBytes(4) // guild rank
-      msg.byteBuf.skipBytes(1) // level
+      val level = msg.byteBuf.readByte
       val charClass = msg.byteBuf.readByte
-      msg.byteBuf.skipBytes(4) // zone id
+      val zoneId = msg.byteBuf.readIntLE
       if (!isOnline) {
         // last logoff time
         msg.byteBuf.skipBytes(4)
@@ -492,7 +509,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       msg.skipString
       msg.skipString
       if (isOnline) {
-        Some(guid -> Player(name, charClass))
+        Some(guid -> GuildMember(name, charClass, level, zoneId))
       } else {
         None
       }

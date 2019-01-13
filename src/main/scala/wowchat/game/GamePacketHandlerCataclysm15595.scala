@@ -117,58 +117,48 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     (0 until charactersNum).foreach(i => {
       guids(i) = new Array[Byte](8)
       guildGuids(i) = new Array[Byte](8)
-      guids(i)(3) = msg.readBit
-      guildGuids(i)(1) = msg.readBit
-      guildGuids(i)(7) = msg.readBit
-      guildGuids(i)(2) = msg.readBit
+      msg.readBitSeq(guids(i), 3)
+      msg.readBitSeq(guildGuids(i), 1, 7, 2)
       nameLenghts(i) = msg.readBits(7)
-      guids(i)(4) = msg.readBit
-      guids(i)(7) = msg.readBit
-      guildGuids(i)(3) = msg.readBit
-      guids(i)(5) = msg.readBit
-      guildGuids(i)(6) = msg.readBit
-      guids(i)(1) = msg.readBit
-      guildGuids(i)(5) = msg.readBit
-      guildGuids(i)(4) = msg.readBit
+      msg.readBitSeq(guids(i), 4, 7)
+      msg.readBitSeq(guildGuids(i), 3)
+      msg.readBitSeq(guids(i), 5)
+      msg.readBitSeq(guildGuids(i), 6)
+      msg.readBitSeq(guids(i), 1)
+      msg.readBitSeq(guildGuids(i), 5, 4)
       msg.readBit // is first login
-      guids(i)(0) = msg.readBit
-      guids(i)(2) = msg.readBit
-      guids(i)(6) = msg.readBit
-      guildGuids(i)(0) = msg.readBit
+      msg.readBitSeq(guids(i), 0, 2, 6)
+      msg.readBitSeq(guildGuids(i), 0)
     })
 
     (0 until charactersNum).foreach(i => {
       msg.byteBuf.skipBytes(1) // char class
       msg.byteBuf.skipBytes(207) // inventory
       msg.byteBuf.readIntLE
-      guildGuids(i)(2) = msg.readXorByte(guildGuids(i)(2))
+      msg.readXorByteSeq(guildGuids(i), 2)
       msg.byteBuf.skipBytes(2)
-      guildGuids(i)(3) = msg.readXorByte(guildGuids(i)(3))
+      msg.readXorByteSeq(guildGuids(i), 3)
       msg.byteBuf.skipBytes(9)
-      guids(i)(4) = msg.readXorByte(guids(i)(4))
+      msg.readXorByteSeq(guids(i), 4)
       msg.byteBuf.readIntLE // map
-      guildGuids(i)(5) = msg.readXorByte(guildGuids(i)(5))
+      msg.readXorByteSeq(guildGuids(i), 5)
       msg.byteBuf.skipBytes(4)
-      guildGuids(i)(6) = msg.readXorByte(guildGuids(i)(6))
+      msg.readXorByteSeq(guildGuids(i), 6)
       msg.byteBuf.skipBytes(4)
-      guids(i)(3) = msg.readXorByte(guids(i)(3))
+      msg.readXorByteSeq(guids(i), 3)
       msg.byteBuf.skipBytes(9)
-      guids(i)(7) = msg.readXorByte(guids(i)(7))
+      msg.readXorByteSeq(guids(i), 7)
       msg.byteBuf.skipBytes(1)
       val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.forName("UTF-8")).toString
       msg.byteBuf.skipBytes(1)
-      guids(i)(0) = msg.readXorByte(guids(i)(0))
-      guids(i)(2) = msg.readXorByte(guids(i)(2))
-      guildGuids(i)(1) = msg.readXorByte(guildGuids(i)(1))
-      guildGuids(i)(7) = msg.readXorByte(guildGuids(i)(7))
+      msg.readXorByteSeq(guids(i), 0, 2)
+      msg.readXorByteSeq(guildGuids(i), 1, 7)
       msg.byteBuf.skipBytes(5)
       val race = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(1) // char level
-      guids(i)(6) = msg.readXorByte(guids(i)(6))
-      guildGuids(i)(4) = msg.readXorByte(guildGuids(i)(4))
-      guildGuids(i)(0) = msg.readXorByte(guildGuids(i)(0))
-      guids(i)(5) = msg.readXorByte(guids(i)(5))
-      guids(i)(1) = msg.readXorByte(guids(i)(1))
+      msg.readXorByteSeq(guids(i), 6)
+      msg.readXorByteSeq(guildGuids(i), 4, 0)
+      msg.readXorByteSeq(guids(i), 5, 1)
 
       if (name.equalsIgnoreCase(Global.config.wow.character)) {
         return Some(CharEnumMessage(name, ByteUtils.bytesToLongLE(guids(i)), race, ByteUtils.bytesToLongLE(guildGuids(i))))
@@ -182,24 +172,8 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
 
   override protected def writePlayerLogin(out: ByteBuf): Unit = {
     val bytes = ByteUtils.longToBytesLE(selfCharacterId.get)
-
-    writeBit(out, bytes(2))
-    writeBit(out, bytes(3))
-    writeBit(out, bytes(0))
-    writeBit(out, bytes(6))
-    writeBit(out, bytes(4))
-    writeBit(out, bytes(5))
-    writeBit(out, bytes(1))
-    writeBit(out, bytes(7))
-
-    writeXorByte(out, bytes(2))
-    writeXorByte(out, bytes(7))
-    writeXorByte(out, bytes(0))
-    writeXorByte(out, bytes(3))
-    writeXorByte(out, bytes(5))
-    writeXorByte(out, bytes(6))
-    writeXorByte(out, bytes(1))
-    writeXorByte(out, bytes(4))
+    writeBitSeq(out, bytes, 2, 3, 0, 6, 4, 5, 1, 7)
+    writeXorByteSeq(out, bytes, 2, 7, 0, 3, 5, 6, 1, 4)
   }
 
   override protected def writeJoinChannel(out: ByteBuf, utf8ChannelBytes: Array[Byte]): Unit = {
@@ -225,15 +199,15 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     super.handleGuildQuery(msg)
   }
 
-  override protected def updateGuildRoster: Unit = {
+  override protected def buildGuildRosterPacket: Packet = {
     // it apparently sends 2 masked guids,
     // but in fact MaNGOS does not do anything with them so we can just send 0s
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(18, 18)
     byteBuf.writeBytes(new Array[Byte](18))
-    ctx.get.writeAndFlush(Packet(CMSG_GUILD_ROSTER, byteBuf))
+    Packet(CMSG_GUILD_ROSTER, byteBuf)
   }
 
-  override protected def parseGuildRoster(msg: Packet): Map[Long, Player] = {
+  override protected def parseGuildRoster(msg: Packet): Map[Long, GuildMember] = {
     val motdLength = msg.readBits(11)
     val count = msg.readBits(18)
     val guids = new Array[Array[Byte]](count)
@@ -243,18 +217,13 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
 
     (0 until count).foreach(i => {
       guids(i) = new Array[Byte](8)
-      guids(i)(3) = msg.readBit
-      guids(i)(4) = msg.readBit
+      msg.readBitSeq(guids(i), 3, 4)
       msg.readBits(2) // bnet client flags
       pNoteLengths(i) = msg.readBits(8)
       oNoteLengths(i) = msg.readBits(8)
-      guids(i)(0) = msg.readBit
+      msg.readBitSeq(guids(i), 0)
       nameLengths(i) = msg.readBits(7)
-      guids(i)(1) = msg.readBit
-      guids(i)(2) = msg.readBit
-      guids(i)(6) = msg.readBit
-      guids(i)(5) = msg.readBit
-      guids(i)(7) = msg.readBit
+      msg.readBitSeq(guids(i), 1, 2, 6, 5, 7)
     })
 
     val gInfoLength = msg.readBits(12)
@@ -262,29 +231,28 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     (0 until count).flatMap(i => {
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // unkn
-      guids(i)(0) = msg.readXorByte(guids(i)(0))
+      msg.readXorByteSeq(guids(i), 0)
       msg.byteBuf.skipBytes(40) // weekly activity, achievments, professions
-      guids(i)(2) = msg.readXorByte(guids(i)(2))
+      msg.readXorByteSeq(guids(i), 2)
       val flags = msg.byteBuf.readByte
-      msg.byteBuf.skipBytes(4) // zone id
+      val zoneId = msg.byteBuf.readIntLE
       msg.byteBuf.skipBytes(8) // total activity (0)
-      guids(i)(7) = msg.readXorByte(guids(i)(7))
+      msg.readXorByteSeq(guids(i), 7)
       msg.byteBuf.skipBytes(4) // guild rep?
       msg.byteBuf.skipBytes(pNoteLengths(i)) // public note
-      guids(i)(3) = msg.readXorByte(guids(i)(3))
-      msg.byteBuf.skipBytes(1) // level
+      msg.readXorByteSeq(guids(i), 3)
+      val level = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // unkn
-      guids(i)(5) = msg.readXorByte(guids(i)(5))
-      guids(i)(4) = msg.readXorByte(guids(i)(4))
+      msg.readXorByteSeq(guids(i), 5, 4)
       msg.byteBuf.skipBytes(1) // unkn
-      guids(i)(1) = msg.readXorByte(guids(i)(1))
+      msg.readXorByteSeq(guids(i), 1)
       msg.byteBuf.skipBytes(4) // last logoff time
       msg.byteBuf.skipBytes(oNoteLengths(i)) // officer note
-      guids(i)(6) = msg.readXorByte(guids(i)(6))
+      msg.readXorByteSeq(guids(i), 6)
       val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
 
       if ((flags & 0x01) == 0x01) {
-        Some(ByteUtils.bytesToLongLE(guids(i)) -> Player(name, charClass))
+        Some(ByteUtils.bytesToLongLE(guids(i)) -> GuildMember(name, charClass, level, zoneId))
       } else {
         None
       }
