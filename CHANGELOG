@@ -1,3 +1,7 @@
+2019-01-14 - v1.2.9
++ Added optional login as Windows platform. This will fix support for Netherwing server while their Mac login is broken.
+* Separated player and guild roster into two separate entities. Will fix sometimes random names in ?who command
+
 2019-01-11 - v1.2.8
 + Added support for guild promoted, demoted, and player removed events.
 * Fixed bot throwing an error if it received a message for a non-configured Discord channel.
