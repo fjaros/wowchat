@@ -27,6 +27,10 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     this.ctx = Some(ctx)
     val version = WowChatConfig.getVersion.split("\\.").map(_.toByte)
     val accountConfig = Global.config.wow.account.toUpperCase
+    val platformString = Global.config.wow.platform match {
+      case Platform.Windows => "Win"
+      case Platform.Mac => "OSX"
+    }
 
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(50, 100)
 
@@ -43,7 +47,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     byteBuf.writeByte(version(2))
     byteBuf.writeShortLE(WowChatConfig.getBuild)
     byteBuf.writeIntLE(ByteUtils.stringToInt("x86"))
-    byteBuf.writeIntLE(ByteUtils.stringToInt("OSX"))
+    byteBuf.writeIntLE(ByteUtils.stringToInt(platformString))
     byteBuf.writeIntLE(ByteUtils.stringToInt("enUS"))
     byteBuf.writeIntLE(0)
     byteBuf.writeByte(127)

@@ -13,7 +13,7 @@ import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig])
 case class DiscordConfig(token: String, enableDotCommands: Boolean, enableCommandsChannels: Set[String])
-case class Wow(realmlist: RealmListConfig, account: String, password: String, character: String)
+case class Wow(platform: Platform.Value, realmlist: RealmListConfig, account: String, password: String, character: String)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
 case class GuildNotificationConfig(enabled: Boolean, format: String)
@@ -55,6 +55,7 @@ object WowChatConfig extends GamePackets {
           .getOrElse(new util.ArrayList[String]()).asScala.map(_.toLowerCase).toSet
       ),
       Wow(
+        Platform.valueOf(getOpt[String](wowConf, "platform").getOrElse("Mac")),
         parseRealmlist(wowConf),
         wowConf.getString("account"),
         wowConf.getString("password"),
@@ -170,6 +171,18 @@ object WowChatConfig extends GamePackets {
       )
     } else {
       None
+    }
+  }
+}
+
+object Platform extends Enumeration {
+  type Platform = Value
+  val Windows, Mac = Value
+
+  def valueOf(platform: String): Platform = {
+    platform.toLowerCase match {
+      case "win" | "windows" => Windows
+      case _ => Mac
     }
   }
 }
