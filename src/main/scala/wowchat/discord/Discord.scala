@@ -174,7 +174,9 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     val channelId = channel.getId
     val channelName = event.getChannel.getName.toLowerCase
     val effectiveName = event.getMember.getEffectiveName
-    val message = sanitizeMessage(event.getMessage.getContentDisplay)
+    val message = (sanitizeMessage(event.getMessage.getContentDisplay) +: event.getMessage.getAttachments.asScala.map(_.getUrl))
+      .filter(_.nonEmpty)
+      .mkString(" ")
     val enableCommandsChannels = Global.config.discord.enableCommandsChannels
     logger.debug(s"RECV DISCORD MESSAGE: [${channel.getName}] [$effectiveName]: $message")
 
