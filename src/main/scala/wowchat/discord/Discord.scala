@@ -5,7 +5,7 @@ import wowchat.common._
 import com.typesafe.scalalogging.StrictLogging
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.core.JDA.Status
-import net.dv8tion.jda.core.entities.{ChannelType, Game}
+import net.dv8tion.jda.core.entities.{ChannelType, Game, MessageType}
 import net.dv8tion.jda.core.entities.Game.GameType
 import net.dv8tion.jda.core.events.StatusChangeEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
@@ -167,6 +167,11 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
     // ignore messages from non-text channels
     if (event.getChannelType != ChannelType.TEXT) {
+      return
+    }
+
+    // ignore non-default messages
+    if (event.getMessage.getType != MessageType.DEFAULT) {
       return
     }
 
