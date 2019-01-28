@@ -13,7 +13,7 @@ import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig])
 case class DiscordConfig(token: String, enableDotCommands: Boolean, enableCommandsChannels: Set[String])
-case class Wow(platform: Platform.Value, realmlist: RealmListConfig, account: String, password: String, character: String)
+case class Wow(platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: String, password: String, character: String)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
 case class GuildNotificationConfig(enabled: Boolean, format: String)
@@ -56,6 +56,7 @@ object WowChatConfig extends GamePackets {
       ),
       Wow(
         Platform.valueOf(getOpt[String](wowConf, "platform").getOrElse("Mac")),
+        getOpt[Int](wowConf, "build"),
         parseRealmlist(wowConf),
         wowConf.getString("account"),
         wowConf.getString("password"),
@@ -70,20 +71,21 @@ object WowChatConfig extends GamePackets {
   lazy val getExpansion = expansion
 
   lazy val getBuild: Int = {
-    version match {
-      case "1.11.2" => 5464
-      case "1.12.1" => 5875
-      case "1.12.2" => 6005
-      case "1.12.3" => 6141
-      case "2.4.3" => 8606
-      case "3.2.2" => 10505
-      case "3.3.0" => 11159
-      case "3.3.2" => 11403
-      case "3.3.3" => 11723
-      case "3.3.5" => 12340
-      case "4.3.4" => 15595
-      case "5.4.8" => 18414
-    }
+    Global.config.wow.build.getOrElse(
+      version match {
+        case "1.11.2" => 5464
+        case "1.12.1" => 5875
+        case "1.12.2" => 6005
+        case "1.12.3" => 6141
+        case "2.4.3" => 8606
+        case "3.2.2" => 10505
+        case "3.3.0" => 11159
+        case "3.3.2" => 11403
+        case "3.3.3" => 11723
+        case "3.3.5" => 12340
+        case "4.3.4" => 15595
+        case "5.4.8" => 18414
+      })
   }
 
   private def parseRealmlist(wowConf: Config): RealmListConfig = {

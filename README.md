@@ -57,6 +57,7 @@ Even though this bot does not do anything malicious, some servers may not like a
    * In section **wow**:
      * **platform**: Leave as **Mac** unless your target server has Warden (anticheat) disabled AND it is blocking/has disabled Mac logins. In this case put **Windows**.
      * **version**: put either 1.12.1, 2.4.3, 3.3.5, 4.3.4, or 5.4.8 based on the server's expansion.
+     * **build**: you can include a build=<build number> setting in the config, if you are using a custom build version on your server.
      * **realmlist**: this is server's realmlist, same as in your realmlist.wtf file.
      Example values are logon.lightshope.org or wow.gamer-district.org
      * **realm**: This is the realm name the Bot will connect to.
