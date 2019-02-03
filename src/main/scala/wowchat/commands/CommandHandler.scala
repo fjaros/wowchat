@@ -30,7 +30,7 @@ object CommandHandler extends StrictLogging {
       true
     })(game => {
       val splt = message.substring(trigger.length).split(" ")
-      val possibleCommand = splt(0)
+      val possibleCommand = splt(0).toLowerCase
       val arguments = if (splt.length > 1 && splt(1).length <= 16) Some(splt(1)) else None
 
       Try {
