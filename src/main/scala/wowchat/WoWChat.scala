@@ -4,7 +4,7 @@ import java.util.concurrent.{Executors, TimeUnit}
 
 import wowchat.common.{CommonConnectionCallback, Global, ReconnectDelay, WowChatConfig}
 import wowchat.discord.Discord
-import wowchat.game.GameConnector
+import wowchat.game.{GameConnector, GamePackets}
 import wowchat.realm.{RealmConnectionCallback, RealmConnector}
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.nio.NioEventLoopGroup
@@ -13,7 +13,7 @@ import scala.io.Source
 
 object WoWChat extends StrictLogging {
 
-  private val RELEASE = "v1.2.9"
+  private val RELEASE = "v1.2.10"
 
   def main(args: Array[String]): Unit = {
     logger.info(s"Running WoWChat - $RELEASE")
@@ -54,7 +54,10 @@ object WoWChat extends StrictLogging {
 
       override def connected: Unit = reconnectDelay.reset
 
-      override def disconnected: Unit = doReconnect
+      override def disconnected: Unit = {
+        Global.discord.sendMessageFromWow(None, "Disconnected from server!", new GamePackets{}.ChatEvents.CHAT_MSG_SYSTEM, None)
+        doReconnect
+      }
 
       def doReconnect: Unit = {
         Global.group.shutdownGracefully()

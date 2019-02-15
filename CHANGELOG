@@ -1,3 +1,14 @@
+2019-02-14 - v1.2.10
++ Enabled parsing of attachment (image links) in Discord->WoW messages
++ Added configuration setting for ingoring server MotD.
++ Added support for custom build numbers. Useful for users who have servers that accept modified clients.
++ Added SYSTEM notification for when the bot disconnects from the WoW server.
++ Lowered default reconnect timeout to 10 seconds.
+* Fixed promote/demote notifications for MoP.
+* Fixed emoji parsing in messages which contain item links.
+* Fixed sending of empty messages to WoW for non-text events (users joining Discord, user pinning a message to the channel).
+* Fixed case sensitivity in ?who command.
+
 2019-01-14 - v1.2.9
 + Added optional login as Windows platform. This will fix support for Netherwing server while their Mac login is broken.
 * Separated player and guild roster into two separate entities. Will fix sometimes random names in ?who command
