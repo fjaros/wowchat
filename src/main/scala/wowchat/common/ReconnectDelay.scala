@@ -12,12 +12,7 @@ class ReconnectDelay extends StrictLogging {
 
   def getNext: Int = {
     synchronized {
-      reconnectDelay = reconnectDelay.map {
-        case 10 => 30
-        case 30 => 60
-        case 60 => 180
-        case _ => 300
-      }.orElse(Some(10))
+      reconnectDelay = Some(10)
 
       val result = reconnectDelay.get
       logger.debug(s"GET RECONNECT DELAY $result")
