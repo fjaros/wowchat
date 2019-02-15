@@ -105,7 +105,9 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
   }
 
   private def handle_SMSG_MOTD(msg: Packet): Unit = {
-    parseServerMotd(msg).foreach(sendChatMessage)
+    if (Global.config.wow.enableServerMotd) {
+      parseServerMotd(msg).foreach(sendChatMessage)
+    }
   }
 
   protected def parseServerMotd(msg: Packet): Seq[ChatMessage] = {

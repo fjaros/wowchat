@@ -56,6 +56,7 @@ Even though this bot does not do anything malicious, some servers may not like a
      * **enable_commands_channels**: A list of channels for which to allow commands. If not specified or empty, the bot will allow commands from all channels.
    * In section **wow**:
      * **platform**: Leave as **Mac** unless your target server has Warden (anticheat) disabled AND it is blocking/has disabled Mac logins. In this case put **Windows**.
+     * **enable_server_motd**: **0** to ignore sending server's MotD. **1** to send server's MotD as a SYSTEM message.
      * **version**: put either 1.12.1, 2.4.3, 3.3.5, 4.3.4, or 5.4.8 based on the server's expansion.
      * **build**: you can include a build=<build number> setting in the config, if you are using a custom build version on your server.
      * **realmlist**: this is server's realmlist, same as in your realmlist.wtf file.

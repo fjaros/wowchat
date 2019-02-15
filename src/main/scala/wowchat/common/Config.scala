@@ -13,7 +13,7 @@ import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig])
 case class DiscordConfig(token: String, enableDotCommands: Boolean, enableCommandsChannels: Set[String])
-case class Wow(platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: String, password: String, character: String)
+case class Wow(platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: String, password: String, character: String, enableServerMotd: Boolean)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
 case class GuildNotificationConfig(enabled: Boolean, format: String)
@@ -60,7 +60,8 @@ object WowChatConfig extends GamePackets {
         parseRealmlist(wowConf),
         wowConf.getString("account"),
         wowConf.getString("password"),
-        wowConf.getString("character")
+        wowConf.getString("character"),
+        getOpt[Boolean](wowConf, "enable_server_motd").getOrElse(true)
       ),
       parseGuildConfig(guildConf),
       parseChannels(channelsConf)
