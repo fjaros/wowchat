@@ -124,7 +124,7 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     (0 until rankscount).foreach(i => {
       msg.byteBuf.skipBytes(8 + 48) // rank info + guild bank
     })
-    (0 until count).flatMap(i => {
+    (0 until count).map(i => {
       val guid = msg.byteBuf.readLongLE
       val isOnline = msg.byteBuf.readBoolean
       val name = msg.readString
@@ -133,17 +133,15 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(1) // tbc unkn
       val zoneId = msg.byteBuf.readIntLE
-      if (!isOnline) {
-        // last logoff time
-        msg.byteBuf.skipBytes(4)
-      }
-      msg.skipString
-      msg.skipString
-      if (isOnline) {
-        Some(guid -> GuildMember(name, charClass, level, zoneId))
+      val lastLogoff = if (!isOnline) {
+        msg.byteBuf.readFloatLE
       } else {
-        None
+        0
       }
+      msg.skipString
+      msg.skipString
+
+      guid -> GuildMember(name, isOnline, charClass, level, zoneId, lastLogoff)
     }).toMap
   }
 

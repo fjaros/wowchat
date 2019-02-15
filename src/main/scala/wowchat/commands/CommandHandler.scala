@@ -3,7 +3,9 @@ package wowchat.commands
 import com.typesafe.scalalogging.StrictLogging
 import net.dv8tion.jda.core.entities.MessageChannel
 import wowchat.common.Global
+import wowchat.game.{GamePackets, GameResources, GuildInfo, GuildMember}
 
+import scala.collection.mutable
 import scala.util.Try
 
 case class WhoRequest(messageChannel: MessageChannel, playerName: String)
@@ -56,10 +58,36 @@ object CommandHandler extends StrictLogging {
   }
 
   // eww
-  def handleWhoResponse(whoResponse: Option[WhoResponse]) = {
+  def handleWhoResponse(whoResponse: Option[WhoResponse], guildInfo: GuildInfo, guildRoster: mutable.Map[Long, GuildMember]) = {
     val response = whoResponse.map(r => {
       s"${r.playerName} ${if (r.guildName.nonEmpty) s"<${r.guildName}> " else ""}is a level ${r.lvl}${r.gender.fold(" ")(g => s" $g ")}${r.race} ${r.cls} currently in ${r.zone}."
-    }).getOrElse(s"No player named ${whoRequest.playerName} is currently playing.")
+    }).getOrElse({
+      // Check guild roster
+      guildRoster
+        .values
+        .find(_.name.equalsIgnoreCase(whoRequest.playerName))
+        .fold(s"No player named ${whoRequest.playerName} is currently playing.")(guildMember => {
+          val cls = new GamePackets{}.Classes.valueOf(guildMember.charClass) // ... should really move that out
+          val days = guildMember.lastLogoff.toInt
+          val hours = ((guildMember.lastLogoff * 24) % 24).toInt
+          val minutes = ((guildMember.lastLogoff * 24 * 60) % 60).toInt
+          val minutesStr = s" $minutes minute${if (minutes != 1) "s" else ""}"
+          val hoursStr = if (hours > 0) s" $hours hour${if (hours != 1) "s" else ""}," else ""
+          val daysStr = if (days > 0) s" $days day${if (days != 1) "s" else ""}," else ""
+
+          val guildNameStr = if (guildInfo != null) {
+            s" <${guildInfo.name}>"
+          } else {
+            // Welp, some servers don't set guild guid in character selection packet.
+            // The only other way to get this information is through parsing SMSG_UPDATE_OBJECT
+            // and its compressed version which is quite annoying especially across expansions.
+            ""
+          }
+
+          s"${guildMember.name}$guildNameStr is a level ${guildMember.level} $cls currently offline. " +
+            s"Last seen$daysStr$hoursStr$minutesStr ago in ${GameResources.AREA.getOrElse(guildMember.zoneId, "Unknown Zone")}."
+        })
+    })
     whoRequest.messageChannel.sendMessage(response).queue()
   }
 }

@@ -2,7 +2,7 @@ package wowchat.game
 
 import java.nio.charset.Charset
 import java.security.MessageDigest
-import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
+import java.util.concurrent.{Executors, TimeUnit}
 
 import wowchat.common._
 import wowchat.game.warden.WardenHandler
@@ -16,7 +16,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 case class Player(name: String, charClass: Byte)
-case class GuildMember(name: String, charClass: Byte, level: Byte, zoneId: Int)
+case class GuildMember(name: String, isOnline: Boolean, charClass: Byte, level: Byte, zoneId: Int, lastLogoff: Float)
 case class ChatMessage(guid: Long, tp: Byte, message: String, channel: Option[String] = None)
 case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
@@ -96,7 +96,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
     guildRoster
       .valuesIterator
-      .filter(!_.name.equalsIgnoreCase(characterName))
+      .filter(guildMember => guildMember.isOnline && !guildMember.name.equalsIgnoreCase(characterName))
       .toSeq
       .sortBy(_.name)
       .map(m => {
@@ -106,7 +106,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   def getGuildiesOnlineMessage(isStatus: Boolean): String = {
-    val size = guildRoster.size - 1
+    val size = guildRoster.count(_._2.isOnline) - 1
     val guildies = s"guildie${if (size != 1) "s" else ""}"
 
     if (isStatus) {
@@ -494,7 +494,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     val ginfo = msg.readString
     val rankscount = msg.byteBuf.readIntLE
     (0 until rankscount).foreach(i => msg.byteBuf.skipBytes(4))
-    (0 until count).flatMap(i => {
+    (0 until count).map(i => {
       val guid = msg.byteBuf.readLongLE
       val isOnline = msg.byteBuf.readBoolean
       val name = msg.readString
@@ -502,17 +502,15 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       val level = msg.byteBuf.readByte
       val charClass = msg.byteBuf.readByte
       val zoneId = msg.byteBuf.readIntLE
-      if (!isOnline) {
-        // last logoff time
-        msg.byteBuf.skipBytes(4)
-      }
-      msg.skipString
-      msg.skipString
-      if (isOnline) {
-        Some(guid -> GuildMember(name, charClass, level, zoneId))
+      val lastLogoff = if (!isOnline) {
+        msg.byteBuf.readFloatLE
       } else {
-        None
+        0
       }
+      msg.skipString
+      msg.skipString
+
+      guid -> GuildMember(name, isOnline, charClass, level, zoneId, lastLogoff)
     }).toMap
   }
 
@@ -621,7 +619,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     val matchCount = msg.byteBuf.readIntLE
 
     if (matchCount == 0) {
-      CommandHandler.handleWhoResponse(None)
+      CommandHandler.handleWhoResponse(None, guildInfo, guildRoster)
     } else {
       (0 until Math.min(matchCount, 3)).foreach(i => {
         val playerName = msg.readString
@@ -642,7 +640,8 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
           cls,
           race,
           gender,
-          GameResources.AREA.getOrElse(zone, "Unknown Zone")))
+          GameResources.AREA.getOrElse(zone, "Unknown Zone"))),
+          guildInfo, guildRoster
         )
       })
     }

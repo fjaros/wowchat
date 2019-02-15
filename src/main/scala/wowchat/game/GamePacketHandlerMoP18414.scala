@@ -44,7 +44,6 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case SMSG_GUILD_MOTD => handle_SMSG_GUILD_MOTD(msg)
-      case SMSG_GUILD_RANKS => logger.error("GUILD RANKS WOHOO")
       case SMSG_GUILD_RANKS_UPDATE => handle_SMSG_GUILD_RANKS_UPDATE(msg)
       case SMSG_GUILD_INVITE_ACCEPT => handle_SMSG_GUILD_INVITE_ACCEPT(msg)
       case SMSG_GUILD_MEMBER_LOGGED => handle_SMSG_GUILD_MEMBER_LOGGED(msg)
@@ -167,7 +166,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     val displayCount = msg.readBits(6)
 
     if (displayCount == 0) {
-      CommandHandler.handleWhoResponse(None)
+      CommandHandler.handleWhoResponse(None, guildInfo, guildRoster)
     } else {
       val fetchCount = Math.min(displayCount, 3)
       val accountId = new Array[Array[Byte]](fetchCount)
@@ -252,7 +251,8 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
           cls,
           race,
           gender,
-          GameResources.AREA.getOrElse(zone, "Unknown Zone")))
+          GameResources.AREA.getOrElse(zone, "Unknown Zone"))),
+          guildInfo, guildRoster
         )
       })
     }
@@ -636,7 +636,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
     val gInfoLength = msg.readBits(11)
 
-    (0 until count).flatMap(i => {
+    (0 until count).map(i => {
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // total reputation
       val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
@@ -649,7 +649,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       msg.readXorByteSeq(guids(i), 3)
       msg.byteBuf.skipBytes(8) // total activity
       msg.byteBuf.skipBytes(oNoteLengths(i)) // officer note
-      msg.byteBuf.skipBytes(4) // logout time
+      val lastLogoff = msg.byteBuf.readFloatLE
       msg.byteBuf.skipBytes(1) // gender? always 0?
       msg.byteBuf.skipBytes(4) // rank
       msg.byteBuf.skipBytes(4) // realm id
@@ -659,12 +659,9 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       msg.byteBuf.skipBytes(8) // weekly activity
       msg.byteBuf.skipBytes(4) // achievement points
       msg.readXorByteSeq(guids(i), 6, 1, 2)
+      val isOnline = (flags & 0x01) == 0x01
 
-      if ((flags & 0x01) == 0x01) {
-        Some(ByteUtils.bytesToLongLE(guids(i)) -> GuildMember(name, charClass, level, zoneId))
-      } else {
-        None
-      }
+      ByteUtils.bytesToLongLE(guids(i)) -> GuildMember(name, isOnline, charClass, level, zoneId, lastLogoff)
     }).toMap
   }
 

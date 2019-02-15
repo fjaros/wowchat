@@ -228,7 +228,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
 
     val gInfoLength = msg.readBits(12)
 
-    (0 until count).flatMap(i => {
+    (0 until count).map(i => {
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // unkn
       msg.readXorByteSeq(guids(i), 0)
@@ -246,16 +246,13 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
       msg.readXorByteSeq(guids(i), 5, 4)
       msg.byteBuf.skipBytes(1) // unkn
       msg.readXorByteSeq(guids(i), 1)
-      msg.byteBuf.skipBytes(4) // last logoff time
+      val lastLogoff = msg.byteBuf.readFloatLE
       msg.byteBuf.skipBytes(oNoteLengths(i)) // officer note
       msg.readXorByteSeq(guids(i), 6)
       val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
+      val isOnline = (flags & 0x01) == 0x01
 
-      if ((flags & 0x01) == 0x01) {
-        Some(ByteUtils.bytesToLongLE(guids(i)) -> GuildMember(name, charClass, level, zoneId))
-      } else {
-        None
-      }
+      ByteUtils.bytesToLongLE(guids(i)) -> GuildMember(name, isOnline, charClass, level, zoneId, lastLogoff)
     }).toMap
   }
 
