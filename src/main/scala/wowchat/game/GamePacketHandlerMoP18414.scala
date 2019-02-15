@@ -451,7 +451,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       .map(i => {
         msg.byteBuf.skipBytes(4) // rank index
         val id = msg.byteBuf.readIntLE
-        val name = msg.readString
+        val name = msg.byteBuf.readCharSequence(rankLengths(i), Charset.forName("UTF-8")).toString
         id -> name
       })
       .toMap

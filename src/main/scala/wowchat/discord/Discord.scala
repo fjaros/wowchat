@@ -71,7 +71,9 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   def sendGuildNotification(message: String): Unit = {
     Global.wowToDiscord.get((ChatEvents.CHAT_MSG_GUILD, None))
       .foreach(_.foreach {
-        case (discordChannel, _) => discordChannel.sendMessage(message).queue()
+        case (channel, _) =>
+          logger.info(s"WoW->Discord(${channel.getName}) $message")
+          channel.sendMessage(message).queue()
       })
   }
 
