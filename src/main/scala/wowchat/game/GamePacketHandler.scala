@@ -62,6 +62,9 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     this.ctx = None
     gameEventCallback.disconnected
     Global.game = None
+    if (inWorld) {
+      Global.discord.sendMessageFromWow(None, "Disconnected from server!", ChatEvents.CHAT_MSG_SYSTEM, None)
+    }
     super.channelInactive(ctx)
   }
 
