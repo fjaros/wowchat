@@ -73,6 +73,7 @@ Even though this bot does not do anything malicious, some servers may not like a
      * For each notification, **online**, **offline**, **joined**, **left**, **motd**, **achievement** specify:
        * **enabled**: **0** to not display in Discord, **1** to display in Discord
        * **format**: How to display the message.
+       * **channel**: Optional channel **name** OR **ID** where to display message instead of the default guild chat channel.
    * In section **chat**:
      * This section sets up the channel relays between Discord and WoW. You can have an unlimited number of channel relays.
      * **direction**: How do you want to relay each channel, put either

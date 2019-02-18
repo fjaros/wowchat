@@ -16,7 +16,7 @@ case class DiscordConfig(token: String, enableDotCommands: Boolean, enableComman
 case class Wow(platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: String, password: String, character: String, enableServerMotd: Boolean)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
-case class GuildNotificationConfig(enabled: Boolean, format: String)
+case class GuildNotificationConfig(enabled: Boolean, format: String, channel: Option[String])
 case class ChannelConfig(chatDirection: ChatDirection, wow: WowChannelConfig, discord: DiscordChannelConfig)
 case class WowChannelConfig(tp: Byte, channel: Option[String] = None, format: String)
 case class DiscordChannelConfig(channel: String, format: String)
@@ -118,17 +118,18 @@ object WowChatConfig extends GamePackets {
 
     guildConf.fold({
       GuildConfig(defaults.mapValues {
-        case (enabled, format) => GuildNotificationConfig(enabled, format)
+        case (enabled, format) => GuildNotificationConfig(enabled, format, None)
       })
     })(guildConf => {
       GuildConfig(
         defaults.keysIterator.map(key => {
           val conf = getConfigOpt(guildConf, key)
           val default = defaults(key)
-          key -> conf.fold(GuildNotificationConfig(default._1, default._2))(conf => {
+          key -> conf.fold(GuildNotificationConfig(default._1, default._2, None))(conf => {
             GuildNotificationConfig(
               getOpt[Boolean](conf, "enabled").getOrElse(default._1),
-              getOpt[String](conf, "format").getOrElse(default._2)
+              getOpt[String](conf, "format").getOrElse(default._2),
+              getOpt[String](conf, "channel")
             )
           })
         })
@@ -168,6 +169,8 @@ object WowChatConfig extends GamePackets {
             case "true" | "1" | "y" | "yes" => true
             case _ => false
           }
+        } else if (typeOf[T] =:= typeOf[String]) {
+          cfg.getString(path)
         } else {
           cfg.getAnyRef(path)
         }).asInstanceOf[T]

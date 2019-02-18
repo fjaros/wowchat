@@ -443,19 +443,19 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       return
     }
 
-    val guildNotificationConfig = Global.config.guildConfig.notificationConfigs(
-      event match {
-        case GuildEvents.GE_PROMOTED => "promoted"
-        case GuildEvents.GE_DEMOTED => "demoted"
-        case GuildEvents.GE_MOTD => "motd"
-        case GuildEvents.GE_JOINED => "joined"
-        case GuildEvents.GE_LEFT => "left"
-        case GuildEvents.GE_REMOVED => "removed"
-        case GuildEvents.GE_SIGNED_ON => "online"
-        case GuildEvents.GE_SIGNED_OFF => "offline"
-        case _ => return
-      }
-    )
+    val eventConfigKey = event match {
+      case GuildEvents.GE_PROMOTED => "promoted"
+      case GuildEvents.GE_DEMOTED => "demoted"
+      case GuildEvents.GE_MOTD => "motd"
+      case GuildEvents.GE_JOINED => "joined"
+      case GuildEvents.GE_LEFT => "left"
+      case GuildEvents.GE_REMOVED => "removed"
+      case GuildEvents.GE_SIGNED_ON => "online"
+      case GuildEvents.GE_SIGNED_OFF => "offline"
+      case _ => return
+    }
+
+    val guildNotificationConfig = Global.config.guildConfig.notificationConfigs(eventConfigKey)
 
     if (guildNotificationConfig.enabled) {
       val formatted = event match {
@@ -479,7 +479,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
             .replace("%message", messages.head)
       }
 
-      Global.discord.sendGuildNotification(formatted)
+      Global.discord.sendGuildNotification(eventConfigKey, formatted)
     }
 
     updateGuildRoster

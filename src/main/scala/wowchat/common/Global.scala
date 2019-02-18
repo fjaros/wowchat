@@ -22,6 +22,8 @@ object Global {
     with mutable.MultiMap[String, WowChannelConfig]
   val wowToDiscord = new mutable.HashMap[(Byte, Option[String]), mutable.Set[(TextChannel, DiscordChannelConfig)]]
     with mutable.MultiMap[(Byte, Option[String]), (TextChannel, DiscordChannelConfig)]
+  val guildEventsToDiscord = new mutable.HashMap[String, mutable.Set[TextChannel]]
+    with mutable.MultiMap[String, TextChannel]
 
   def getTime: String = {
     LocalDateTime.now.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
