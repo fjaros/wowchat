@@ -621,10 +621,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     val displayCount = msg.byteBuf.readIntLE
     val matchCount = msg.byteBuf.readIntLE
 
-    if (matchCount == 0) {
+    if (displayCount == 0) {
       CommandHandler.handleWhoResponse(None, guildInfo, guildRoster)
     } else {
-      (0 until Math.min(matchCount, 3)).foreach(i => {
+      (0 until Math.min(displayCount, 3)).foreach(i => {
         val playerName = msg.readString
         val guildName = msg.readString
         val lvl = msg.byteBuf.readIntLE
