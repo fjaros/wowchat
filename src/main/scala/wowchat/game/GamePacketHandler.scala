@@ -235,6 +235,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       case SMSG_CHANNEL_NOTIFY => handle_SMSG_CHANNEL_NOTIFY(msg)
       case SMSG_NOTIFICATION => handle_SMSG_NOTIFICATION(msg)
       case SMSG_WHO => handle_SMSG_WHO(msg)
+      case SMSG_SERVER_MESSAGE => handle_SMSG_SERVER_MESSAGE(msg)
 
       case SMSG_WARDEN_DATA => handle_SMSG_WARDEN_DATA(msg)
 
@@ -648,6 +649,19 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
         )
       })
     }
+  }
+
+  private def handle_SMSG_SERVER_MESSAGE(msg: Packet): Unit = {
+    val tp = msg.byteBuf.readIntLE
+    val txt = msg.readString
+    val message = tp match {
+      case ServerMessageType.SERVER_MSG_SHUTDOWN_TIME => s"Shutdown in $txt"
+      case ServerMessageType.SERVER_MSG_RESTART_TIME => s"Restart in $txt"
+      case ServerMessageType.SERVER_MSG_SHUTDOWN_CANCELLED => "Shutdown cancelled."
+      case ServerMessageType.SERVER_MSG_RESTART_CANCELLED => "Restart cancelled."
+      case _ => txt
+    }
+    sendChatMessage(ChatMessage(0, ChatEvents.CHAT_MSG_SYSTEM, message, None))
   }
 
   private def handle_SMSG_WARDEN_DATA(msg: Packet): Unit = {

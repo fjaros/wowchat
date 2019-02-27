@@ -26,6 +26,7 @@ trait GamePacketsCataclysm15595 extends GamePacketsWotLK {
   override val CMSG_AUTH_CHALLENGE = 0x0449
   override val SMSG_AUTH_RESPONSE = 0x5DB6
   override val SMSG_LOGIN_VERIFY_WORLD = 0x2005
+  override val SMSG_SERVER_MESSAGE = 0x6C04
 
   override val SMSG_WARDEN_DATA = 0x12E7
   override val CMSG_WARDEN_DATA = 0x12E8
