@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig])
-case class DiscordConfig(token: String, enableDotCommands: Boolean, enableCommandsChannels: Set[String])
+case class DiscordConfig(token: String, enableDotCommands: Boolean, dotCommandsWhitelist: Set[String], enableCommandsChannels: Set[String])
 case class Wow(platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: String, password: String, character: String, enableServerMotd: Boolean)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
@@ -51,6 +51,8 @@ object WowChatConfig extends GamePackets {
       DiscordConfig(
         discordConf.getString("token"),
         getOpt[Boolean](discordConf, "enable_dot_commands").getOrElse(true),
+        getOpt[util.List[String]](discordConf, "dot_commands_whitelist")
+          .getOrElse(new util.ArrayList[String]()).asScala.map(_.toLowerCase).toSet,
         getOpt[util.List[String]](discordConf, "enable_commands_channels")
           .getOrElse(new util.ArrayList[String]()).asScala.map(_.toLowerCase).toSet
       ),

@@ -219,17 +219,29 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
     if ((enableCommandsChannels.nonEmpty && !enableCommandsChannels.contains(channelName)) || !CommandHandler(channel, message)) {
       // send to all configured wow channels
+      val discordConf = Global.config.discord
       Global.discordToWow
         .get(channelName)
         .fold(Global.discordToWow.get(channelId))(Some(_))
         .foreach(_.foreach(channelConfig => {
-            val finalMessage = if (Global.config.discord.enableDotCommands && message.startsWith(".")) {
+            val finalMessage = if (
+              message.startsWith(".") &&
+              discordConf.enableDotCommands &&
+              (discordConf.dotCommandsWhitelist.isEmpty || discordConf.dotCommandsWhitelist.contains(message.drop(1).toLowerCase))
+            ) {
               message
             } else {
-              channelConfig.format
+              val formatted = channelConfig.format
                 .replace("%time", Global.getTime)
                 .replace("%user", effectiveName)
                 .replace("%message", message)
+
+              // If the final formatted message is a dot command, it should be disabled. Add a space in front.
+              if (formatted.startsWith(".")) {
+                s" $formatted"
+              } else {
+                formatted
+              }
             }
 
             logger.info(s"Discord->WoW(${

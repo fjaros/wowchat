@@ -127,9 +127,9 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
       return None
     }
 
-    // ignore messages from itself
+    // ignore messages from itself, unless it is a system message.
     val guid = msg.byteBuf.readLongLE
-    if (guid == selfCharacterId.get) {
+    if (tp != ChatEvents.CHAT_MSG_SYSTEM && guid == selfCharacterId.get) {
       return None
     }
 

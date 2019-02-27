@@ -550,12 +550,12 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
     msg.readXorByteSeq(senderGuid, 4, 7, 1, 5, 0, 6, 2, 3)
 
-    // ignore messages from itself
-    if (ByteUtils.bytesToLongLE(senderGuid) == selfCharacterId.get) {
+    val tp = msg.byteBuf.readByte
+
+    // ignore messages from itself, unless it is a system message.
+    if (tp != ChatEvents.CHAT_MSG_SYSTEM && ByteUtils.bytesToLongLE(senderGuid) == selfCharacterId.get) {
       return None
     }
-
-    val tp = msg.byteBuf.readByte
 
     // ignore if from an unhandled channel - unless it is a guild achievement message
     if (tp != ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT && !Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {

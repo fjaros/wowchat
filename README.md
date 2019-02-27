@@ -53,6 +53,7 @@ Even though this bot does not do anything malicious, some servers may not like a
    * In section **discord**:
      * **token**: Paste the above copied Bot token.
      * **enable_dot_commands**: If set to 1, it will not format outgoing messages starting with ".", enabling you to send things like ".s in" to the server directly. If set to 0, it will format these messages like regular messages.
+     * **dot_commands_whitelist**: If empty, it will allow or disallow dot commands based on **enable_dot_commands** setting. If any command is listed here, the bot will ONLY allow those specific comamnds to be sent in game.
      * **enable_commands_channels**: A list of channels for which to allow commands. If not specified or empty, the bot will allow commands from all channels.
    * In section **wow**:
      * **platform**: Leave as **Mac** unless your target server has Warden (anticheat) disabled AND it is blocking/has disabled Mac logins. In this case put **Windows**.
