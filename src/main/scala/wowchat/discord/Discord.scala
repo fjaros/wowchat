@@ -219,16 +219,11 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
     if ((enableCommandsChannels.nonEmpty && !enableCommandsChannels.contains(channelName)) || !CommandHandler(channel, message)) {
       // send to all configured wow channels
-      val discordConf = Global.config.discord
       Global.discordToWow
         .get(channelName)
         .fold(Global.discordToWow.get(channelId))(Some(_))
         .foreach(_.foreach(channelConfig => {
-            val finalMessage = if (
-              message.startsWith(".") &&
-              discordConf.enableDotCommands &&
-              (discordConf.dotCommandsWhitelist.isEmpty || discordConf.dotCommandsWhitelist.contains(message.drop(1).toLowerCase))
-            ) {
+            val finalMessage = if (shouldSendDirectly(message)) {
               message
             } else {
               val formatted = channelConfig.format
@@ -252,6 +247,26 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             })
         }))
     }
+  }
+
+  def shouldSendDirectly(message: String): Boolean = {
+    val discordConf = Global.config.discord
+    val trimmed = message.drop(1).toLowerCase
+
+    message.startsWith(".") &&
+    discordConf.enableDotCommands &&
+      (
+        discordConf.dotCommandsWhitelist.isEmpty ||
+        discordConf.dotCommandsWhitelist.contains(trimmed) ||
+        // Theoretically it would be better to construct a prefix tree for this.
+        !discordConf.dotCommandsWhitelist.forall(item => {
+          if (item.endsWith("*")) {
+            !trimmed.startsWith(item.dropRight(1).toLowerCase)
+          } else {
+            true
+          }
+        })
+      )
   }
 
   def sanitizeMessage(message: String): String = {
