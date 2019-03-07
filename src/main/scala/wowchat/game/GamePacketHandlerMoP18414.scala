@@ -162,20 +162,19 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     byteBuf.writeBytes(name.getBytes("UTF-8"))
   }
 
-  override protected def handle_SMSG_WHO(msg: Packet): Unit = {
+  override protected def parseWhoResponse(msg: Packet): Seq[WhoResponse] = {
     val displayCount = msg.readBits(6)
 
     if (displayCount == 0) {
-      CommandHandler.handleWhoResponse(None, guildInfo, guildRoster)
+      Seq.empty
     } else {
-      val fetchCount = Math.min(displayCount, 3)
-      val accountId = new Array[Array[Byte]](fetchCount)
-      val playerGuid = new Array[Array[Byte]](fetchCount)
-      val guildGuid = new Array[Array[Byte]](fetchCount)
-      val guildNameLengths = new Array[Int](fetchCount)
-      val playerNameLengths = new Array[Int](fetchCount)
+      val accountId = new Array[Array[Byte]](displayCount)
+      val playerGuid = new Array[Array[Byte]](displayCount)
+      val guildGuid = new Array[Array[Byte]](displayCount)
+      val guildNameLengths = new Array[Int](displayCount)
+      val playerNameLengths = new Array[Int](displayCount)
 
-      (0 until fetchCount).foreach(i => {
+      (0 until displayCount).foreach(i => {
         accountId(i) = new Array[Byte](8)
         playerGuid(i) = new Array[Byte](8)
         guildGuid(i) = new Array[Byte](8)
@@ -208,10 +207,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
         playerNameLengths(i) = msg.readBits(6)
       })
 
-      // skip rest
-      (fetchCount until displayCount).foreach(i => msg.readBits(74))
-
-      (0 until fetchCount).foreach(i => {
+      (0 until displayCount).map(i => {
         msg.readXorByteSeq(playerGuid(i), 1)
         msg.byteBuf.skipBytes(4) // realm id
         msg.readXorByteSeq(playerGuid(i), 7)
@@ -244,15 +240,14 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
         val lvl = msg.byteBuf.readByte
         val zone = msg.byteBuf.readIntLE
 
-        CommandHandler.handleWhoResponse(Some(WhoResponse(
+        WhoResponse(
           playerName,
           guildName,
           lvl,
           cls,
           race,
           gender,
-          GameResources.AREA.getOrElse(zone, "Unknown Zone"))),
-          guildInfo, guildRoster
+          GameResources.AREA.getOrElse(zone, "Unknown Zone")
         )
       })
     }

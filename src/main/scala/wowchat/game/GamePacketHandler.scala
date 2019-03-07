@@ -618,14 +618,29 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
   // This is actually really hard to map back to a specific request
   // because the packet doesn't include a cookie/id/requested name if none found
-  protected def handle_SMSG_WHO(msg: Packet): Unit = {
+  private def handle_SMSG_WHO(msg: Packet): Unit = {
+    val displayResults = parseWhoResponse(msg)
+    // Try to find exact match
+    val exactName = CommandHandler.whoRequest.playerName.toLowerCase
+    val exactMatches = displayResults.filter(_.playerName.toLowerCase == exactName)
+    if (exactMatches.length == 1) {
+      // Found exact match
+      CommandHandler.handleWhoResponse(Some(exactMatches.head), guildInfo, guildRoster)
+    } else {
+      displayResults.take(Math.min(displayResults.length, 3)).foreach(whoResponse => {
+        CommandHandler.handleWhoResponse(Some(whoResponse), guildInfo, guildRoster)
+      })
+    }
+  }
+
+  protected def parseWhoResponse(msg: Packet): Seq[WhoResponse] = {
     val displayCount = msg.byteBuf.readIntLE
     val matchCount = msg.byteBuf.readIntLE
 
     if (displayCount == 0) {
-      CommandHandler.handleWhoResponse(None, guildInfo, guildRoster)
+      Seq.empty
     } else {
-      (0 until Math.min(displayCount, 3)).foreach(i => {
+      (0 until displayCount).map(i => {
         val playerName = msg.readString
         val guildName = msg.readString
         val lvl = msg.byteBuf.readIntLE
@@ -637,15 +652,14 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
           None
         }
         val zone = msg.byteBuf.readIntLE
-        CommandHandler.handleWhoResponse(Some(WhoResponse(
+        WhoResponse(
           playerName,
           guildName,
           lvl,
           cls,
           race,
           gender,
-          GameResources.AREA.getOrElse(zone, "Unknown Zone"))),
-          guildInfo, guildRoster
+          GameResources.AREA.getOrElse(zone, "Unknown Zone")
         )
       })
     }
