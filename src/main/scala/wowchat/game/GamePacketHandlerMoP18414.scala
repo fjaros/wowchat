@@ -631,7 +631,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
     val gInfoLength = msg.readBits(11)
 
-    (0 until count).map(i => {
+    val guildRosterMap = (0 until count).map(i => {
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // total reputation
       val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
@@ -658,6 +658,14 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
       ByteUtils.bytesToLongLE(guids(i)) -> GuildMember(name, isOnline, charClass, level, zoneId, lastLogoff)
     }).toMap
+
+    msg.byteBuf.skipBytes(4) // accounts number
+    msg.byteBuf.skipBytes(4) // created date
+    msg.byteBuf.skipBytes(gInfoLength)
+    msg.byteBuf.skipBytes(4) // weekly rep cap
+    guildMotd = Some(msg.byteBuf.readCharSequence(motdLength, Charset.forName("UTF-8")).toString)
+
+    guildRosterMap
   }
 
   override protected def parseNotification(msg: Packet): String = {

@@ -6,4 +6,5 @@ trait GameCommandHandler {
   def sendNotification(message: String)
 
   def handleWho(arguments: Option[String]): Option[String]
+  def handleGmotd(): Option[String]
 }

@@ -120,7 +120,7 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
 
   override protected def parseGuildRoster(msg: Packet): Map[Long, GuildMember] = {
     val count = msg.byteBuf.readIntLE
-    val motd = msg.readString
+    guildMotd = Some(msg.readString)
     val ginfo = msg.readString
     val rankscount = msg.byteBuf.readIntLE
     (0 until rankscount).foreach(i => {

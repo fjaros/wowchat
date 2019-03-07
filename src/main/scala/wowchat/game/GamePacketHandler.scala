@@ -43,9 +43,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   protected var inWorld: Boolean = false
   protected var guildGuid: Long = _
   protected var guildInfo: GuildInfo = _
-
-  var motd: String = ""
-  var ginfo: String = ""
+  protected var guildMotd: Option[String] = None
 
   protected var ctx: Option[ChannelHandlerContext] = None
   protected val playerRoster = LRUMap.empty[Long, Player]
@@ -191,6 +189,16 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     } else {
       Some(buildGuildiesOnline)
     }
+  }
+
+  override def handleGmotd(): Option[String] = {
+    guildMotd.map(guildMotd => {
+      val guildNotificationConfig = Global.config.guildConfig.notificationConfigs("motd")
+      guildNotificationConfig.format
+        .replace("%time", Global.getTime)
+        .replace("%user", "")
+        .replace("%message", guildMotd)
+    })
   }
 
   protected def buildWhoMessage(name: String): ByteBuf = {
@@ -494,7 +502,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
   protected def parseGuildRoster(msg: Packet): Map[Long, GuildMember] = {
     val count = msg.byteBuf.readIntLE
-    val motd = msg.readString
+    guildMotd = Some(msg.readString)
     val ginfo = msg.readString
     val rankscount = msg.byteBuf.readIntLE
     (0 until rankscount).foreach(i => msg.byteBuf.skipBytes(4))

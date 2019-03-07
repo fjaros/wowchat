@@ -43,6 +43,8 @@ object CommandHandler extends StrictLogging {
               whoRequest = WhoRequest(fromChannel, arguments.get)
             }
             whoSucceeded
+          case "gmotd" =>
+            game.handleGmotd()
         }
       }.fold(throwable => {
         // command not found, should send to wow chat

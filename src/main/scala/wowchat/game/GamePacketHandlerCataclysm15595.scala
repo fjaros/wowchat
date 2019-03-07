@@ -228,7 +228,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
 
     val gInfoLength = msg.readBits(12)
 
-    (0 until count).map(i => {
+    val guildRosterMap = (0 until count).map(i => {
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // unkn
       msg.readXorByteSeq(guids(i), 0)
@@ -254,6 +254,11 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
 
       ByteUtils.bytesToLongLE(guids(i)) -> GuildMember(name, isOnline, charClass, level, zoneId, lastLogoff)
     }).toMap
+
+    msg.byteBuf.skipBytes(gInfoLength)
+    guildMotd = Some(msg.byteBuf.readCharSequence(motdLength, Charset.forName("UTF-8")).toString)
+
+    guildRosterMap
   }
 
   override protected def parseNotification(msg: Packet): String = {
