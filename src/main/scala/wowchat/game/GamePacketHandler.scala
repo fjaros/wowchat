@@ -631,13 +631,17 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     // Try to find exact match
     val exactName = CommandHandler.whoRequest.playerName.toLowerCase
     val exactMatches = displayResults.filter(_.playerName.toLowerCase == exactName)
-    if (exactMatches.length == 1) {
-      // Found exact match
-      CommandHandler.handleWhoResponse(Some(exactMatches.head), guildInfo, guildRoster)
-    } else {
-      displayResults.take(Math.min(displayResults.length, 3)).foreach(whoResponse => {
-        CommandHandler.handleWhoResponse(Some(whoResponse), guildInfo, guildRoster)
-      })
+    exactMatches.length match {
+      case 0 =>
+        // Did not find any match
+        CommandHandler.handleWhoResponse(None, guildInfo, guildRoster)
+      case 1 =>
+        // Found exact match
+        CommandHandler.handleWhoResponse(Some(exactMatches.head), guildInfo, guildRoster)
+      case _ =>
+        displayResults.take(Math.min(displayResults.length, 3)).foreach(whoResponse => {
+          CommandHandler.handleWhoResponse(Some(whoResponse), guildInfo, guildRoster)
+        })
     }
   }
 
