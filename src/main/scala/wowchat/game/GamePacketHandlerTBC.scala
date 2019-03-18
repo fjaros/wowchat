@@ -1,6 +1,5 @@
 package wowchat.game
 
-import java.lang.management.ManagementFactory
 import java.nio.charset.Charset
 
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
@@ -21,6 +20,8 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     0x72, 0x06, 0x8A, 0x26, 0x0C, 0x90, 0x90, 0xED, 0x7B, 0x83, 0x40, 0xC4, 0x7E, 0xA6, 0x94, 0xB6,
     0x98, 0x18, 0xC5, 0x36, 0xCA, 0xE8, 0x81, 0x61, 0x42, 0xF9, 0xEB, 0x07, 0x63, 0xAB, 0x8B, 0xEC
   ).map(_.toByte)
+
+  private val connectTime = System.currentTimeMillis
 
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
@@ -155,14 +156,12 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
   }
 
   private def handle_SMSG_TIME_SYNC_REQ(msg: Packet): Unit = {
-    // jvm uptime should work for this?
-    val jvmUptime = ManagementFactory.getRuntimeMXBean.getUptime
-
     val counter = msg.byteBuf.readIntLE
+    val uptime = (System.currentTimeMillis - connectTime).toInt
 
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
     byteBuf.writeIntLE(counter)
-    byteBuf.writeIntLE(jvmUptime.toInt)
+    byteBuf.writeIntLE(uptime)
 
     ctx.get.writeAndFlush(Packet(CMSG_TIME_SYNC_RESP, byteBuf))
   }
