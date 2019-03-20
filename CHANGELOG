@@ -1,3 +1,14 @@
+2019-03-20 - v1.3.0
++ Added support for global and channel-bound chat filters using Java Regex pattern matching.
++ Added whitelist feature to optionally explicitly only allow users using certain dot commands.
++ Added support for restart/shutdown announcement messages to be relayed as System messages.
++ Added command ?gmotd to display your guild's motd.
++ Added option to send guild notifications and guild motd to another Discord channel.
++ Changed behavior of ?who command to always return exact player requested if available on queries returning multiple players.
+* Fixed bug in ?who command not working if the server returns a different player count vs the number of players actually displayed.
+* Fixed bug in displaying color coded messages if the message contains the $ symbol.
+* Fixed rare sync bug on some servers if the server + bot are both running for longer than 24 days.
+
 2019-02-14 - v1.2.10
 + Enabled parsing of attachment (image links) in Discord->WoW messages
 + Added configuration setting for ingoring server MotD.
