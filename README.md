@@ -83,10 +83,20 @@ Even though this bot does not do anything malicious, some servers may not like a
        * In type put one of, **Say**, **Guild**, **Officer**, **Emote**, **Yell**, **System**, **Whisper**, **Channel**. This is the type of chat the Bot will read for this section.
          * If you put **type=Channel**, you also must provide a **channel=name of channel** value.
        * In format put how you want to display the message, supported replacable values are **%time**, **%user**, **%message**, and **%channel** if above type is **Channel**.
+       * **filters**: See filters section. If a channel configuration has this section, it will override the global filters and use these instead for this channel.
+         * If this is in the **wow** section, it will filter Discord->WoW messages.
      * **discord** section:
        * **channel**: The discord channel **name** OR **ID** where to display the message. **It is advised to use channel ID here instead of name, so the bot does not stop working when the channel name is changed.**
          * To see channels' IDs, you must enable Developer mode in Discord under User Settings -> Appearance -> Advanced.
        * **format**: Same options as in **wow** section above.
+       * **filters**: See filters section. If a channel configuration has this section, it will override the global filters and use these instead for this channel.
+         * If this is in the **discord** section, it will filter WoW->Discord messages.
+   * In section **filters**:
+     * This section specifies filters for chat messages to be ignored by the bot. It works for both directions, Discord to WoW and WoW to Discord. It can be overriden in each specific channel configuration as stated above.
+     * **enabled**: **0** to globally disable all filters, **1** to enable them.
+     * **patterns**: List of Java Regex match patterns. If the incoming messages matches any one of the patterns and filters are enabled, it will be ignored.
+       * When ignored, the message will not be relayed; however it will be logged into the bot's command line output prepended with the word FILTERED.
+
 3. Invite your bot to Discord
    * Go back to https://discordapp.com/developers/applications/ and click your new Bot application.
    * In browser enter: https://discordapp.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot

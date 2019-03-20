@@ -48,7 +48,6 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
       discordChannels.foreach {
         case (channel, channelConfig) =>
-
           val parsedResolvedTags = from.map(from => {
             messageResolver.resolveTags(channel, parsedLinks, error => {
               Global.game.foreach(_.sendMessageToWow(ChatEvents.CHAT_MSG_WHISPER, error, Some(from)))
@@ -63,8 +62,11 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             .replace("%message", parsedResolvedTags)
             .replace("%target", wowChannel.getOrElse(""))
 
-          logger.info(s"WoW->Discord(${channel.getName}) $formatted")
-          channel.sendMessage(formatted).queue()
+          val filter = shouldFilter(channelConfig.filters, message)
+          logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord(${channel.getName}) $formatted")
+          if (!filter) {
+            channel.sendMessage(formatted).queue()
+          }
       }
     })
   }
@@ -223,28 +225,31 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         .get(channelName)
         .fold(Global.discordToWow.get(channelId))(Some(_))
         .foreach(_.foreach(channelConfig => {
-            val finalMessage = if (shouldSendDirectly(message)) {
-              message
+          val finalMessage = if (shouldSendDirectly(message)) {
+            message
+          } else {
+            val formatted = channelConfig.format
+              .replace("%time", Global.getTime)
+              .replace("%user", effectiveName)
+              .replace("%message", message)
+
+            // If the final formatted message is a dot command, it should be disabled. Add a space in front.
+            if (formatted.startsWith(".")) {
+              s" $formatted"
             } else {
-              val formatted = channelConfig.format
-                .replace("%time", Global.getTime)
-                .replace("%user", effectiveName)
-                .replace("%message", message)
-
-              // If the final formatted message is a dot command, it should be disabled. Add a space in front.
-              if (formatted.startsWith(".")) {
-                s" $formatted"
-              } else {
-                formatted
-              }
+              formatted
             }
+          }
 
-            logger.info(s"Discord->WoW(${
-              channelConfig.channel.getOrElse(ChatEvents.valueOf(channelConfig.tp))
-            }) [$effectiveName]: $message")
+          val filter = shouldFilter(channelConfig.filters, message)
+          logger.info(s"${if (filter) "FILTERED " else ""}Discord->WoW(${
+            channelConfig.channel.getOrElse(ChatEvents.valueOf(channelConfig.tp))
+          }) [$effectiveName]: $message")
+          if (!filter) {
             Global.game.fold(logger.error("Cannot send message! Not connected to WoW!"))(handler => {
               handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)
             })
+          }
         }))
     }
   }
@@ -267,6 +272,12 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
           }
         })
       )
+  }
+
+  def shouldFilter(filtersConfig: Option[FiltersConfig], message: String): Boolean = {
+    filtersConfig
+      .fold(Global.config.filters)(Some(_))
+      .exists(filters => filters.enabled && filters.patterns.exists(message.matches))
   }
 
   def sanitizeMessage(message: String): String = {
