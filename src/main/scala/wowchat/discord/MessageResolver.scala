@@ -50,7 +50,7 @@ class MessageResolver(jda: JDA) {
     val pass1 = s"$hex(.*?)\\|r".r
     val pass2 = hex.r
 
-    pass2.replaceAllIn(pass1.replaceAllIn(message, _.group(1)), "")
+    pass2.replaceAllIn(pass1.replaceAllIn(message.replace("$", "\\$"), _.group(1)), "")
   }
 
   def resolveTags(discordChannel: TextChannel, message: String, onError: String => Unit): String = {
