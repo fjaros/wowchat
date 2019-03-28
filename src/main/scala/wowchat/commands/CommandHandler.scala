@@ -22,40 +22,44 @@ object CommandHandler extends StrictLogging {
   var whoRequest: WhoRequest = _
 
   // returns back the message as an option if unhandled
+  // needs to be refactored into a Map[String, <Intelligent Command Handler Function>]
   def apply(fromChannel: MessageChannel, message: String): Boolean = {
     if (!message.startsWith(trigger)) {
       return false
     }
 
-    Global.game.fold({
-      fromChannel.sendMessage(NOT_ONLINE).queue()
-      true
-    })(game => {
-      val splt = message.substring(trigger.length).split(" ")
-      val possibleCommand = splt(0).toLowerCase
-      val arguments = if (splt.length > 1 && splt(1).length <= 16) Some(splt(1)) else None
+    val splt = message.substring(trigger.length).split(" ")
+    val possibleCommand = splt(0).toLowerCase
+    val arguments = if (splt.length > 1 && splt(1).length <= 16) Some(splt(1)) else None
 
-      Try {
-        possibleCommand match {
-          case "who" | "online" =>
+    Try {
+      possibleCommand match {
+        case "who" | "online" =>
+          Global.game.fold({
+            fromChannel.sendMessage(NOT_ONLINE).queue()
+            return true
+          })(game => {
             val whoSucceeded = game.handleWho(arguments)
             if (arguments.isDefined) {
               whoRequest = WhoRequest(fromChannel, arguments.get)
             }
             whoSucceeded
-          case "gmotd" =>
-            game.handleGmotd()
-        }
-      }.fold(throwable => {
-        // command not found, should send to wow chat
-        false
-      }, opt => {
-        // command found, do not send to wow chat
-        if (opt.isDefined) {
-          fromChannel.sendMessage(opt.get).queue()
-        }
-        true
-      })
+          })
+        case "gmotd" =>
+          Global.game.fold({
+            fromChannel.sendMessage(NOT_ONLINE).queue()
+            return true
+          })(_.handleGmotd())
+      }
+    }.fold(throwable => {
+      // command not found, should send to wow chat
+      false
+    }, opt => {
+      // command found, do not send to wow chat
+      if (opt.isDefined) {
+        fromChannel.sendMessage(opt.get).queue()
+      }
+      true
     })
   }
 
