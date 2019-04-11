@@ -65,7 +65,12 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
           val filter = shouldFilter(channelConfig.filters, message)
           logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord(${channel.getName}) $formatted")
           if (!filter) {
-            channel.sendMessage(formatted).queue()
+            val escapedMarkdown = formatted
+              .replace("`", "\\`")
+              .replace("*", "\\*")
+              .replace("_", "\\_")
+              .replace("~", "\\~")
+            channel.sendMessage(escapedMarkdown).queue()
           }
       }
     })
