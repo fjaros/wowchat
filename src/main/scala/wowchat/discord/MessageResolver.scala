@@ -55,8 +55,7 @@ class MessageResolver(jda: JDA) {
 
   def resolveTags(discordChannel: TextChannel, message: String, onError: String => Unit): String = {
     // OR non-capturing regex didn't work for these for some reason
-    val regex1 = "\"@(.+?)\"".r
-    val regex2 = "@([^\\s]+)".r
+    val regexes = Seq("\"@(.+?)\"", "@([^\\s]+)", "@([\\w]+)").map(_.r)
 
     val scalaMembers = discordChannel.getMembers.asScala
     val effectiveNames = scalaMembers.map(member => {
@@ -71,7 +70,7 @@ class MessageResolver(jda: JDA) {
       .map(role => role.getName -> role.getId)
 
     // each group
-    Seq(regex1, regex2).foldLeft(message) {
+    regexes.foldLeft(message) {
       case (result, regex) =>
         regex.replaceAllIn(result, m => {
           val tag = m.group(1)
