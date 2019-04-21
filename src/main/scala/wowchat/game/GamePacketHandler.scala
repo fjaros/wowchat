@@ -630,18 +630,40 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     val displayResults = parseWhoResponse(msg)
     // Try to find exact match
     val exactName = CommandHandler.whoRequest.playerName.toLowerCase
-    val exactMatches = displayResults.filter(_.playerName.toLowerCase == exactName)
-    exactMatches.length match {
-      case 0 =>
-        // Did not find any match
-        CommandHandler.handleWhoResponse(None, guildInfo, guildRoster)
-      case 1 =>
-        // Found exact match
-        CommandHandler.handleWhoResponse(Some(exactMatches.head), guildInfo, guildRoster)
-      case _ =>
-        displayResults.take(Math.min(displayResults.length, 3)).foreach(whoResponse => {
-          CommandHandler.handleWhoResponse(Some(whoResponse), guildInfo, guildRoster)
+    val exactMatch = displayResults.find(_.playerName.toLowerCase == exactName)
+    val handledResponses = CommandHandler.handleWhoResponse(
+      exactMatch,
+      guildInfo,
+      guildRoster,
+      guildMember => guildMember.name.equalsIgnoreCase(CommandHandler.whoRequest.playerName)
+    )
+    if (handledResponses.isEmpty) {
+      // Exact match not found and no exact match in guild roster. Look for approximate matches.
+      if (displayResults.isEmpty) {
+        // No approximate matches found online. Try to find some in guild roster.
+        val approximateMatches = CommandHandler.handleWhoResponse(
+          exactMatch,
+          guildInfo,
+          guildRoster,
+          guildMember => guildMember.name.toLowerCase.contains(exactName)
+        )
+        if (approximateMatches.isEmpty) {
+          // No approximate matches found.
+          CommandHandler.whoRequest.messageChannel.sendMessage(s"No player named ${CommandHandler.whoRequest.playerName} is currently playing.").queue()
+        } else {
+          // Send at most 3 approximate matches.
+          approximateMatches.take(3).foreach(CommandHandler.whoRequest.messageChannel.sendMessage(_).queue())
+        }
+      } else {
+        // Approximate matches found online!
+        displayResults.take(3).foreach(whoResponse => {
+          CommandHandler.handleWhoResponse(Some(whoResponse),
+            guildInfo,
+            guildRoster,
+            guildMember => guildMember.name.equalsIgnoreCase(CommandHandler.whoRequest.playerName)
+          ).foreach(CommandHandler.whoRequest.messageChannel.sendMessage(_).queue())
         })
+      }
     }
   }
 

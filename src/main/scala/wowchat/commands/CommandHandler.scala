@@ -64,15 +64,18 @@ object CommandHandler extends StrictLogging {
   }
 
   // eww
-  def handleWhoResponse(whoResponse: Option[WhoResponse], guildInfo: GuildInfo, guildRoster: mutable.Map[Long, GuildMember]) = {
-    val response = whoResponse.map(r => {
-      s"${r.playerName} ${if (r.guildName.nonEmpty) s"<${r.guildName}> " else ""}is a level ${r.lvl}${r.gender.fold(" ")(g => s" $g ")}${r.race} ${r.cls} currently in ${r.zone}."
+  def handleWhoResponse(whoResponse: Option[WhoResponse],
+                        guildInfo: GuildInfo,
+                        guildRoster: mutable.Map[Long, GuildMember],
+                        guildRosterMatcherFunc: GuildMember => Boolean): Iterable[String] = {
+    whoResponse.map(r => {
+      Seq(s"${r.playerName} ${if (r.guildName.nonEmpty) s"<${r.guildName}> " else ""}is a level ${r.lvl}${r.gender.fold(" ")(g => s" $g ")}${r.race} ${r.cls} currently in ${r.zone}.")
     }).getOrElse({
       // Check guild roster
       guildRoster
         .values
-        .find(_.name.equalsIgnoreCase(whoRequest.playerName))
-        .fold(s"No player named ${whoRequest.playerName} is currently playing.")(guildMember => {
+        .filter(guildRosterMatcherFunc)
+        .map(guildMember => {
           val cls = new GamePackets{}.Classes.valueOf(guildMember.charClass) // ... should really move that out
           val days = guildMember.lastLogoff.toInt
           val hours = ((guildMember.lastLogoff * 24) % 24).toInt
@@ -94,6 +97,5 @@ object CommandHandler extends StrictLogging {
             s"Last seen$daysStr$hoursStr$minutesStr ago in ${GameResources.AREA.getOrElse(guildMember.zoneId, "Unknown Zone")}."
         })
     })
-    whoRequest.messageChannel.sendMessage(response).queue()
   }
 }
