@@ -1,3 +1,9 @@
+2019-04-24 - v1.3.1
++ Improve who command handling to better return approximate results from a mix of offline guild members and online players.
++ Improve matching of tags in WoW->Discord messages to tag users even if their name is followed by special characters.
++ Enabled escaping of characters in WoW->Discord messages that would format the message on Discord.
+* Fixed issue with some servers not sending back character list in case it is requested before anti cheat response.
+
 2019-03-20 - v1.3.0
 + Added support for global and channel-bound chat filters using Java Regex pattern matching.
 + Added whitelist feature to optionally explicitly only allow users using certain dot commands.

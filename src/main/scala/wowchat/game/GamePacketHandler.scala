@@ -334,6 +334,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   private def handle_SMSG_CHAR_ENUM(msg: Packet): Unit = {
+    if (receivedCharEnum) {
+      // Do not parse char enum again
+      return
+    }
     receivedCharEnum = true
     parseCharEnum(msg).fold({
       logger.error(s"Character ${Global.config.wow.character} not found!")
@@ -673,6 +677,8 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
           ).foreach(CommandHandler.whoRequest.messageChannel.sendMessage(_).queue())
         })
       }
+    } else {
+      handledResponses.foreach(CommandHandler.whoRequest.messageChannel.sendMessage(_).queue())
     }
   }
 
@@ -729,6 +735,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
     if (wardenHandler.isEmpty) {
       wardenHandler = Some(initializeWardenHandler)
+      logger.info("Warden handling initialized!")
     }
 
     val (id, out) = wardenHandler.get.handle(msg)
