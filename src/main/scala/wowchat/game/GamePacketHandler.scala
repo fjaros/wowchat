@@ -5,7 +5,7 @@ import java.security.MessageDigest
 import java.util.concurrent.{Executors, TimeUnit}
 
 import wowchat.common._
-import wowchat.game.warden.WardenHandler
+import wowchat.game.warden.{WardenHandler, WardenPackets}
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import io.netty.channel.{ChannelFuture, ChannelHandlerContext, ChannelInboundHandlerAdapter}
@@ -54,6 +54,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   // cannot use multimap here because need deterministic order
   private val queuedChatMessages = new mutable.HashMap[Long, mutable.ListBuffer[ChatMessage]]
   private var wardenHandler: Option[WardenHandler] = None
+  private var receivedCharEnum = false
 
   override def channelInactive(ctx: ChannelHandlerContext): Unit = {
     executorService.shutdown()
@@ -289,11 +290,18 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     val code = parseAuthResponse(msg)
     if (code == AuthResponseCodes.AUTH_OK) {
       logger.info("Successfully logged in!")
-      ctx.get.writeAndFlush(Packet(CMSG_CHAR_ENUM))
+      sendCharEnum
     } else {
       logger.error(AuthResponseCodes.getMessage(code))
       ctx.foreach(_.close)
       gameEventCallback.error
+    }
+  }
+
+  private def sendCharEnum: Unit = {
+    // Only request char enum if previous requests were unsuccessful (due to failed warden reply)
+    if (!receivedCharEnum) {
+      ctx.get.writeAndFlush(Packet(CMSG_CHAR_ENUM))
     }
   }
 
@@ -326,6 +334,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   private def handle_SMSG_CHAR_ENUM(msg: Packet): Unit = {
+    receivedCharEnum = true
     parseCharEnum(msg).fold({
       logger.error(s"Character ${Global.config.wow.character} not found!")
     })(character => {
@@ -722,9 +731,14 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       wardenHandler = Some(initializeWardenHandler)
     }
 
-    val out = wardenHandler.get.handle(msg)
+    val (id, out) = wardenHandler.get.handle(msg)
     if (out.isDefined) {
       ctx.get.writeAndFlush(Packet(CMSG_WARDEN_DATA, out.get))
+      // Sometimes servers do not allow char listing request until warden is successfully answered.
+      // Try requesting it here again.
+      if (id == WardenPackets.WARDEN_SMSG_HASH_REQUEST) {
+        sendCharEnum
+      }
     }
   }
 
