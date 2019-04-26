@@ -54,6 +54,10 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             })
           })
             .getOrElse(parsedLinks)
+            .replace("`", "\\`")
+            .replace("*", "\\*")
+            .replace("_", "\\_")
+            .replace("~", "\\~")
 
           val formatted = channelConfig
             .format
@@ -65,12 +69,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
           val filter = shouldFilter(channelConfig.filters, message)
           logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord(${channel.getName}) $formatted")
           if (!filter) {
-            val escapedMarkdown = formatted
-              .replace("`", "\\`")
-              .replace("*", "\\*")
-              .replace("_", "\\_")
-              .replace("~", "\\~")
-            channel.sendMessage(escapedMarkdown).queue()
+            channel.sendMessage(formatted).queue()
           }
       }
     })
