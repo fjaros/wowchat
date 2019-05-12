@@ -54,6 +54,7 @@ class GameConnector(host: String,
           }
 
           val decoder = WowChatConfig.getExpansion match {
+            case WowExpansion.WotLK => new GamePacketDecoderWotLK
             case WowExpansion.Cataclysm => new GamePacketDecoderCataclysm
             case WowExpansion.MoP => new GamePacketDecoderMoP
             case _ => new GamePacketDecoder

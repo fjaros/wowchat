@@ -13,6 +13,7 @@
     <logger name="wowchat.game.GamePacketEncoderMoP" level="INFO" />
 
     <logger name="wowchat.game.GamePacketDecoder" level="INFO" />
+    <logger name="wowchat.game.GamePacketDecoderWotLK" level="INFO" />
     <logger name="wowchat.game.GamePacketDecoderCataclysm" level="INFO" />
     <logger name="wowchat.game.GamePacketDecoderMoP" level="INFO" />
 
