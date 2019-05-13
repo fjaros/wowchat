@@ -5,7 +5,7 @@ import java.util.zip.Inflater
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import io.netty.channel.ChannelHandlerContext
 
-class GamePacketDecoderCataclysm extends GamePacketDecoder with GamePacketsCataclysm15595 {
+class GamePacketDecoderCataclysm extends GamePacketDecoderWotLK with GamePacketsCataclysm15595 {
 
   protected val inflater: Inflater = new Inflater
 
