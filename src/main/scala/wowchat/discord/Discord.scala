@@ -48,10 +48,9 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
       discordChannels.foreach {
         case (channel, channelConfig) =>
-          val parsedResolvedTags = from.map(from => {
-            messageResolver.resolveTags(channel, parsedLinks, error => {
-              Global.game.foreach(_.sendMessageToWow(ChatEvents.CHAT_MSG_WHISPER, error, Some(from)))
-            })
+          var errors = mutable.ArrayBuffer.empty[String]
+          val parsedResolvedTags = from.map(_ => {
+            messageResolver.resolveTags(channel, parsedLinks, errors += _)
           })
             .getOrElse(parsedLinks)
             .replace("`", "\\`")
@@ -71,6 +70,10 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
           if (!filter) {
             channel.sendMessage(formatted).queue()
           }
+          errors.foreach(error => {
+            Global.game.foreach(_.sendMessageToWow(ChatEvents.CHAT_MSG_WHISPER, error, from))
+            channel.sendMessage(error).queue()
+          })
       }
     })
   }
