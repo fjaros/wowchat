@@ -1,3 +1,12 @@
+2019-06-01 - v1.3.2
++ Improved Discord tag matching heuristics:
+  + If multiple matches are found, preferred matches are chosen if the match is exact, or if the match contains the tag as an independent word.
+  + If a picked match cannot be found, the bot will send the message as is without resolving the tag.
+    In addition to whispering the sender, it will also write the error into the Discord channel, since a lot of servers block
+    level 1 characters from whispering.
+* Fixed bot breaking on WotLK/Cata when receiving very large responses such as the guild roster for a 900+ member guild.
+* Fixed incorrect application of escaping markdown before applying config-based message formatting.
+
 2019-04-24 - v1.3.1
 + Improve who command handling to better return approximate results from a mix of offline guild members and online players.
 + Improve matching of tags in WoW->Discord messages to tag users even if their name is followed by special characters.
