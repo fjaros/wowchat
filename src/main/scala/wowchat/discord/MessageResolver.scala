@@ -57,6 +57,8 @@ class MessageResolver(jda: JDA) {
     val regexes = Seq("\"@(.+?)\"", "@([\\w]+)").map(_.r)
 
     val scalaMembers = discordChannel.getMembers.asScala
+      // you don't want to tag yourself
+      .filterNot(_.getUser.getIdLong == jda.getSelfUser.getIdLong)
     val effectiveNames = scalaMembers.map(member => {
       member.getEffectiveName -> member.getUser.getId
     })
@@ -111,14 +113,25 @@ class MessageResolver(jda: JDA) {
 
     val matchesInitial = names
       .filter {
-        case (name, id) =>
+        case (name, _) =>
           name.toLowerCase.contains(lTag)
       }
 
     (if (matchesInitial.size > 1 && !lTag.contains(" ")) {
-      matchesInitial.filterNot {
-        case (name, _) => name.contains(" ")
-      }
+      // Multiple matches found. Prefer exact match first and a match where the tag is a whole word in the Discord name second.
+      matchesInitial.find {
+        case (name, _) => name.toLowerCase == lTag
+      }.fold({
+        // Exact match not found. Try to find the tag as a whole word within the name.
+        val namesWithMatchedWord = matchesInitial.filter {
+          case (name, _) => name.toLowerCase.split("\\W+").contains(lTag)
+        }
+        if (namesWithMatchedWord.nonEmpty) {
+          namesWithMatchedWord
+        } else {
+          matchesInitial
+        }
+      })(_ :: Nil)
     } else {
       matchesInitial
     }).map {
