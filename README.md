@@ -51,7 +51,7 @@ Even though this bot does not do anything malicious, some servers may not like a
 2. Configure WoW Chat by opening `wowchat.conf` in a text editor.
    * You can also create your own file, using the supplied `wowchat.conf` as a template.
    * In section **discord**:
-     * **token**: Paste the above copied Bot token.
+     * **token**: Paste the above copied Bot token, or set the DISCORD_TOKEN environment variable.
      * **enable_dot_commands**: If set to 1, it will not format outgoing messages starting with ".", enabling you to send things like ".s in" to the server directly. If set to 0, it will format these messages like regular messages.
      * **dot_commands_whitelist**: If empty, it will allow or disallow dot commands based on **enable_dot_commands** setting. If any command is listed here, the bot will ONLY allow those specific comamnds to be sent in game.
      * **enable_commands_channels**: A list of channels for which to allow commands. If not specified or empty, the bot will allow commands from all channels.
@@ -66,9 +66,9 @@ Even though this bot does not do anything malicious, some servers may not like a
      It is the Text shown on top of character list window. Put ONLY the name, do NOT put the realm type like PVP or PVE.
      In the following example, the **realm** value is The Construct
      * ![realm-construct](https://raw.githubusercontent.com/fjaros/wowchat/master/images/example3.png)
-     * **account**: The bot's WoW game account.
-     * **password**: The bot's WoW game account password.
-     * **character**: Your character's name as would be shown in the character list.
+     * **account**: The bot's WoW game account, or set the WOW_ACCOUNT environment variable.
+     * **password**: The bot's WoW game account password, or set the WOW_PASSWORD environment variable.
+     * **character**: Your character's name as would be shown in the character list, or set the WOW_CHARACTER environment variable.
    * In section **guild**:
      * This section sets up guild notifications on Discord.
      * For each notification, **online**, **offline**, **joined**, **left**, **motd**, **achievement** specify:

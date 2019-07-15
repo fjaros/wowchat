@@ -29,11 +29,11 @@ object WowChatConfig extends GamePackets {
 
   def apply(confFile: String): WowChatConfig = {
     val file = new File(confFile)
-    val config = if (file.exists) {
-      ConfigFactory.parseFile(file).resolve()
+    val config = (if (file.exists) {
+      ConfigFactory.parseFile(file)
     } else {
       ConfigFactory.load(confFile)
-    }
+    }).resolve
 
     val discordConf = config.getConfig("discord")
     val wowConf = config.getConfig("wow")
