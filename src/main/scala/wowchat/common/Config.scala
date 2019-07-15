@@ -30,7 +30,7 @@ object WowChatConfig extends GamePackets {
   def apply(confFile: String): WowChatConfig = {
     val file = new File(confFile)
     val config = if (file.exists) {
-      ConfigFactory.parseFile(file)
+      ConfigFactory.parseFile(file).resolve()
     } else {
       ConfigFactory.load(confFile)
     }
