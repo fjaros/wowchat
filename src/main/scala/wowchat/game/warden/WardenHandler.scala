@@ -116,9 +116,14 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     val strArray = new Array[Byte](strLength)
     decrypted.readBytes(strArray)
 
+    // Observed an issue with some servers, where even if they send the correct length for the request, they
+    // erroneously send a null byte within the payload. Since the client interprets the payload as a C string,
+    // we will do the same and cut it off whenever a null byte is hit.
+    val filteredArray = strArray.takeWhile(_ != 0x00)
+
     ret.writeByte(WardenPackets.WARDEN_CMSG_CHEAT_CHECKS_RESULT)
 
-    formCheatChecksRequestDigest(ret, strArray)
+    formCheatChecksRequestDigest(ret, filteredArray)
     val encrypted = clientCrypt.crypt(ret, ret.readableBytes)
     ret.release
     Some(formResponse(encrypted))
