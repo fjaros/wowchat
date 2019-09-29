@@ -31,6 +31,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       case Platform.Windows => "Win"
       case Platform.Mac => "OSX"
     }
+    val localeString = Global.config.wow.locale
 
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(50, 100)
 
@@ -48,7 +49,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     byteBuf.writeShortLE(WowChatConfig.getBuild)
     byteBuf.writeIntLE(ByteUtils.stringToInt("x86"))
     byteBuf.writeIntLE(ByteUtils.stringToInt(platformString))
-    byteBuf.writeIntLE(ByteUtils.stringToInt("enUS"))
+    byteBuf.writeIntLE(ByteUtils.stringToInt(localeString))
     byteBuf.writeIntLE(0)
     byteBuf.writeByte(127)
     byteBuf.writeByte(0)

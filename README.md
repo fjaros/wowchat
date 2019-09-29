@@ -57,6 +57,7 @@ Even though this bot does not do anything malicious, some servers may not like a
      * **enable_commands_channels**: A list of channels for which to allow commands. If not specified or empty, the bot will allow commands from all channels.
    * In section **wow**:
      * **platform**: Leave as **Mac** unless your target server has Warden (anticheat) disabled AND it is blocking/has disabled Mac logins. In this case put **Windows**.
+     * **locale**: Optionally specify a locale if you want to join locale-specific global channels. **enUS** is the default locale.
      * **enable_server_motd**: **0** to ignore sending server's MotD. **1** to send server's MotD as a SYSTEM message.
      * **version**: put either 1.12.1, 2.4.3, 3.3.5, 4.3.4, or 5.4.8 based on the server's expansion.
      * **build**: you can include a build=<build number> setting in the config, if you are using a custom build version on your server.
@@ -85,6 +86,7 @@ Even though this bot does not do anything malicious, some servers may not like a
        * In format put how you want to display the message, supported replacable values are **%time**, **%user**, **%message**, and **%channel** if above type is **Channel**.
        * **filters**: See filters section. If a channel configuration has this section, it will override the global filters and use these instead for this channel.
          * If this is in the **wow** section, it will filter Discord->WoW messages.
+       * Optionally in **id**, specify the channel ID if your server has a non-standard global channel.
      * **discord** section:
        * **channel**: The discord channel **name** OR **ID** where to display the message. **It is advised to use channel ID here instead of name, so the bot does not stop working when the channel name is changed.**
          * To see channels' IDs, you must enable Developer mode in Discord under User Settings -> Appearance -> Advanced.

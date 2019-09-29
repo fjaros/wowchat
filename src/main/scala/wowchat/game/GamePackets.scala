@@ -276,4 +276,28 @@ trait GamePackets {
     val SERVER_MSG_SHUTDOWN_CANCELLED = 0x04
     val SERVER_MSG_RESTART_CANCELLED = 0x05
   }
+
+  object ChatChannelIds {
+    val GENERAL = 0x01
+    val TRADE = 0x02
+    val LOCAL_DEFENSE = 0x16
+    val WORLD_DEFENSE = 0x17
+    val GUILD_RECRUITMENT = WowChatConfig.getExpansion match {
+      case WowExpansion.TBC | WowExpansion.WotLK => 0x19
+      case _ => 0x00
+    }
+    val LOOKING_FOR_GROUP = 0x1A
+
+    def getId(channel: String) = {
+      channel.takeWhile(_ != ' ').toLowerCase match {
+        case "general" => GENERAL
+        case "trade" => TRADE
+        case "localdefense" => LOCAL_DEFENSE
+        case "worlddefense" => WORLD_DEFENSE
+        case "guildrecruitment" => GUILD_RECRUITMENT
+        case "lookingforgroup" => LOOKING_FOR_GROUP
+        case _ => 0x00
+      }
+    }
+  }
 }

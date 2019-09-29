@@ -389,8 +389,8 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     writeXorByteSeq(out, bytes, 5, 1, 0, 6, 2, 4, 7, 3)
   }
 
-  override protected def writeJoinChannel(out: ByteBuf, utf8ChannelBytes: Array[Byte]): Unit = {
-    out.writeIntLE(0) // channel id
+  override protected def writeJoinChannel(out: ByteBuf, id: Int, utf8ChannelBytes: Array[Byte]): Unit = {
+    out.writeIntLE(id) // channel id
     writeBit(out, 0) // unkn
     writeBits(out, utf8ChannelBytes.length, 7)
     writeBits(out, 0, 7)

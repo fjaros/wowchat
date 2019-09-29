@@ -13,12 +13,12 @@ import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig], filters: Option[FiltersConfig])
 case class DiscordConfig(token: String, enableDotCommands: Boolean, dotCommandsWhitelist: Set[String], enableCommandsChannels: Set[String])
-case class Wow(platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: String, password: String, character: String, enableServerMotd: Boolean)
+case class Wow(locale: String, platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: String, password: String, character: String, enableServerMotd: Boolean)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
 case class GuildNotificationConfig(enabled: Boolean, format: String, channel: Option[String])
 case class ChannelConfig(chatDirection: ChatDirection, wow: WowChannelConfig, discord: DiscordChannelConfig)
-case class WowChannelConfig(tp: Byte, channel: Option[String] = None, format: String, filters: Option[FiltersConfig])
+case class WowChannelConfig(id: Option[Int], tp: Byte, channel: Option[String] = None, format: String, filters: Option[FiltersConfig])
 case class DiscordChannelConfig(channel: String, format: String, filters: Option[FiltersConfig])
 case class FiltersConfig(enabled: Boolean, patterns: Seq[String])
 
@@ -55,6 +55,7 @@ object WowChatConfig extends GamePackets {
           .getOrElse(new util.ArrayList[String]()).asScala.map(_.toLowerCase).toSet
       ),
       Wow(
+        getOpt[String](wowConf, "locale").getOrElse("enUS"),
         Platform.valueOf(getOpt[String](wowConf, "platform").getOrElse("Mac")),
         getOpt[Int](wowConf, "build"),
         parseRealmlist(wowConf),
@@ -87,6 +88,7 @@ object WowChatConfig extends GamePackets {
         case "3.3.5" => 12340
         case "4.3.4" => 15595
         case "5.4.8" => 18414
+        case _ => throw new IllegalArgumentException(s"Build $version not supported!")
       })
   }
 
@@ -148,6 +150,7 @@ object WowChatConfig extends GamePackets {
         ChannelConfig(
           ChatDirection.withName(channel.getString("direction")),
           WowChannelConfig(
+            getOpt[Int](channel, "wow.id"),
             ChatEvents.parse(channel.getString("wow.type")),
             wowChannel,
             getOpt[String](channel, "wow.format").getOrElse(""),

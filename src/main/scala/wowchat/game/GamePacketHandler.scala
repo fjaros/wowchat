@@ -413,16 +413,21 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
     // join channels
     Global.config.channels
-      .flatMap(_.wow.channel)
-      .foreach(channel => {
-        logger.info(s"Joining channel $channel")
-        val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(50, 200)
-        writeJoinChannel(byteBuf, channel.getBytes("UTF-8"))
-        ctx.get.writeAndFlush(Packet(CMSG_JOIN_CHANNEL, byteBuf))
+      .flatMap(channelConfig => {
+        channelConfig.wow.channel.fold[Option[(Int, String)]](None)(channelName => {
+          Some(channelConfig.wow.id.getOrElse(ChatChannelIds.getId(channelName)) -> channelName)
+        })
       })
+      .foreach {
+        case (id, name) =>
+        logger.info(s"Joining channel $name")
+        val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(50, 200)
+        writeJoinChannel(byteBuf, id, name.getBytes("UTF-8"))
+        ctx.get.writeAndFlush(Packet(CMSG_JOIN_CHANNEL, byteBuf))
+      }
   }
 
-  protected def writeJoinChannel(out: ByteBuf, utf8ChannelBytes: Array[Byte]): Unit = {
+  protected def writeJoinChannel(out: ByteBuf, id: Int, utf8ChannelBytes: Array[Byte]): Unit = {
     out.writeBytes(utf8ChannelBytes)
     out.writeByte(0)
     out.writeByte(0)

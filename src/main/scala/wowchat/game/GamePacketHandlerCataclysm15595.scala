@@ -177,8 +177,8 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     writeXorByteSeq(out, bytes, 2, 7, 0, 3, 5, 6, 1, 4)
   }
 
-  override protected def writeJoinChannel(out: ByteBuf, utf8ChannelBytes: Array[Byte]): Unit = {
-    out.writeIntLE(0) // channel id
+  override protected def writeJoinChannel(out: ByteBuf, id: Int, utf8ChannelBytes: Array[Byte]): Unit = {
+    out.writeIntLE(id) // channel id
     writeBit(out, 0) // has voice
     writeBit(out, 0) // zone update
     writeBits(out, utf8ChannelBytes.length, 8)
