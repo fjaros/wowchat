@@ -70,10 +70,12 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
           if (!filter) {
             channel.sendMessage(formatted).queue()
           }
-          errors.foreach(error => {
-            Global.game.foreach(_.sendMessageToWow(ChatEvents.CHAT_MSG_WHISPER, error, from))
-            channel.sendMessage(error).queue()
-          })
+          if (Global.config.discord.enableTagFailedNotifications) {
+            errors.foreach(error => {
+              Global.game.foreach(_.sendMessageToWow(ChatEvents.CHAT_MSG_WHISPER, error, from))
+              channel.sendMessage(error).queue()
+            })
+          }
       }
     })
   }
