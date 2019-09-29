@@ -1,3 +1,9 @@
+2019-09-29 - v1.3.3
++ Enabled setting account, password, and character variables from environmental variables (Commit by Road-block).
++ Implemented correct channel ID handling for global/localized/zone-specific channels like General and Trade (Issue #16).
++ Added config option for turning off tag matching failed notifications.
+* Fixed bug causing failed warden responses on some servers which send warden check requests containing null byte.
+
 2019-06-01 - v1.3.2
 + Improved Discord tag matching heuristics:
   + If multiple matches are found, preferred matches are chosen if the match is exact, or if the match contains the tag as an independent word.
