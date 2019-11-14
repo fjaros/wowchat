@@ -245,6 +245,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       case SMSG_NOTIFICATION => handle_SMSG_NOTIFICATION(msg)
       case SMSG_WHO => handle_SMSG_WHO(msg)
       case SMSG_SERVER_MESSAGE => handle_SMSG_SERVER_MESSAGE(msg)
+      case SMSG_INVALIDATE_PLAYER => handle_SMSG_INVALIDATE_PLAYER(msg)
 
       case SMSG_WARDEN_DATA => handle_SMSG_WARDEN_DATA(msg)
 
@@ -730,6 +731,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       case _ => txt
     }
     sendChatMessage(ChatMessage(0, ChatEvents.CHAT_MSG_SYSTEM, message, None))
+  }
+
+  private def handle_SMSG_INVALIDATE_PLAYER(msg: Packet): Unit = {
+    val guid = msg.byteBuf.readLongLE
+    playerRoster.remove(guid)
   }
 
   private def handle_SMSG_WARDEN_DATA(msg: Packet): Unit = {

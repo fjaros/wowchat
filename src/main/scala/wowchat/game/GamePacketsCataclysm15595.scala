@@ -31,6 +31,8 @@ trait GamePacketsCataclysm15595 extends GamePacketsWotLK {
   override val SMSG_WARDEN_DATA = 0x12E7
   override val CMSG_WARDEN_DATA = 0x12E8
 
+  override val SMSG_INVALIDATE_PLAYER = 0x6325
+
   override val SMSG_TIME_SYNC_REQ = 0x3CA4
   override val CMSG_TIME_SYNC_RESP = 0x3B0C
 

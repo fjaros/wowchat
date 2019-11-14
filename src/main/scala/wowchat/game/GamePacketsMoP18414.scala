@@ -40,6 +40,10 @@ trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
   override val SMSG_WARDEN_DATA = 0x0C0A
   override val CMSG_WARDEN_DATA = 0x1816
 
+  // I was not able to find an open source implementation of this packet for MoP
+  // So I do not know if it has the same format as from previous versions - the guid being plain 8 bytes
+  override val SMSG_INVALIDATE_PLAYER = 0x102E
+
   override val SMSG_TIME_SYNC_REQ = 0x1A8F
   override val CMSG_TIME_SYNC_RESP = 0x01DB
 

@@ -36,6 +36,8 @@ trait GamePackets {
   val SMSG_WARDEN_DATA = 0x02E6
   val CMSG_WARDEN_DATA = 0x02E7
 
+  val SMSG_INVALIDATE_PLAYER = 0x031C
+
   // tbc/wotlk only
   val SMSG_TIME_SYNC_REQ = 0x0390
   val CMSG_TIME_SYNC_RESP = 0x0391
