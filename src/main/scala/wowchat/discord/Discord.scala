@@ -4,13 +4,13 @@ import wowchat.commands.CommandHandler
 import wowchat.common._
 import com.typesafe.scalalogging.StrictLogging
 import com.vdurmont.emoji.EmojiParser
-import net.dv8tion.jda.core.JDA.Status
-import net.dv8tion.jda.core.entities.{ChannelType, Game, MessageType}
-import net.dv8tion.jda.core.entities.Game.GameType
-import net.dv8tion.jda.core.events.StatusChangeEvent
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent
-import net.dv8tion.jda.core.hooks.ListenerAdapter
-import net.dv8tion.jda.core.{AccountType, JDABuilder}
+import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.JDA.Status
+import net.dv8tion.jda.api.entities.{Activity, ChannelType, MessageType}
+import net.dv8tion.jda.api.entities.Activity.ActivityType
+import net.dv8tion.jda.api.events.StatusChangeEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 import wowchat.game.GamePackets
 
 import scala.collection.JavaConverters._
@@ -19,27 +19,26 @@ import scala.collection.mutable
 class Discord(discordConnectionCallback: CommonConnectionCallback) extends ListenerAdapter
   with GamePackets with StrictLogging {
 
-  private val jda = new JDABuilder(AccountType.BOT)
-    .setToken(Global.config.discord.token)
-    .addEventListener(this)
+  private val jda = JDABuilder.createDefault(Global.config.discord.token)
+    .addEventListeners(this)
     .build
 
   private val messageResolver = MessageResolver(jda)
 
-  private var lastStatus: Option[Game] = None
+  private var lastStatus: Option[Activity] = None
   private var firstConnect = true
 
-  def changeStatus(gameType: GameType, message: String): Unit = {
-    lastStatus = Some(Game.of(gameType, message))
-    jda.getPresence.setGame(lastStatus.get)
+  def changeStatus(gameType: ActivityType, message: String): Unit = {
+    lastStatus = Some(Activity.of(gameType, message))
+    jda.getPresence.setActivity(lastStatus.get)
   }
 
   def changeGuildStatus(message: String): Unit = {
-    changeStatus(GameType.WATCHING, message)
+    changeStatus(ActivityType.WATCHING, message)
   }
 
   def changeRealmStatus(message: String): Unit = {
-    changeStatus(GameType.DEFAULT, message)
+    changeStatus(ActivityType.DEFAULT, message)
   }
 
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String]): Unit = {

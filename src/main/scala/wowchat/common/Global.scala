@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 import io.netty.channel.EventLoopGroup
-import net.dv8tion.jda.core.entities.TextChannel
+import net.dv8tion.jda.api.entities.TextChannel
 import wowchat.discord.Discord
 import wowchat.game.GameCommandHandler
 

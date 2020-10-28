@@ -1,3 +1,6 @@
+2020-10-27 - v1.3.4
+* Update to new Discord Library. This is a mandatory update. Using an old version will not connect to Discord.
+
 2019-09-29 - v1.3.3
 + Enabled setting account, password, and character variables from environmental variables (Commit by Road-block).
 + Implemented correct channel ID handling for global/localized/zone-specific channels like General and Trade (Issue #16).

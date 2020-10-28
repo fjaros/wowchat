@@ -6,12 +6,12 @@
 
     <groupId>wowchat</groupId>
     <artifactId>wowchat</artifactId>
-    <version>1.3.3</version>
+    <version>1.3.4</version>
 
     <properties>
         <java.version>1.8</java.version>
         <scala.version.major>2.12</scala.version.major>
-        <scala.version.minor>10</scala.version.minor>
+        <scala.version.minor>12</scala.version.minor>
     </properties>
 
     <dependencies>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>3.8.3_464</version>
+            <version>4.2.0_212</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.restcomm.media.core.codec</groupId>
