@@ -68,7 +68,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             .replace("%message", parsedResolvedTags)
             .replace("%target", wowChannel.getOrElse(""))
 
-          val filter = shouldFilter(channelConfig.filters, message)
+          val filter = shouldFilter(channelConfig.filters, formatted)
           logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord(${channel.getName}) $formatted")
           if (!filter) {
             channel.sendMessage(formatted).queue()
