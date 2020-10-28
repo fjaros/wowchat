@@ -47,6 +47,7 @@ Even though this bot does not do anything malicious, some servers may not like a
    * On the left click the Bot tab
    * Add a Bot
    * Uncheck Public Bot option
+   * **Check PRESENCE INTENT Under "Privileged Gateway Intents"** This is important! Without it, your bot will not work!
    * Under token click Copy. This is the value WoW Chat will use to login to Discord.
 2. Configure WoW Chat by opening `wowchat.conf` in a text editor.
    * You can also create your own file, using the supplied `wowchat.conf` as a template.

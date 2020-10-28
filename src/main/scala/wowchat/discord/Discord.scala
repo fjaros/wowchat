@@ -8,9 +8,11 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.JDA.Status
 import net.dv8tion.jda.api.entities.{Activity, ChannelType, MessageType}
 import net.dv8tion.jda.api.entities.Activity.ActivityType
-import net.dv8tion.jda.api.events.StatusChangeEvent
+import net.dv8tion.jda.api.events.{ShutdownEvent, StatusChangeEvent}
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.requests.{CloseCode, GatewayIntent}
+import net.dv8tion.jda.api.utils.cache.CacheFlag
 import wowchat.game.GamePackets
 
 import scala.collection.JavaConverters._
@@ -19,7 +21,9 @@ import scala.collection.mutable
 class Discord(discordConnectionCallback: CommonConnectionCallback) extends ListenerAdapter
   with GamePackets with StrictLogging {
 
-  private val jda = JDABuilder.createDefault(Global.config.discord.token)
+  private val jda = JDABuilder
+    .createDefault(Global.config.discord.token, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EMOJIS)
+    .disableCache(CacheFlag.VOICE_STATE)
     .addEventListeners(this)
     .build
 
@@ -197,6 +201,14 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         }
       case Status.DISCONNECTED =>
         discordConnectionCallback.disconnected
+      case _ =>
+    }
+  }
+
+  override def onShutdown(event: ShutdownEvent): Unit = {
+    event.getCloseCode match {
+      case CloseCode.DISALLOWED_INTENTS =>
+        logger.error("Per new Discord rules, you must check the PRESENCE INTENT box under \"Privileged Gateway Intents\" for this bot in the developer portal. You can find more info at https://discord.com/developers/docs/topics/gateway#privileged-intents")
       case _ =>
     }
   }
