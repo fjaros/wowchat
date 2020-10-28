@@ -1,5 +1,7 @@
-2020-10-27 - v1.3.4
-* Update to new Discord Library. This is a mandatory update. Using an old version will not connect to Discord.
+2020-10-27 - v1.3.4/v1.3.5
+* Update to new Discord Library. This is a mandatory update. Using an old version will not connect to Discord. (Issue #45)
+* Added support for Discord Gateway Intents and appropriate requirement messages to users. (Issue #47)
+- Changed filter behavior to modify post processed messages. (Issue #35)
 
 2019-09-29 - v1.3.3
 + Enabled setting account, password, and character variables from environmental variables (Commit by Road-block).
