@@ -22,7 +22,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   with GamePackets with StrictLogging {
 
   private val jda = JDABuilder
-    .createDefault(Global.config.discord.token, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EMOJIS)
+    .createDefault(Global.config.discord.token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EMOJIS)
     .disableCache(CacheFlag.VOICE_STATE)
     .addEventListeners(this)
     .build
