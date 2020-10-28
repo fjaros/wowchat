@@ -210,7 +210,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   override def onShutdown(event: ShutdownEvent): Unit = {
     event.getCloseCode match {
       case CloseCode.DISALLOWED_INTENTS =>
-        logger.error("Per new Discord rules, you must check the PRESENCE INTENT box under \"Privileged Gateway Intents\" for this bot in the developer portal. You can find more info at https://discord.com/developers/docs/topics/gateway#privileged-intents")
+        logger.error("Per new Discord rules, you must check the PRESENCE INTENT and SERVER MEMBERS INTENT boxes under \"Privileged Gateway Intents\" for this bot in the developer portal. You can find more info at https://discord.com/developers/docs/topics/gateway#privileged-intents")
       case _ =>
     }
   }
