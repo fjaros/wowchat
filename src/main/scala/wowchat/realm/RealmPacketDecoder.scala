@@ -49,7 +49,7 @@ class RealmPacketDecoder extends ByteToMessageDecoder with StrictLogging {
           size = if (RealmPackets.AuthResult.isSuccess(result)) {
             if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 25 else 31
           } else {
-            if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 1 else 3
+            1 // it should be 3 for post-vanilla, but some private server auth servers return just the result byte.
           }
           in.resetReaderIndex
         case RealmPackets.CMD_REALM_LIST =>

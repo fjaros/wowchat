@@ -26,10 +26,17 @@
             <includes>
                 <include>logback.xml</include>
                 <include>wowchat.conf</include>
+            </includes>
+            <fileMode>0644</fileMode>
+        </fileSet>
+        <fileSet>
+            <outputDirectory/>
+            <directory>src/main/resources</directory>
+            <includes>
                 <include>run.bat</include>
                 <include>run.sh</include>
             </includes>
-            <fileMode>0644</fileMode>
+            <fileMode>0755</fileMode>
         </fileSet>
     </fileSets>
 </assembly>

@@ -128,6 +128,12 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
         // seems sometimes this error happens even on a legit connect. so just run regular reconnect loop
         realmConnectionCallback.disconnected
       } else {
+        if (result == RealmPackets.AuthResult.WOW_FAIL_VERSION_INVALID && Global.config.wow.platform == Platform.Mac) {
+          logger.error(
+            s"It is likely server ${Global.config.wow.realmlist.host} is blocking logins from Mac clients. " +
+            "You can try using platform=Windows but the bot will disconnect soon after login if Warden anti-cheat is enabled."
+          )
+        }
         realmConnectionCallback.error
       }
       return
