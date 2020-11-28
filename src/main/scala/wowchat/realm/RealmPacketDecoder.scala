@@ -49,7 +49,9 @@ class RealmPacketDecoder extends ByteToMessageDecoder with StrictLogging {
           size = if (RealmPackets.AuthResult.isSuccess(result)) {
             if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 25 else 31
           } else {
-            1 // it should be 3 for post-vanilla, but some private server auth servers return just the result byte.
+            // A failure authentication result should be 1 byte in length for vanilla and 3 bytes for other expansions.
+            // Some servers send back a malformed 1 byte response even for later expansions.
+            if (in.readableBytes == 0) 1 else 3
           }
           in.resetReaderIndex
         case RealmPackets.CMD_REALM_LIST =>
