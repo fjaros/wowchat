@@ -43,7 +43,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     logger.info(s"Connected! Sending account login information...")
     this.ctx = Some(ctx)
     val version = WowChatConfig.getVersion.split("\\.").map(_.toByte)
-    val accountConfig = Global.config.wow.account.toUpperCase
+    val accountConfig = Global.config.wow.account
     val platformString = Global.config.wow.platform match {
       case Platform.Windows => "Win"
       case Platform.Mac => "OSX"
@@ -73,7 +73,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     byteBuf.writeByte(0)
     byteBuf.writeByte(1)
     byteBuf.writeByte(accountConfig.length)
-    byteBuf.writeBytes(accountConfig.getBytes)
+    byteBuf.writeBytes(accountConfig)
 
     ctx.writeAndFlush(Packet(RealmPackets.CMD_AUTH_LOGON_CHALLENGE, byteBuf))
 
@@ -112,9 +112,15 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     val salt = toArray(msg.byteBuf, 32)
     val unk3 = toArray(msg.byteBuf, 16)
     val securityFlag = msg.byteBuf.readByte
+    if (securityFlag != 0) {
+      logger.error(s"Two factor authentication is enabled for this account. Please disable it or use another account.")
+      ctx.get.close
+      realmConnectionCallback.error
+      return
+    }
 
     srpClient.step1(
-      Global.config.wow.account.toUpperCase,
+      Global.config.wow.account,
       Global.config.wow.password,
       BigNumber(B),
       BigNumber(g),
@@ -122,7 +128,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       BigNumber(salt)
     )
 
-    sessionKey = srpClient.K.asByteArray()
+    sessionKey = srpClient.K.asByteArray(40)
 
     val aArray = srpClient.A.asByteArray(32)
     val ret = PooledByteBufAllocator.DEFAULT.buffer(74, 74)

@@ -17,7 +17,6 @@ import scala.util.Try
 class RealmConnector(realmConnectionCallback: RealmConnectionCallback) extends StrictLogging {
 
   private var channel: Option[Channel] = None
-  private var connected: Boolean = false
 
   def connect: Unit = {
     logger.info(s"Connecting to realm server ${Global.config.wow.realmlist.host}:${Global.config.wow.realmlist.port}")

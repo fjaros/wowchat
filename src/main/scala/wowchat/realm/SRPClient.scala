@@ -50,9 +50,8 @@ class SRPClient {
     md.digest()
   }
 
-  def step1(account: String, password: String,
+  def step1(account: Array[Byte], password: String,
             B: BigNumber, g: BigNumber, N: BigNumber, s: BigNumber): Unit = {
-    val accountUpper = account.toUpperCase
     val passwordUpper = password.toUpperCase
 
     A = g.modPow(a, N)
@@ -62,8 +61,8 @@ class SRPClient {
 
     val u = BigNumber(md.digest, true)
 
-    val user = s"$accountUpper:$passwordUpper"
-    md.update(user.getBytes)
+    val user = (account :+ ':'.toByte) ++ passwordUpper.getBytes("UTF-8")
+    md.update(user)
     val p = md.digest
 
     md.update(s.asByteArray(32))
@@ -97,7 +96,7 @@ class SRPClient {
     })
 
     md.update(N.asByteArray(32))
-    var hash = md.digest
+    val hash = md.digest
 
     md.update(g.asByteArray(1))
     digest = md.digest
@@ -105,7 +104,7 @@ class SRPClient {
       hash(i) = (hash(i) ^ digest(i)).toByte
     })
 
-    md.update(accountUpper.getBytes)
+    md.update(account)
     val t4 = md.digest
 
     K = BigNumber(vK, true)
@@ -114,12 +113,12 @@ class SRPClient {
 
     val t4_correct = BigNumber(t4, true)
 
-    md.update(t3.asByteArray())
-    md.update(t4_correct.asByteArray())
-    md.update(s.asByteArray())
-    md.update(A.asByteArray())
-    md.update(B.asByteArray())
-    md.update(K.asByteArray())
+    md.update(t3.asByteArray(20))
+    md.update(t4_correct.asByteArray(20))
+    md.update(s.asByteArray(32))
+    md.update(A.asByteArray(32))
+    md.update(B.asByteArray(32))
+    md.update(K.asByteArray(40))
 
     M = BigNumber(md.digest)
   }

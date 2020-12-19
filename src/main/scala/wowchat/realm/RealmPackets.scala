@@ -47,7 +47,7 @@ object RealmPackets {
         case WOW_FAIL_VERSION_INVALID | WOW_FAIL_VERSION_UPDATE => "Invalid game version for this server!"
         case WOW_FAIL_SUSPENDED => "Your account has been suspended!"
         case WOW_FAIL_FAIL_NOACCESS => "Login failed! You do not have access to this server!"
-        case x => f"Failed to login! Error code: $x%02X"
+        case x => f"Failed to login to realm server! Error code: $x%02X"
       }
     }
   }

@@ -5,7 +5,7 @@ import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 // used for warden and wotlk header encryption
 class RC4(key: Array[Byte]) {
   private val SBOX_LENGTH = 256
-  private var sbox = initSBox(key)
+  private val sbox = initSBox(key)
   private var i = 0
   private var j = 0
 

@@ -29,7 +29,7 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
   ).map(_.toByte)
 
   override protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
-    val accountConfig = Global.config.wow.account.toUpperCase
+    val account = Global.config.wow.account
 
     msg.byteBuf.skipBytes(4) // wotlk
     val serverSeed = msg.byteBuf.readInt
@@ -38,7 +38,7 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     out.writeShortLE(0)
     out.writeIntLE(WowChatConfig.getBuild)
     out.writeIntLE(0)
-    out.writeBytes(accountConfig.getBytes)
+    out.writeBytes(account)
     out.writeByte(0)
     out.writeInt(0) // wotlk
     out.writeInt(clientSeed)
@@ -48,7 +48,7 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     out.writeLongLE(3) // wotlk
 
     val md = MessageDigest.getInstance("SHA1")
-    md.update(accountConfig.getBytes)
+    md.update(account)
     md.update(Array[Byte](0, 0, 0, 0))
     md.update(ByteUtils.intToBytes(clientSeed))
     md.update(ByteUtils.intToBytes(serverSeed))

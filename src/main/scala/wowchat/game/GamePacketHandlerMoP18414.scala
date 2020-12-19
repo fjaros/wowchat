@@ -254,14 +254,14 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
   }
 
   override protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
-    val account = Global.config.wow.account.toUpperCase
+    val account = Global.config.wow.account
 
     msg.byteBuf.skipBytes(35) // MoP - 35 bytes random data
     val serverSeed = msg.byteBuf.readInt
     val clientSeed = Random.nextInt
 
     val md = MessageDigest.getInstance("SHA1")
-    md.update(account.getBytes)
+    md.update(account)
     md.update(Array[Byte](0, 0, 0, 0))
     md.update(ByteUtils.intToBytes(clientSeed))
     md.update(ByteUtils.intToBytes(serverSeed))
@@ -304,7 +304,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     writeBit(out, 0)
     writeBits(out, account.length, 11)
     flushBits(out)
-    out.writeBytes(account.getBytes)
+    out.writeBytes(account)
 
     AuthChallengeMessage(sessionKey, out)
   }

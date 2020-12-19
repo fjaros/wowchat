@@ -227,7 +227,7 @@ trait GamePackets {
         case AUTH_BANNED => "Your account has been banned!"
         case AUTH_ALREADY_LOGGING_IN | AUTH_ALREADY_ONLINE => "Your account is already online! Log it off or wait a minute if already logging off."
         case AUTH_SUSPENDED => "Your account has been suspended!"
-        case x => f"Failed to login! Error code: $x%02X"
+        case x => f"Failed to login to game server! Error code: $x%02X"
       }
     }
   }
