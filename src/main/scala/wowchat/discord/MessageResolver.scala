@@ -6,6 +6,7 @@ import wowchat.common.{WowChatConfig, WowExpansion}
 import wowchat.game.GameResources
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object MessageResolver {
 
@@ -148,11 +149,18 @@ class MessageResolver(jda: JDA) {
       emote.getName.toLowerCase -> emote.getId
     }).toMap
 
+    val alreadyResolved = mutable.Set.empty[String]
     regex.findAllIn(message).foldLeft(message) {
       case (result, possibleEmoji) =>
-        emojiMap.get(possibleEmoji.toLowerCase).fold(result)(id => {
-          result.replace(s":$possibleEmoji:", s"<:$possibleEmoji:$id>")
-        })
+        val lPossibleEmoji = possibleEmoji.toLowerCase
+        if (alreadyResolved(lPossibleEmoji)) {
+          result
+        } else {
+          emojiMap.get(lPossibleEmoji).fold(result)(id => {
+            alreadyResolved += lPossibleEmoji
+            result.replace(s":$possibleEmoji:", s"<:$possibleEmoji:$id>")
+          })
+        }
     }
   }
 }
