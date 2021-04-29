@@ -49,7 +49,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   protected val playerRoster = LRUMap.empty[Long, Player]
   protected val guildRoster = mutable.Map.empty[Long, GuildMember]
   protected var lastRequestedGuildRoster: Long = _
-  private val executorService = Executors.newSingleThreadScheduledExecutor
+  protected val executorService = Executors.newSingleThreadScheduledExecutor
 
   // cannot use multimap here because need deterministic order
   private val queuedChatMessages = new mutable.HashMap[Long, mutable.ListBuffer[ChatMessage]]
@@ -66,6 +66,9 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
     super.channelInactive(ctx)
   }
+
+  // Vanilla does not have a keep alive packet
+  protected def runKeepAliveExecutor: Unit = {}
 
   private def runPingExecutor: Unit = {
     executorService.scheduleWithFixedDelay(new Runnable {
@@ -405,6 +408,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     inWorld = true
     Global.discord.changeRealmStatus(realmName)
     gameEventCallback.connected
+    runKeepAliveExecutor
     runPingExecutor
     runGuildRosterExecutor
     if (guildGuid != 0) {

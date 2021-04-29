@@ -44,13 +44,13 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.42.Final</version>
+            <version>4.1.63.Final</version>
         </dependency>
 
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.0_212</version>
+            <version>4.2.1_262</version>
             <exclusions>
                 <exclusion>
                     <groupId>club.minnced</groupId>
@@ -157,9 +157,9 @@
 
     <repositories>
         <repository>
-            <id>jcenter</id>
-            <name>jcenter-bintray</name>
-            <url>https://jcenter.bintray.com</url>
+            <id>dv8tion</id>
+            <name>m2-dv8tion</name>
+            <url>https://m2.dv8tion.net/releases</url>
         </repository>
     </repositories>
 </project>

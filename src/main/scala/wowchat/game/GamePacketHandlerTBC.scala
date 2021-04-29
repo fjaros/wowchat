@@ -1,6 +1,7 @@
 package wowchat.game
 
 import java.nio.charset.Charset
+import java.util.concurrent.TimeUnit
 
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import wowchat.common.{CommonConnectionCallback, Global, Packet}
@@ -22,6 +23,12 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
   ).map(_.toByte)
 
   private val connectTime = System.currentTimeMillis
+
+  override protected def runKeepAliveExecutor: Unit = {
+    executorService.scheduleWithFixedDelay(() => {
+      ctx.get.writeAndFlush(Packet(CMSG_KEEP_ALIVE))
+    }, 15, 30, TimeUnit.SECONDS)
+  }
 
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {

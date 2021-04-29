@@ -43,6 +43,7 @@ trait GamePacketsMoP18414 extends GamePacketsCataclysm15595 {
   // I was not able to find an open source implementation of this packet for MoP
   // So I do not know if it has the same format as from previous versions - the guid being plain 8 bytes
   override val SMSG_INVALIDATE_PLAYER = 0x102E
+  override val CMSG_KEEP_ALIVE = 0x1A87
 
   override val SMSG_TIME_SYNC_REQ = 0x1A8F
   override val CMSG_TIME_SYNC_RESP = 0x01DB
