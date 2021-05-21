@@ -16,6 +16,9 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
   private var ctx: Option[ChannelHandlerContext] = None
   private var expectedDisconnect = false
   private var sessionKey: Array[Byte] = _
+  // Issue 57, certain servers return logon proof packet for the 2nd time when asking for friends list with an error code.
+  // Implement a state to ignore it if/when it comes a second time
+  private var logonState = 0
 
   private val buildCrcHashes = Map(
     (5875, Platform.Mac)
@@ -84,11 +87,16 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     msg match {
       case msg: Packet =>
         msg.id match {
-          case RealmPackets.CMD_AUTH_LOGON_CHALLENGE => handle_CMD_AUTH_LOGON_CHALLENGE(msg)
-          case RealmPackets.CMD_AUTH_LOGON_PROOF => handle_CMD_AUTH_LOGON_PROOF(msg)
-          case RealmPackets.CMD_REALM_LIST => handle_CMD_REALM_LIST(msg)
+          case RealmPackets.CMD_AUTH_LOGON_CHALLENGE if logonState == 0 => handle_CMD_AUTH_LOGON_CHALLENGE(msg)
+          case RealmPackets.CMD_AUTH_LOGON_PROOF if logonState == 1 => handle_CMD_AUTH_LOGON_PROOF(msg)
+          case RealmPackets.CMD_REALM_LIST if logonState == 2 => handle_CMD_REALM_LIST(msg)
+          case _ =>
+            logger.info(f"Received packet ${msg.id}%04X in unexpected logonState $logonState")
+            msg.byteBuf.release
+            return
         }
         msg.byteBuf.release
+        logonState += 1
       case msg =>
         logger.error(s"Packet is instance of ${msg.getClass}")
     }
@@ -155,12 +163,6 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
         // seems sometimes this error happens even on a legit connect. so just run regular reconnect loop
         realmConnectionCallback.disconnected
       } else {
-        if (result == RealmPackets.AuthResult.WOW_FAIL_VERSION_INVALID && Global.config.wow.platform == Platform.Mac) {
-          logger.error(
-            s"It is likely server ${Global.config.wow.realmlist.host} is blocking logins from Mac clients. " +
-            "You can try using platform=Windows but the bot will disconnect soon after login if Warden anti-cheat is enabled."
-          )
-        }
         realmConnectionCallback.error
       }
       return

@@ -50,7 +50,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.1_262</version>
+            <version>4.2.1_265</version>
             <exclusions>
                 <exclusion>
                     <groupId>club.minnced</groupId>
