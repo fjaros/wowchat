@@ -61,7 +61,7 @@ trait GamePackets {
 
     lazy val CHAT_MSG_ACHIEVEMENT = if (WowChatConfig.getExpansion == WowExpansion.MoP) 0x2E.toByte else 0x30.toByte
     lazy val CHAT_MSG_GUILD_ACHIEVEMENT = if (WowChatConfig.getExpansion == WowExpansion.MoP) 0x2F.toByte else 0x31.toByte
-    lazy val CHAT_MSG_ADDON = 0xBE.toByte
+    lazy val CHAT_MSG_ADDON = 0xFF.toByte
 
     def parse(tp: String): Byte = {
       (tp.toLowerCase match {
