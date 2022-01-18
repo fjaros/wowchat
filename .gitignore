@@ -2,3 +2,13 @@
 *iml
 target
 GreetBot
+.bloop/bloop.settings.json
+.bloop/wowchat-test.json
+.bloop/wowchat.json
+.metals/metals.h2.db
+.metals/metals.lock.db
+.metals/metals.log
+.metals/readonly/dependencies/scala-library-2.12.12-sources.jar/.jar.meta
+.metals/readonly/dependencies/scala-library-2.12.12-sources.jar/scala/Byte.scala
+.metals/readonly/dependencies/scala-library-2.12.12-sources.jar/scala/Int.scala
+.vscode/settings.json

@@ -24,7 +24,7 @@ trait GamePackets {
   val SMSG_MESSAGECHAT = 0x96
   val CMSG_JOIN_CHANNEL = 0x97
   val SMSG_CHANNEL_NOTIFY = 0x99
-
+  
   val SMSG_NOTIFICATION = 0x01CB
   val CMSG_PING = 0x01DC
   val SMSG_AUTH_CHALLENGE = 0x01EC
@@ -61,6 +61,7 @@ trait GamePackets {
 
     lazy val CHAT_MSG_ACHIEVEMENT = if (WowChatConfig.getExpansion == WowExpansion.MoP) 0x2E.toByte else 0x30.toByte
     lazy val CHAT_MSG_GUILD_ACHIEVEMENT = if (WowChatConfig.getExpansion == WowExpansion.MoP) 0x2F.toByte else 0x31.toByte
+    lazy val CHAT_MSG_ADDON = 0xBE.toByte
 
     def parse(tp: String): Byte = {
       (tp.toLowerCase match {
@@ -71,6 +72,7 @@ trait GamePackets {
         case "yell" => CHAT_MSG_YELL
         case "emote" => CHAT_MSG_EMOTE
         case "whisper" => CHAT_MSG_WHISPER
+        case "addon" => CHAT_MSG_ADDON
         case "channel" | "custom" => CHAT_MSG_CHANNEL
         case _ => -1
       }).toByte
@@ -86,6 +88,7 @@ trait GamePackets {
         case CHAT_MSG_EMOTE | CHAT_MSG_TEXT_EMOTE => "Emote"
         case CHAT_MSG_CHANNEL => "Channel"
         case CHAT_MSG_SYSTEM => "System"
+        case CHAT_MSG_ADDON => "addon"
         case _ => "Unknown"
       }
     }
