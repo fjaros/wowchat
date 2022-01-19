@@ -130,10 +130,8 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
       var message = msg.readString
 
       Global.config.channels.foreach { channel =>
-        if(channel.wow.prefix != None) {
-          if (prefix == channel.wow.prefix) {
-              Some(ChatMessage(0, ChatEvents.CHAT_MSG_ADDON, message))
-          }
+        if(channel.wow.prefix != None && prefix == channel.wow.prefix) {
+            Some(ChatMessage(0, ChatEvents.CHAT_MSG_ADDON, message))
         }
       }
       return None
