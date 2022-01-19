@@ -157,6 +157,10 @@ object WowChatConfig extends GamePackets {
       .map(_.toConfig)
       .map(channel => {
         val wowChannel = getOpt[String](channel, "wow.channel")
+        var prfix = channel.getString("wow.prefix");
+
+        if (prfix == None || prfix == null)
+          prfix = ""
 
         ChannelConfig(
           ChatDirection.withName(channel.getString("direction")),
@@ -164,7 +168,7 @@ object WowChatConfig extends GamePackets {
             getOpt[Int](channel, "wow.id"),
             ChatEvents.parse(channel.getString("wow.type")),
             wowChannel,
-            channel.getString("wow.prefix"),
+            prfix,
             getOpt[String](channel, "wow.format").getOrElse(""),
             parseFilters(getConfigOpt(channel, "wow.filters"))
           ),

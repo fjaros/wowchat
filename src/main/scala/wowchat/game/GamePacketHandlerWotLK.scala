@@ -130,11 +130,9 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
       var message = msg.readString
 
       Global.config.channels.foreach { channel =>
-        if(channel.wow.channel != None) {
-          var chan =  channel.wow.channel.get.toLowerCase()
-          logger.info(chan)
-          if (chan == "addon" && prefix ==channel.wow.prefix) {
-              Some(message)
+        if(channel.wow.prefix != None) {
+          if (prefix == channel.wow.prefix) {
+              Some(ChatMessage(0, ChatEvents.CHAT_MSG_ADDON, message))
           }
         }
       }
