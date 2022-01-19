@@ -123,10 +123,24 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     val tp = msg.byteBuf.readByte
 
     val lang = msg.byteBuf.readIntLE
-    // ignore addon messages
+
     if (lang == -1) {
+      msg.byteBuf.skipBytes(24)
+      var prefix = msg.readPrefix
+      var message = msg.readString
+
+      Global.config.channels.foreach { channel =>
+        if(channel.wow.channel != None) {
+          var chan =  channel.wow.channel.get.toLowerCase()
+          logger.info(chan)
+          if (chan == "addon" && prefix ==channel.wow.prefix) {
+              Some(message)
+          }
+        }
+      }
       return None
     }
+
 
     // ignore messages from itself, unless it is a system message.
     val guid = msg.byteBuf.readLongLE
@@ -141,7 +155,7 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
       msg.skipString
     }
 
-    val channelName = if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
+    val channelName = if (tp == ChatEvents.CHAT_MSG_CHANNEL || lang == -1) {
       Some(msg.readString)
     } else {
       None
