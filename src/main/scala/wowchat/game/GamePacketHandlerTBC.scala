@@ -80,8 +80,17 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     val tp = msg.byteBuf.readByte
 
     val lang = msg.byteBuf.readIntLE
-    // ignore addon messages
+    
     if (lang == -1) {
+      msg.byteBuf.skipBytes(24)
+      var prefix = msg.readPrefix
+      var message = msg.readString
+
+      Global.config.channels.foreach { channel =>
+        if(channel.wow.prefix != None && prefix == channel.wow.prefix) {
+            return Some(ChatMessage(0, ChatEvents.CHAT_MSG_ADDON, message))
+        }
+      }
       return None
     }
 
