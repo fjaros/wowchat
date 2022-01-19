@@ -53,6 +53,10 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
       discordChannels.foreach {
         case (channel, channelConfig) =>
+
+          if (ChatEvents.CHAT_MSG_ADDON == wowType) {
+            channel.sendMessage(message).queue()
+          } else {
           var errors = mutable.ArrayBuffer.empty[String]
           val parsedResolvedTags = from.map(_ => {
             messageResolver.resolveTags(channel, parsedLinks, errors += _)
@@ -62,6 +66,8 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             .replace("*", "\\*")
             .replace("_", "\\_")
             .replace("~", "\\~")
+
+            
 
           val formatted = channelConfig
             .format
@@ -81,6 +87,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
               channel.sendMessage(error).queue()
             })
           }
+        }
       }
     })
   }
