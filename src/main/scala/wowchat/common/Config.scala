@@ -77,6 +77,13 @@ object WowChatConfig extends GamePackets {
   lazy val getBuild: Int = {
     Global.config.wow.build.getOrElse(
       version match {
+        case "1.6.1" => 4544
+        case "1.6.2" => 4565
+        case "1.6.3" => 4620
+        case "1.7.1" => 4695
+        case "1.8.4" => 4878
+        case "1.9.4" => 5086
+        case "1.10.2" => 5302
         case "1.11.2" => 5464
         case "1.12.1" => 5875
         case "1.12.2" => 6005

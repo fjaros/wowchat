@@ -1,3 +1,10 @@
+2022-02-20 - v1.3.8
++ Updates to used libraries.
++ Added build hashes and support for more 1.x vanilla builds.
+* Fixed issue with bot not sending messages longer than 255 characters, since this is unsupported by WoW clients.
+  Instead, the bot will split up these messages and send them in multiple chat packets.
+* Fixed issue with bot not sending Discord messages which are replies.
+
 2020-10-27 - v1.3.4/v1.3.5/v1.3.6
 * Update to new Discord Library. This is a mandatory update. Using an old version will not connect to Discord. (Issue #45)
 * Added support for Discord Gateway Intents and appropriate requirement messages to users. (Issue #47)

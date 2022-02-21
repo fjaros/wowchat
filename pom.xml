@@ -6,7 +6,7 @@
 
     <groupId>wowchat</groupId>
     <artifactId>wowchat</artifactId>
-    <version>1.3.7</version>
+    <version>1.3.8</version>
 
     <properties>
         <java.version>1.8</java.version>
@@ -25,32 +25,32 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>1.2.10</version>
         </dependency>
 
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_${scala.version.major}</artifactId>
-            <version>3.9.2</version>
+            <version>3.9.4</version>
         </dependency>
 
         <!-- config -->
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
-            <version>1.3.4</version>
+            <version>1.4.2</version>
         </dependency>
 
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.63.Final</version>
+            <version>4.1.74.Final</version>
         </dependency>
 
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.2.1_265</version>
+            <version>4.4.0_352</version>
             <exclusions>
                 <exclusion>
                     <groupId>club.minnced</groupId>

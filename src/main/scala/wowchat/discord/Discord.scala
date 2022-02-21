@@ -227,7 +227,8 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     }
 
     // ignore non-default messages
-    if (event.getMessage.getType != MessageType.DEFAULT) {
+    val messageType = event.getMessage.getType
+    if (messageType != MessageType.DEFAULT && messageType != MessageType.INLINE_REPLY) {
       return
     }
 
@@ -247,31 +248,23 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         .get(channelName)
         .fold(Global.discordToWow.get(channelId))(Some(_))
         .foreach(_.foreach(channelConfig => {
-          val finalMessage = if (shouldSendDirectly(message)) {
-            message
+          val finalMessages = if (shouldSendDirectly(message)) {
+            Seq(message)
           } else {
-            val formatted = channelConfig.format
-              .replace("%time", Global.getTime)
-              .replace("%user", effectiveName)
-              .replace("%message", message)
+            splitUpMessage(channelConfig.format, effectiveName, message)
+          }
 
-            // If the final formatted message is a dot command, it should be disabled. Add a space in front.
-            if (formatted.startsWith(".")) {
-              s" $formatted"
-            } else {
-              formatted
+          finalMessages.foreach(finalMessage => {
+            val filter = shouldFilter(channelConfig.filters, finalMessage)
+            logger.info(s"${if (filter) "FILTERED " else ""}Discord->WoW(${
+              channelConfig.channel.getOrElse(ChatEvents.valueOf(channelConfig.tp))
+            }) $finalMessage")
+            if (!filter) {
+              Global.game.fold(logger.error("Cannot send message! Not connected to WoW!"))(handler => {
+                handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)
+              })
             }
-          }
-
-          val filter = shouldFilter(channelConfig.filters, message)
-          logger.info(s"${if (filter) "FILTERED " else ""}Discord->WoW(${
-            channelConfig.channel.getOrElse(ChatEvents.valueOf(channelConfig.tp))
-          }) [$effectiveName]: $message")
-          if (!filter) {
-            Global.game.fold(logger.error("Cannot send message! Not connected to WoW!"))(handler => {
-              handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)
-            })
-          }
+          })
         }))
     }
   }
@@ -304,5 +297,46 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
   def sanitizeMessage(message: String): String = {
     EmojiParser.parseToAliases(message, EmojiParser.FitzpatrickAction.REMOVE)
+  }
+
+  def splitUpMessage(format: String, name: String, message: String): Seq[String] = {
+    val retArr = mutable.ArrayBuffer.empty[String]
+    val maxTmpLen = 255 - format
+      .replace("%time", Global.getTime)
+      .replace("%user", name)
+      .replace("%message", "")
+      .length
+
+    var tmp = message
+    while (tmp.length > maxTmpLen) {
+      val subStr = tmp.substring(0, maxTmpLen)
+      val spaceIndex = subStr.lastIndexOf(' ')
+      tmp = if (spaceIndex == -1) {
+        retArr += subStr
+        tmp.substring(maxTmpLen)
+      } else {
+        retArr += subStr.substring(0, spaceIndex)
+        tmp.substring(spaceIndex + 1)
+      }
+    }
+
+    if (tmp.nonEmpty) {
+      retArr += tmp
+    }
+
+    retArr
+      .map(message => {
+        val formatted = format
+          .replace("%time", Global.getTime)
+          .replace("%user", name)
+          .replace("%message", message)
+
+        // If the final formatted message is a dot command, it should be disabled. Add a space in front.
+        if (formatted.startsWith(".")) {
+          s" $formatted"
+        } else {
+          formatted
+        }
+      })
   }
 }
