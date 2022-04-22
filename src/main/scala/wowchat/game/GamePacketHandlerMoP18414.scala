@@ -276,7 +276,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     out.writeByte(digest(3))
     out.writeByte(digest(4))
     out.writeByte(digest(0))
-    out.writeIntLE(1)
+    out.writeIntLE(realmId)
     out.writeByte(digest(11))
     out.writeInt(clientSeed)
     out.writeByte(digest(19))
