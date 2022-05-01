@@ -222,6 +222,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     logger.info("Connected! Authenticating...")
     this.ctx = Some(ctx)
     Global.game = Some(this)
+    runPingExecutor
   }
 
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
@@ -295,6 +296,12 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     if (code == AuthResponseCodes.AUTH_OK) {
       logger.info("Successfully logged in!")
       sendCharEnum
+    } else if (code == AuthResponseCodes.AUTH_WAIT_QUEUE) {
+      if (msg.byteBuf.readableBytes() >= 14) {
+        msg.byteBuf.skipBytes(10)
+      }
+      val position = msg.byteBuf.readIntLE
+      logger.info(s"Queue enabled. Position: $position")
     } else {
       logger.error(AuthResponseCodes.getMessage(code))
       ctx.foreach(_.close)
@@ -409,7 +416,6 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     Global.discord.changeRealmStatus(realmName)
     gameEventCallback.connected
     runKeepAliveExecutor
-    runPingExecutor
     runGuildRosterExecutor
     if (guildGuid != 0) {
       queryGuildName

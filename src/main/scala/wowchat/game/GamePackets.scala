@@ -219,6 +219,34 @@ trait GamePackets {
     val AUTH_SUSPENDED = 0x20
     val AUTH_PARENTAL_CONTROL = 0x21
 
+    def valueOf(authResult: Int): String = {
+      authResult match {
+        case AUTH_OK => "AUTH_OK"
+        case AUTH_FAILED => "AUTH_FAILED"
+        case AUTH_REJECT => "AUTH_REJECT"
+        case AUTH_BAD_SERVER_PROOF => "AUTH_BAD_SERVER_PROOF"
+        case AUTH_UNAVAILABLE => "AUTH_UNAVAILABLE"
+        case AUTH_SYSTEM_ERROR => "AUTH_SYSTEM_ERROR"
+        case AUTH_BILLING_ERROR => "AUTH_BILLING_ERROR"
+        case AUTH_BILLING_EXPIRED => "AUTH_BILLING_EXPIRED"
+        case AUTH_VERSION_MISMATCH => "AUTH_VERSION_MISMATCH"
+        case AUTH_UNKNOWN_ACCOUNT => "AUTH_UNKNOWN_ACCOUNT"
+        case AUTH_INCORRECT_PASSWORD => "AUTH_INCORRECT_PASSWORD"
+        case AUTH_SESSION_EXPIRED => "AUTH_SESSION_EXPIRED"
+        case AUTH_SERVER_SHUTTING_DOWN => "AUTH_SERVER_SHUTTING_DOWN"
+        case AUTH_ALREADY_LOGGING_IN => "AUTH_ALREADY_LOGGING_IN"
+        case AUTH_LOGIN_SERVER_NOT_FOUND => "AUTH_LOGIN_SERVER_NOT_FOUND"
+        case AUTH_WAIT_QUEUE => "AUTH_WAIT_QUEUE"
+        case AUTH_BANNED => "AUTH_BANNED"
+        case AUTH_ALREADY_ONLINE => "AUTH_ALREADY_ONLINE"
+        case AUTH_NO_TIME => "AUTH_NO_TIME"
+        case AUTH_DB_BUSY => "AUTH_DB_BUSY"
+        case AUTH_SUSPENDED => "AUTH_SUSPENDED"
+        case AUTH_PARENTAL_CONTROL => "AUTH_PARENTAL_CONTROL"
+        case x => f"0x$x%02X"
+      }
+    }
+
     def getMessage(authResult: Int): String = {
       authResult match {
         case AUTH_OK => "Success!"
@@ -227,7 +255,7 @@ trait GamePackets {
         case AUTH_BANNED => "Your account has been banned!"
         case AUTH_ALREADY_LOGGING_IN | AUTH_ALREADY_ONLINE => "Your account is already online! Log it off or wait a minute if already logging off."
         case AUTH_SUSPENDED => "Your account has been suspended!"
-        case x => f"Failed to login to game server! Error code: $x%02X"
+        case x => s"Failed to login to game server! Error code: ${valueOf(x)}"
       }
     }
   }
