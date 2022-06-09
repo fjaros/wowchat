@@ -29,7 +29,7 @@ class MessageResolver(jda: JDA) {
     "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r
   )
 
-  protected val linkSite = "http://classicdb.ch"
+  protected val linkSite = Global.config.wow.database
 
   def resolveLinks(message: String): String = {
     linkRegexes.foldLeft(message) {
@@ -174,7 +174,6 @@ class MessageResolverTBC(jda: JDA) extends MessageResolver(jda) {
     "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r
   )
 
-  override protected val linkSite = "http://tbc-twinhead.twinstar.cz"
 }
 
 class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
@@ -187,12 +186,6 @@ class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
     "spell" -> "\\|Htrade:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\s?".r
   )
 
-  override protected val linkSite = "http://wotlk-twinhead.twinstar.cz"
-}
-
-class MessageResolverCataclysm(jda: JDA) extends MessageResolverWotLK(jda) {
-
-  override protected val linkSite = "https://cata-twinhead.twinstar.cz/"
 }
 
 class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
@@ -205,5 +198,4 @@ class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
     "spell" -> "\\|Htrade:.+?:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\s?".r
   )
 
-  override protected val linkSite = "http://mop-shoot.tauri.hu"
 }
