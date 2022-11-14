@@ -122,7 +122,7 @@ trait GamePackets {
 
     def getLanguage(race: Byte): Byte = {
       race match {
-        case RACE_ORC | RACE_UNDEAD | RACE_TAUREN | RACE_TROLL | RACE_BLOODELF | RACE_GOBLIN | RACE_PANDAREN_HORDE => 0x01 // orcish
+        case RACE_ORC | RACE_UNDEAD | RACE_TAUREN | RACE_TROLL | RACE_GOBLIN | RACE_PANDAREN_HORDE => 0x01 // orcish
         case RACE_PANDAREN_NEUTRAL => 0x2A.toByte // pandaren neutral?
         case _ => 0x07 // common
       }
@@ -139,7 +139,7 @@ trait GamePackets {
         case RACE_GNOME => "Gnome"
         case RACE_TROLL => "Troll"
         case RACE_GOBLIN => "Goblin"
-        case RACE_BLOODELF => "Blood Elf"
+        case RACE_BLOODELF => "High Elf"
         case RACE_DRAENEI => "Draenei"
         case RACE_WORGEN => "Worgen"
         case RACE_PANDAREN_NEUTRAL => "Pandaren"
