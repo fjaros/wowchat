@@ -3,16 +3,9 @@ WoWChat -- README
 
 WoWChat is a Discord integration chat bot for old versions of World of Warcraft.
 
-**It does NOT support WoW Classic or Retail servers.**
+This version of WoWChat has been modified for use on the custom https://turtle-wow.org/ server.
 
 New Requirement: Due to Discord changes, you must check PRESENCE INTENT and SERVER MEMBERS INTENT under Privileged Gateway Intents in Discord developer portal.
-
-Currently supported versions are:
-  * Vanilla
-  * The Burning Crusade
-  * Wrath of the Lich King
-  * Cataclysm (4.3.4 build 15595)
-  * Mists of Pandaria (5.4.8 build 18414)
 
 Features:
 * Clientless (Does not need the WoW Client to be open to run)
