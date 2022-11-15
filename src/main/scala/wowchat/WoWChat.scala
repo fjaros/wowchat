@@ -89,7 +89,7 @@ object WoWChat extends StrictLogging {
       logger.error( "~~~ !!!                YOUR WoWChat VERSION IS OUT OF DATE                !!! ~~~")
       logger.error(s"~~~ !!!                     Current Version:  $RELEASE                      !!! ~~~")
       logger.error(s"~~~ !!!                     Repo    Version:  $repoTagName                      !!! ~~~")
-      logger.error( "~~~ !!! RUN git pull OR GO TO https://github.com/fjaros/wowchat TO UPDATE !!! ~~~")
+      logger.error( "~~~ !!!    GO TO https://github.com/Zebouski/WoWChat-Turtle TO UPDATE !!! ~~~")
       logger.error( "~~~ !!!                YOUR WoWChat VERSION IS OUT OF DATE                !!! ~~~")
     }
   }
