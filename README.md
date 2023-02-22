@@ -5,7 +5,7 @@ WoWChat is a Discord integration chat bot for old versions of World of Warcraft.
 
 **It does NOT support WoW Classic or Retail servers.**
 
-New Requirement: Due to Discord changes, you must check PRESENCE INTENT and SERVER MEMBERS INTENT under Privileged Gateway Intents in Discord developer portal.
+New Requirement: Due to Discord changes, you must check PRESENCE INTENT, SERVER MEMBERS INTENT, and MESSAGE CONTENT INTENT under Privileged Gateway Intents in Discord developer portal.
 
 Currently supported versions are:
   * Vanilla
