@@ -13,7 +13,7 @@ import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig], filters: Option[FiltersConfig])
 case class DiscordConfig(token: String, enableDotCommands: Boolean, dotCommandsWhitelist: Set[String], enableCommandsChannels: Set[String], enableTagFailedNotifications: Boolean)
-case class Wow(locale: String, platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: Array[Byte], password: String, character: String, enableServerMotd: Boolean)
+case class Wow(locale: String, platform: Platform.Value, realmBuild: Option[Int], gameBuild: Option[Int], realmlist: RealmListConfig, account: Array[Byte], password: String, character: String, enableServerMotd: Boolean)
 case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
 case class GuildNotificationConfig(enabled: Boolean, format: String, channel: Option[String])
@@ -58,7 +58,8 @@ object WowChatConfig extends GamePackets {
       Wow(
         getOpt[String](wowConf, "locale").getOrElse("enUS"),
         Platform.valueOf(getOpt[String](wowConf, "platform").getOrElse("Mac")),
-        getOpt[Int](wowConf, "build"),
+        getOpt[Int](wowConf, "realm_build").orElse(getOpt[Int](wowConf, "build")),
+        getOpt[Int](wowConf, "game_build").orElse(getOpt[Int](wowConf, "build")),
         parseRealmlist(wowConf),
         convertToUpper(wowConf.getString("account")),
         wowConf.getString("password"),
@@ -74,31 +75,32 @@ object WowChatConfig extends GamePackets {
   lazy val getVersion = version
   lazy val getExpansion = expansion
 
-  lazy val getBuild: Int = {
-    Global.config.wow.build.getOrElse(
-      version match {
-        case "1.6.1" => 4544
-        case "1.6.2" => 4565
-        case "1.6.3" => 4620
-        case "1.7.1" => 4695
-        case "1.8.4" => 4878
-        case "1.9.4" => 5086
-        case "1.10.2" => 5302
-        case "1.11.2" => 5464
-        case "1.12.1" => 5875
-        case "1.12.2" => 6005
-        case "1.12.3" => 6141
-        case "2.4.3" => 8606
-        case "3.2.2" => 10505
-        case "3.3.0" => 11159
-        case "3.3.2" => 11403
-        case "3.3.3" => 11723
-        case "3.3.5" => 12340
-        case "4.3.4" => 15595
-        case "5.4.8" => 18414
-        case _ => throw new IllegalArgumentException(s"Build $version not supported!")
-      })
-  }
+  private lazy val buildFromVersion: Int =
+    version match {
+      case "1.6.1" => 4544
+      case "1.6.2" => 4565
+      case "1.6.3" => 4620
+      case "1.7.1" => 4695
+      case "1.8.4" => 4878
+      case "1.9.4" => 5086
+      case "1.10.2" => 5302
+      case "1.11.2" => 5464
+      case "1.12.1" => 5875
+      case "1.12.2" => 6005
+      case "1.12.3" => 6141
+      case "2.4.3" => 8606
+      case "3.2.2" => 10505
+      case "3.3.0" => 11159
+      case "3.3.2" => 11403
+      case "3.3.3" => 11723
+      case "3.3.5" => 12340
+      case "4.3.4" => 15595
+      case "5.4.8" => 18414
+      case _ => throw new IllegalArgumentException(s"Build $version not supported!")
+    }
+
+  lazy val getRealmBuild: Int = Global.config.wow.realmBuild.getOrElse(buildFromVersion)
+  lazy val getGameBuild: Int = Global.config.wow.gameBuild.getOrElse(buildFromVersion)
 
   private def convertToUpper(account: String): Array[Byte] = {
     account.map(c => {

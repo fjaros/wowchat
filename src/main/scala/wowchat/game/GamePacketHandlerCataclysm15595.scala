@@ -77,7 +77,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     out.writeByte(digest(7))
     out.writeByte(digest(16))
     out.writeByte(digest(3))
-    out.writeShortLE(WowChatConfig.getBuild)
+    out.writeShortLE(WowChatConfig.getGameBuild)
     out.writeByte(digest(8))
     out.writeBytes(new Array[Byte](5))
     out.writeByte(digest(17))

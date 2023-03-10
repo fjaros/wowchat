@@ -290,7 +290,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     out.writeByte(digest(5))
     out.writeByte(digest(6))
     out.writeByte(digest(8))
-    out.writeShortLE(WowChatConfig.getBuild)
+    out.writeShortLE(WowChatConfig.getGameBuild)
     out.writeByte(digest(17))
     out.writeByte(digest(7))
     out.writeByte(digest(13))
