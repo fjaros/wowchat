@@ -134,6 +134,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     msg.readBitSeq(guid3, 1, 4)
     val nameLength = msg.readBits(6)
     msg.readBitSeq(guid2, 6)
+    msg.resetBitReader
     msg.readBitSeq(guid3, 6, 0)
 
     val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
