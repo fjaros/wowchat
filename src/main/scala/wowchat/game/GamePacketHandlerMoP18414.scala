@@ -135,12 +135,19 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
     val nameLength = msg.readBits(6)
     msg.readBitSeq(guid2, 6)
     msg.resetBitReader
-    msg.readBitSeq(guid3, 6, 0)
+    msg.readXorByteSeq(guid3, 6, 0)
 
     val name = msg.byteBuf.readCharSequence(nameLength, Charset.forName("UTF-8")).toString
 
     // can't be bothered to parse the rest of this crap
     NameQueryMessage(ByteUtils.bytesToLongLE(guid), name, charClass)
+  }
+
+  override protected def parseInvalidatePlayer(msg: Packet): Long = {
+    val guid = new Array[Byte](8)
+    msg.readBitSeq(guid, 6, 3, 1, 2, 7, 5, 0, 4)
+    msg.readXorByteSeq(guid, 7, 1, 2, 3, 6, 0, 4, 5)
+    ByteUtils.bytesToLongLE(guid)
   }
 
   override protected def buildWhoMessage(name: String): ByteBuf = {
