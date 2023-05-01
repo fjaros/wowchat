@@ -16,7 +16,7 @@ trait GamePacketsCataclysm15595 extends GamePacketsWotLK {
   override val SMSG_GUILD_ROSTER = 0x3DA3
   override val SMSG_GUILD_EVENT = 0x0705
   override val SMSG_MESSAGECHAT = 0x2026
-  override val SMSG_GM_MESSAGECHAT = 0x13B4
+  override val SMSG_GM_MESSAGECHAT = 0x6434
   override val CMSG_JOIN_CHANNEL = 0x0156
   override val SMSG_CHANNEL_NOTIFY = 0x0825
 
