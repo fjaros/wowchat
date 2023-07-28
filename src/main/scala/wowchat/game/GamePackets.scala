@@ -218,6 +218,12 @@ trait GamePackets {
     val AUTH_DB_BUSY = 0x1F
     val AUTH_SUSPENDED = 0x20
     val AUTH_PARENTAL_CONTROL = 0x21
+    val AUTH_LOCKED_ENFORCED = 0x22
+    val REALM_LIST_IN_PROGRESS = 0x23
+    val REALM_LIST_SUCCESS = 0x24
+    val REALM_LIST_FAILED = 0x25
+    val REALM_LIST_INVALID = 0x26
+    val REALM_LIST_REALM_NOT_FOUND = 0x27
 
     def valueOf(authResult: Int): String = {
       authResult match {
@@ -243,6 +249,12 @@ trait GamePackets {
         case AUTH_DB_BUSY => "AUTH_DB_BUSY"
         case AUTH_SUSPENDED => "AUTH_SUSPENDED"
         case AUTH_PARENTAL_CONTROL => "AUTH_PARENTAL_CONTROL"
+        case AUTH_LOCKED_ENFORCED => "AUTH_LOCKED_ENFORCED"
+        case REALM_LIST_IN_PROGRESS => "REALM_LIST_IN_PROGRESS"
+        case REALM_LIST_SUCCESS => "REALM_LIST_SUCCESS"
+        case REALM_LIST_FAILED => "REALM_LIST_FAILED"
+        case REALM_LIST_INVALID => "REALM_LIST_INVALID"
+        case REALM_LIST_REALM_NOT_FOUND => "REALM_LIST_REALM_NOT_FOUND"
         case x => f"0x$x%02X"
       }
     }

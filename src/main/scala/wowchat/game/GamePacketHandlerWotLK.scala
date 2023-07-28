@@ -36,7 +36,7 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     val clientSeed = Random.nextInt
     val out = PooledByteBufAllocator.DEFAULT.buffer(200, 400)
     out.writeShortLE(0)
-    out.writeIntLE(WowChatConfig.getBuild)
+    out.writeIntLE(WowChatConfig.getGameBuild)
     out.writeIntLE(0)
     out.writeBytes(account)
     out.writeByte(0)

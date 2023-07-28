@@ -5,7 +5,7 @@ WoWChat is a Discord integration chat bot for old versions of World of Warcraft.
 
 This version of WoWChat has been modified for use on the custom https://turtle-wow.org/ server.
 
-New Requirement: Due to Discord changes, you must check PRESENCE INTENT and SERVER MEMBERS INTENT under Privileged Gateway Intents in Discord developer portal.
+New Requirement: Due to Discord changes, you must check PRESENCE INTENT, SERVER MEMBERS INTENT, and MESSAGE CONTENT INTENT under Privileged Gateway Intents in Discord developer portal.
 
 Features:
 * Clientless (Does not need the WoW Client to be open to run)
@@ -58,7 +58,7 @@ Even though this bot does not do anything malicious, some servers may not like a
      * **locale**: Optionally specify a locale if you want to join locale-specific global channels. **enUS** is the default locale.
      * **enable_server_motd**: **0** to ignore sending server's MotD. **1** to send server's MotD as a SYSTEM message.
      * **version**: put either 1.12.1, 2.4.3, 3.3.5, 4.3.4, or 5.4.8 based on the server's expansion.
-     * **build**: you can include a build=<build number> setting in the config, if you are using a custom build version on your server.
+     * **build**: you can include a build=<build number> setting in the config, if you are using a custom build version on your server. Optionally you can also use **realm_build** and **game_build** options if the number used is different for each server. See https://github.com/fjaros/wowchat/issues/90
      * **realmlist**: this is server's realmlist, same as in your realmlist.wtf file.
      Example values are logon.lightshope.org or wow.gamer-district.org
      * **realm**: This is the realm name the Bot will connect to.

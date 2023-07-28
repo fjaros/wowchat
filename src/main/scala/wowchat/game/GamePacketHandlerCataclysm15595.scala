@@ -77,9 +77,10 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     out.writeByte(digest(7))
     out.writeByte(digest(16))
     out.writeByte(digest(3))
-    out.writeShortLE(WowChatConfig.getBuild)
+    out.writeShortLE(WowChatConfig.getGameBuild)
     out.writeByte(digest(8))
-    out.writeBytes(new Array[Byte](5))
+    out.writeIntLE(realmId)
+    out.writeByte(0)
     out.writeByte(digest(17))
     out.writeByte(digest(6))
     out.writeByte(digest(0))
@@ -102,7 +103,13 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
   }
 
   override protected def parseAuthResponse(msg: Packet): Byte = {
-    msg.byteBuf.skipBytes(16)
+    if (msg.byteBuf.readableBytes() >= 17) {
+      msg.byteBuf.skipBytes(16)
+    } else if (msg.byteBuf.readableBytes() >= 2) {
+      msg.byteBuf.skipBytes(1)
+    } else {
+      return AuthResponseCodes.AUTH_FAILED.toByte
+    }
     super.parseAuthResponse(msg)
   }
 

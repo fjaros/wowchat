@@ -744,8 +744,12 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   private def handle_SMSG_INVALIDATE_PLAYER(msg: Packet): Unit = {
-    val guid = msg.byteBuf.readLongLE
+    val guid = parseInvalidatePlayer(msg)
     playerRoster.remove(guid)
+  }
+
+  protected def parseInvalidatePlayer(msg: Packet): Long = {
+    msg.byteBuf.readLongLE
   }
 
   private def handle_SMSG_WARDEN_DATA(msg: Packet): Unit = {
