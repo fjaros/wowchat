@@ -346,8 +346,12 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
 
   private def handle_SMSG_CHAR_ENUM(msg: Packet): Unit = {
     if (receivedCharEnum) {
-      // Do not parse char enum again
-      return
+      if (inWorld) {
+        // Do not parse char enum again if we've already joined the world.
+        return
+      } else {
+        logger.info("Received character enum more than once. Trying to join the world again...")
+      }
     }
     receivedCharEnum = true
     parseCharEnum(msg).fold({
