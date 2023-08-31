@@ -35,14 +35,14 @@ class MessageResolver(jda: JDA) {
     linkRegexes.foldLeft(message) {
       case (result, (classicDbKey, regex)) =>
         regex.replaceAllIn(result, m => {
-          s"[${m.group(2)}] ($linkSite?$classicDbKey=${m.group(1)}) "
+          s"[[${m.group(2)}]($linkSite?$classicDbKey=${m.group(1)})] "
         })
     }
   }
 
   def resolveAchievementId(achievementId: Int): String = {
     val name = GameResources.ACHIEVEMENT.getOrElse(achievementId, achievementId)
-    s"[$name] ($linkSite?achievement=$achievementId) "
+    s"[[$name]($linkSite?achievement=$achievementId)] "
   }
 
   def stripColorCoding(message: String): String = {
