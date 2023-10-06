@@ -144,7 +144,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         eligibleDiscordChannels.foreach(channel => {
           configChannels
             .filter {
-              case (name, channelConfig) =>
+              case (name, _) =>
                 name.equalsIgnoreCase(channel.getName) ||
                 name == channel.getId
             }
@@ -170,23 +170,23 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         // build guild notification maps
         val guildEventChannels = Global.config.guildConfig.notificationConfigs
           .filter {
-            case (key, notificationConfig) =>
+            case (_, notificationConfig) =>
               notificationConfig.enabled
           }
           .flatMap {
             case (key, notificationConfig) =>
-              notificationConfig.channel.fold[Option[(String, String)]](None)(channel => Some(channel -> key))
+              notificationConfig.channel.map(key -> _)
           }
 
         discordTextChannels.foreach(channel => {
           guildEventChannels
             .filter {
-              case (name, _) =>
+              case (_, name) =>
                 name.equalsIgnoreCase(channel.getName) ||
                 name == channel.getId
             }
             .foreach {
-              case (_, notificationKey) =>
+              case (notificationKey, _) =>
                 Global.guildEventsToDiscord.addBinding(notificationKey, channel)
             }
         })

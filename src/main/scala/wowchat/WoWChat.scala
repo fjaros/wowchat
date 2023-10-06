@@ -25,7 +25,11 @@ object WoWChat extends StrictLogging {
     }
     Global.config = WowChatConfig(confFile)
 
-    checkForNewVersion
+    try {
+      checkForNewVersion
+    } catch {
+      case e: Exception => logger.error("Failed to check for a new version!", e)
+    }
 
     val gameConnectionController: CommonConnectionCallback = new CommonConnectionCallback {
 
