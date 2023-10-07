@@ -32,7 +32,19 @@ class RealmPacketDecoder extends ByteToMessageDecoder with StrictLogging {
           in.skipBytes(1)
           val result = in.readByte
           size = if (RealmPackets.AuthResult.isSuccess(result)) {
-            118
+            in.skipBytes(115)
+            val securityFlags = in.readByte
+            var securityLength = 0
+            if ((securityFlags & 0x01) == 0x01) { // PIN
+              securityLength += 20
+            }
+            if ((securityFlags & 0x02) == 0x02) { // Matrix
+              securityLength += 12
+            }
+            if ((securityFlags & 0x04) == 0x04) { // Security token
+              securityLength += 1
+            }
+            118 + securityLength
           } else {
             2
           }

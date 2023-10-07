@@ -7,6 +7,8 @@ import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter}
 
+import scala.io.StdIn
+
 private[realm] case class RealmList(name: String, address: String, realmId: Byte)
 
 class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
@@ -138,13 +140,19 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     val nLength = msg.byteBuf.readByte
     val n = toArray(msg.byteBuf, nLength)
     val salt = toArray(msg.byteBuf, 32)
-    val unk3 = toArray(msg.byteBuf, 16)
+    msg.byteBuf.skipBytes(16) // unk3?
     val securityFlag = msg.byteBuf.readByte
-    if (securityFlag != 0) {
-      logger.error(s"Two factor authentication is enabled for this account. Please disable it or use another account.")
+    val token = if (securityFlag == 0x04) {
+      msg.byteBuf.readByte // ?
+      logger.info("Token two factor authentication is enabled for this account. Input the token:")
+      Some(StdIn.readLine)
+    } else if (securityFlag != 0x00) {
+      logger.error(s"Two factor authentication of type $securityFlag is enabled for this account which is not supported. Please disable it or use another account.")
       ctx.get.close
       realmConnectionCallback.error
       return
+    } else {
+      None
     }
 
     srpClient.step1(
@@ -159,7 +167,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     sessionKey = srpClient.K.asByteArray(40)
 
     val aArray = srpClient.A.asByteArray(32)
-    val ret = PooledByteBufAllocator.DEFAULT.buffer(74, 74)
+    val ret = PooledByteBufAllocator.DEFAULT.buffer(74, 128)
     ret.writeBytes(aArray)
     ret.writeBytes(srpClient.M.asByteArray(20, false))
     val md = MessageDigest.getInstance("SHA1")
@@ -167,7 +175,11 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     md.update(buildCrcHashes.getOrElse((WowChatConfig.getRealmBuild, Global.config.wow.platform), new Array[Byte](20)))
     ret.writeBytes(md.digest)
     ret.writeByte(0)
-    ret.writeByte(0)
+    ret.writeByte(securityFlag)
+    token.foreach(token => {
+      ret.writeByte(token.length)
+      ret.writeBytes(token.getBytes("UTF-8"))
+    })
 
     ctx.get.writeAndFlush(Packet(RealmPackets.CMD_AUTH_LOGON_PROOF, ret))
   }
