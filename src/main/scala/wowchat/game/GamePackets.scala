@@ -58,6 +58,7 @@ trait GamePackets {
     lazy val CHAT_MSG_CHANNEL_LIST = if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 0x11.toByte else 0x14.toByte
     lazy val CHAT_MSG_CHANNEL_NOTICE = if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 0x12.toByte else 0x15.toByte
     lazy val CHAT_MSG_CHANNEL_NOTICE_USER = if (WowChatConfig.getExpansion == WowExpansion.Vanilla) 0x13.toByte else 0x16.toByte
+    lazy val CHAT_MSG_HARDCORE = 0x5E.toByte
 
     lazy val CHAT_MSG_ACHIEVEMENT = if (WowChatConfig.getExpansion == WowExpansion.MoP) 0x2E.toByte else 0x30.toByte
     lazy val CHAT_MSG_GUILD_ACHIEVEMENT = if (WowChatConfig.getExpansion == WowExpansion.MoP) 0x2F.toByte else 0x31.toByte
@@ -72,6 +73,7 @@ trait GamePackets {
         case "emote" => CHAT_MSG_EMOTE
         case "whisper" => CHAT_MSG_WHISPER
         case "channel" | "custom" => CHAT_MSG_CHANNEL
+        case "hardcore" => CHAT_MSG_HARDCORE
         case _ => -1
       }).toByte
     }
@@ -86,6 +88,7 @@ trait GamePackets {
         case CHAT_MSG_EMOTE | CHAT_MSG_TEXT_EMOTE => "Emote"
         case CHAT_MSG_CHANNEL => "Channel"
         case CHAT_MSG_SYSTEM => "System"
+        case CHAT_MSG_HARDCORE => "Hardcore"
         case _ => "Unknown"
       }
     }
