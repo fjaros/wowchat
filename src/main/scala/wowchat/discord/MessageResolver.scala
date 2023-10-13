@@ -24,9 +24,9 @@ object MessageResolver {
 class MessageResolver(jda: JDA) {
 
   protected val linkRegexes = Seq(
-    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "spell" -> "\\|.+?\\|(?:Hspell|Henchant)?:(\\d+).*?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r
+    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r,
+    "spell" -> "\\|.+?\\|(?:Hspell|Henchant)?:(\\d+).*?\\|h\\[(.+?)]\\|h\\|r".r,
+    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r
   )
 
   protected val linkSite = "http://database.turtle-wow.org"
@@ -169,9 +169,9 @@ class MessageResolver(jda: JDA) {
 class MessageResolverTBC(jda: JDA) extends MessageResolver(jda) {
 
   override protected val linkRegexes = Seq(
-    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "spell" -> "\\|.+?\\|(?:Hspell|Henchant|Htalent)?:(\\d+).*?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r
+    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r,
+    "spell" -> "\\|.+?\\|(?:Hspell|Henchant|Htalent)?:(\\d+).*?\\|h\\[(.+?)]\\|h\\|r".r,
+    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r
   )
 
   override protected val linkSite = "http://tbc-twinhead.twinstar.cz"
@@ -180,11 +180,11 @@ class MessageResolverTBC(jda: JDA) extends MessageResolver(jda) {
 class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
 
   override protected val linkRegexes = Seq(
-    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "spell" -> "\\|.+?\\|(?:Hspell|Henchant|Htalent)?:(\\d+).*?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "achievement" -> "\\|.+?\\|Hachievement:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "spell" -> "\\|Htrade:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\s?".r
+    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r,
+    "spell" -> "\\|.+?\\|(?:Hspell|Henchant|Htalent)?:(\\d+).*?\\|h\\[(.+?)]\\|h\\|r".r,
+    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r,
+    "achievement" -> "\\|.+?\\|Hachievement:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r,
+    "spell" -> "\\|Htrade:(\\d+):.+?\\|h\\[(.+?)]\\|h".r
   )
 
   override protected val linkSite = "http://wotlk-twinhead.twinstar.cz"
@@ -198,11 +198,11 @@ class MessageResolverCataclysm(jda: JDA) extends MessageResolverWotLK(jda) {
 class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
 
   override protected val linkRegexes = Seq(
-    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "spell" -> "\\|.+?\\|(?:Hspell|Henchant|Htalent)?:(\\d+).*?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "achievement" -> "\\|.+?\\|Hachievement:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r,
-    "spell" -> "\\|Htrade:.+?:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\s?".r
+    "item" -> "\\|.+?\\|Hitem:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r,
+    "spell" -> "\\|.+?\\|(?:Hspell|Henchant|Htalent)?:(\\d+).*?\\|h\\[(.+?)]\\|h\\|r".r,
+    "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r,
+    "achievement" -> "\\|.+?\\|Hachievement:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r,
+    "spell" -> "\\|Htrade:.+?:(\\d+):.+?\\|h\\[(.+?)]\\|h".r
   )
 
   override protected val linkSite = "http://mop-shoot.tauri.hu"
