@@ -14,6 +14,10 @@ Currently supported versions are:
   * Cataclysm (4.3.4 build 15595)
   * Mists of Pandaria (5.4.8 build 18414)
 
+Some servers have their own modifications which deviate from the original client implementation. For those, consider these dedicated forks which add the custom features of those servers:
+  * Ascension: https://github.com/Szyler/AscensionChat
+  * Turtle WoW: https://github.com/Zebouski/WoWChat-Turtle
+
 Features:
 * Clientless (Does not need the WoW Client to be open to run)
 * Seamless Chat integration of channels between WoW and Discord
