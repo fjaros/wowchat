@@ -3,7 +3,7 @@ WoWChat-Turtle -- README
 
 WoWChat is a Discord integration chat bot for old versions of World of Warcraft.
 
-This version of WoWChat has been modified for use on the custom https://turtle-wow.org/ server.
+This version of [WoWChat](https://github.com/fjaros/wowchat) has been adjusted only for use on the modded vanilla server https://turtle-wow.org/
 
 New Requirement: Due to Discord changes, you must check PRESENCE INTENT, SERVER MEMBERS INTENT, and MESSAGE CONTENT INTENT under Privileged Gateway Intents in Discord developer portal.
 
