@@ -6,10 +6,12 @@ import com.typesafe.scalalogging.StrictLogging
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.JDA.Status
-import net.dv8tion.jda.api.entities.{Activity, ChannelType, MessageType}
+import net.dv8tion.jda.api.entities.{Activity, MessageType}
 import net.dv8tion.jda.api.entities.Activity.ActivityType
-import net.dv8tion.jda.api.events.{ShutdownEvent, StatusChangeEvent}
+import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.events.StatusChangeEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.events.session.ShutdownEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.{CloseCode, GatewayIntent}
 import net.dv8tion.jda.api.utils.MemberCachePolicy
@@ -23,9 +25,15 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   with GamePackets with StrictLogging {
 
   private val jda = JDABuilder
-    .createDefault(Global.config.discord.token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EMOJIS)
+    .createDefault(Global.config.discord.token,
+      GatewayIntent.GUILD_EXPRESSIONS,
+      GatewayIntent.GUILD_MEMBERS,
+      GatewayIntent.GUILD_MESSAGES,
+      GatewayIntent.GUILD_PRESENCES,
+      GatewayIntent.MESSAGE_CONTENT)
     .setMemberCachePolicy(MemberCachePolicy.ALL)
-    .disableCache(CacheFlag.VOICE_STATE)
+    .disableCache(CacheFlag.SCHEDULED_EVENTS,
+      CacheFlag.VOICE_STATE)
     .addEventListeners(this)
     .build
 
@@ -44,7 +52,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   }
 
   def changeRealmStatus(message: String): Unit = {
-    changeStatus(ActivityType.DEFAULT, message)
+    changeStatus(ActivityType.CUSTOM_STATUS, message)
   }
 
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String]): Unit = {
@@ -53,7 +61,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
       discordChannels.foreach {
         case (channel, channelConfig) =>
-          var errors = mutable.ArrayBuffer.empty[String]
+          val errors = mutable.ArrayBuffer.empty[String]
           val parsedResolvedTags = from.map(_ => {
             messageResolver.resolveTags(channel, parsedLinks, errors += _)
           })

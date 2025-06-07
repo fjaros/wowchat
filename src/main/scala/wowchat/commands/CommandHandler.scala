@@ -1,7 +1,7 @@
 package wowchat.commands
 
 import com.typesafe.scalalogging.StrictLogging
-import net.dv8tion.jda.api.entities.MessageChannel
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import wowchat.common.Global
 import wowchat.game.{GamePackets, GameResources, GuildInfo, GuildMember}
 
