@@ -13,7 +13,7 @@ import scala.io.Source
 
 object WoWChat extends StrictLogging {
 
-  private val RELEASE = "v1.3.8"
+  private val RELEASE = "v1.3.8_551"
 
   def main(args: Array[String]): Unit = {
     logger.info(s"Running WoWChat - $RELEASE")
@@ -26,7 +26,7 @@ object WoWChat extends StrictLogging {
     Global.config = WowChatConfig(confFile)
 
     try {
-      checkForNewVersion
+//      checkForNewVersion
     } catch {
       case e: Exception => logger.error("Failed to check for a new version!", e)
     }

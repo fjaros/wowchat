@@ -1,7 +1,7 @@
 package wowchat.discord
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import wowchat.common.{WowChatConfig, WowExpansion}
 import wowchat.game.GameResources
 
@@ -145,7 +145,7 @@ class MessageResolver(jda: JDA) {
     val regex = "(?<=:).*?(?=:)".r
 
     // could do some caching here later
-    val emojiMap = jda.getEmotes.asScala.map(emote => {
+    val emojiMap = jda.getEmojis.asScala.map(emote => {
       emote.getName.toLowerCase -> emote.getId
     }).toMap
 
