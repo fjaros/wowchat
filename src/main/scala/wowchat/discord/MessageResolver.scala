@@ -2,7 +2,7 @@ package wowchat.discord
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import wowchat.common.{WowChatConfig, WowExpansion}
+import wowchat.common.{Global, WowChatConfig, WowExpansion}
 import wowchat.game.GameResources
 
 import scala.collection.JavaConverters._
@@ -29,7 +29,15 @@ class MessageResolver(jda: JDA) {
     "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r
   )
 
-  protected val linkSite = "http://classicdb.ch"
+  protected val defaultLinkSite = "http://classicdb.ch"
+
+  private val linkSite = Global.config.discord.itemDatabase.fold(defaultLinkSite)(itemDatabase => {
+    if (itemDatabase != "") {
+      itemDatabase
+    } else {
+      defaultLinkSite
+    }
+  })
 
   def resolveLinks(message: String): String = {
     linkRegexes.foldLeft(message) {
@@ -174,7 +182,7 @@ class MessageResolverTBC(jda: JDA) extends MessageResolver(jda) {
     "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)]\\|h\\|r".r
   )
 
-  override protected val linkSite = "http://tbc-twinhead.twinstar.cz"
+  override protected val defaultLinkSite = "http://tbc-twinhead.twinstar.cz"
 }
 
 class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
@@ -187,12 +195,12 @@ class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
     "spell" -> "\\|Htrade:(\\d+):.+?\\|h\\[(.+?)]\\|h".r
   )
 
-  override protected val linkSite = "http://wotlk-twinhead.twinstar.cz"
+  override protected val defaultLinkSite = "http://wotlk-twinhead.twinstar.cz"
 }
 
 class MessageResolverCataclysm(jda: JDA) extends MessageResolverWotLK(jda) {
 
-  override protected val linkSite = "https://cata-twinhead.twinstar.cz/"
+  override protected val defaultLinkSite = "https://cata-twinhead.twinstar.cz/"
 }
 
 class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
@@ -205,5 +213,5 @@ class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
     "spell" -> "\\|Htrade:.+?:(\\d+):.+?\\|h\\[(.+?)]\\|h".r
   )
 
-  override protected val linkSite = "http://mop-shoot.tauri.hu"
+  override protected val defaultLinkSite = "http://mop-shoot.tauri.hu"
 }

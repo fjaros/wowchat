@@ -262,8 +262,9 @@ trait GamePackets {
     def getMessage(authResult: Int): String = {
       authResult match {
         case AUTH_OK => "Success!"
-        case AUTH_UNKNOWN_ACCOUNT | AUTH_INCORRECT_PASSWORD => "Incorrect username or password!"
-        case AUTH_VERSION_MISMATCH => "Invalid game version for this server!"
+        case AUTH_UNKNOWN_ACCOUNT => "Invalid username!"
+        case AUTH_INCORRECT_PASSWORD => "Incorrect password for this username!"
+        case AUTH_VERSION_MISMATCH => "Invalid game version for this server! Is your game_build in config correct?"
         case AUTH_BANNED => "Your account has been banned!"
         case AUTH_ALREADY_LOGGING_IN | AUTH_ALREADY_ONLINE => "Your account is already online! Log it off or wait a minute if already logging off."
         case AUTH_SUSPENDED => "Your account has been suspended!"
